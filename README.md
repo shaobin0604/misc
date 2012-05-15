@@ -15,4 +15,8 @@
 
 [PathButton](http://www.eoeandroid.com/thread-148107-1-1.html) by [nanbabao](http://www.eoeandroid.com/space-uid-94886.html)
 
+## ViewPager-Demo-1
+
+类似[鲜果联播](http://app.xianguo.com/lianbo/android.php), [网易阅读](https://play.google.com/store/apps/details?id=com.netease.pris)切换文章效果
+
 

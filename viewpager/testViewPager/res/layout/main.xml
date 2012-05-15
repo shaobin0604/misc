@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.testViewPager"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="xxxx" />
+
+     
+    
+    <com.viewpagerindicator.TitlePageIndicatorEx1
+    
+        android:id="@+id/indicator"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFDDDDDD"
+        app:footerColor="#FFEE3333"
+        app:footerIndicatorStyle="none"
+        app:footerLineHeight="2dp"
+        android:padding="10dip"
+        app:selectedBold="false"
+        app:selectedColor="#FF000000"
+        app:textColor="#FF999999" />
+<!-- -->
+    
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="yyyyy" />
+
+</LinearLayout>
