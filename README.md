@@ -19,4 +19,6 @@
 
 类似[鲜果联播](http://app.xianguo.com/lianbo/android.php), [网易阅读](https://play.google.com/store/apps/details?id=com.netease.pris)切换文章效果
 
+## HttpClientAsyncTask
 
+中断 `AsyncTask` 中的 HTTP 请求
