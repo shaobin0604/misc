@@ -146,19 +146,11 @@ public class HttpClientAsyncTaskActivity extends Activity implements OnClickList
         public void cancelTask() {
             Status status = getStatus();
             MyLog.d("status = " + status);
-            switch (status) {
-                case PENDING:
-                    cancel(true);
-                    break;
-                case RUNNING:
-                    cancel(true);
-                    mDal.abortRequest();
-                    break;
-                case FINISHED:
-                    break;
-                default:
-                    break;
+            
+            if (status == Status.RUNNING) {
+                mDal.abortRequest();
             }
+            cancel(true);
         }
 
         @Override

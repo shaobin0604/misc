@@ -21,8 +21,8 @@ import java.util.ArrayList;
  *
  */
 public class WebServiceDAL {
-//    private static final String BASE_URL = "http://strong-day-9896.herokuapp.com";
-    private static final String BASE_URL = "http://192.168.0.105:5000";
+    private static final String BASE_URL = "http://strong-day-9896.herokuapp.com";
+//    private static final String BASE_URL = "http://192.168.0.105:5000";
     
     
     private volatile boolean mIsAbort = false;
