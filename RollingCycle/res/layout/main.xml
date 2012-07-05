@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/view_container"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_marginTop="5dip"
+		android:layout_marginBottom="5dip"
+		android:layout_marginLeft="5dip"
+		android:layout_marginRight="5dip">
+		<com.leadien.www.widget.RollingCycle
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:id="@+id/rc">
+			
+		</com.leadien.www.widget.RollingCycle>
+	</FrameLayout>
