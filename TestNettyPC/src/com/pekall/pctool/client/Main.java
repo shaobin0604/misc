@@ -17,22 +17,25 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 
 public class Main {
+	
+	//private static final String HOME_DIR = "/home/dev01";
+	private static final String HOME_DIR = "/home/shaobin";
 
     public static void main(String[] args) {
         try {
 //            System.out.println("adb install -r TestNettyAndroid.apk");
-//            executeCommand("/home/dev01/opt/android-sdk/platform-tools/adb install -r TestProtobufAndroidServer.apk");
+//            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb install -r TestProtobufAndroidServer.apk");
 //            Thread.sleep(3000);
             System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
-            executeCommand("/home/dev01/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
             Thread.sleep(3000);
 
             System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
-            executeCommand("/home/dev01/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
+            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
             Thread.sleep(3000);
 
             System.out.println("adb forward tcp:12580 tcp:12580");
-            executeCommand("/home/dev01/opt/android-sdk/platform-tools/adb forward tcp:12580 tcp:12580");
+            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb forward tcp:12580 tcp:12580");
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
@@ -50,7 +53,7 @@ public class Main {
             e.printStackTrace();
         }
         System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
-        executeCommand("/home/dev01/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
 
     }
     
@@ -105,7 +108,7 @@ public class Main {
     
     private static void testGetAppInfoPList() {
         HttpClient client = new DefaultHttpClient();
-        HttpGet get = new HttpGet("http://localhost:12580/app");
+        HttpGet get = new HttpGet("http://localhost:12580/apps");
         try {
             HttpResponse response = client.execute(get);
             HttpEntity entity = response.getEntity();
