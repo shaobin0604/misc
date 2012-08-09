@@ -8,8 +8,11 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SER
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import android.content.UriMatcher;
+
 import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.pekall.pctool.model.FakeBusinessLogicFacade;
+import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -33,6 +36,19 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 public class MainServerHandler extends SimpleChannelUpstreamHandler {
+    private static final String PATH_APP = "/app";
+    private static final String PATH_TEST = "/test";
+    
+    private static final int APPS = 1;
+    private static final int TEST = 2;
+    
+    private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    
+    static {
+        sURIMatcher.addURI("localhost", "apps", APPS);
+        sURIMatcher.addURI("localhost", "test", TEST);
+    }
+    
     
     private FakeBusinessLogicFacade mLogicFacade;
     
@@ -54,13 +70,20 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
         
         Slog.d("path:" + path);
         
-        AddressBook addressBook = mLogicFacade.getAddressBook();
+        
         
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-        buffer.writeBytes(addressBook.toByteArray());
-        response.setContent(buffer);
+        
+        if (path.startsWith(PATH_APP)) {
+            AppInfoPList appInfoPList =  mLogicFacade.getAppInfoPList();
+            buffer.writeBytes(appInfoPList.toByteArray());
+        } else if (path.startsWith(PATH_TEST)) {
+            AddressBook addressBook = mLogicFacade.getAddressBook();
+            buffer.writeBytes(addressBook.toByteArray());
+        }
 
+        response.setContent(buffer);
         response.setHeader(CONTENT_TYPE, "application/x-protobuf");
         response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
        

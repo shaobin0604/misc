@@ -18,4 +18,14 @@ public class AppUtilTestCase extends AndroidTestCase {
 			Slog.d(appInfo.toString());
 		}
 	}
+	
+	public void testGetAppApkFilePath() {
+	    String packageName = "cn.yo2.aquarium.callvibrator";
+	    
+        String actualPath = AppUtil.getAppApkFilePath(getContext(), packageName);
+        
+        String expectedPath = "/data/app/cn.yo2.aquarium.callvibrator-1.apk";
+        
+        assertEquals(expectedPath, actualPath);
+	}
 }

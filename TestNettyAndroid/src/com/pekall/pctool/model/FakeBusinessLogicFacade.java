@@ -5,6 +5,8 @@ import android.content.Context;
 
 import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.example.tutorial.AddressBookProtos.Person;
+import com.pekall.pctool.model.app.AppUtil;
+import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 
 public class FakeBusinessLogicFacade {
 
@@ -23,6 +25,10 @@ public class FakeBusinessLogicFacade {
 
     private Person getPerson(String name, int id) {
         return Person.newBuilder().setName(name).setId(id).build();
+    }
+    
+    public AppInfoPList getAppInfoPList() {
+        return AppUtil.getAppInfoPList(mContext);
     }
 
 }

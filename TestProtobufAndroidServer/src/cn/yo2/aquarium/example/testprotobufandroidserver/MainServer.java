@@ -20,8 +20,8 @@ public class MainServer extends NanoHTTPD {
         return new Response(HTTP_OK, "application/x-protobuf", new ByteArrayInputStream(addressBook.toByteArray()));
     }
 
-    private Person getPerson(String name, int id) {
-        return Person.newBuilder().setName(name).setId(id).build();
+    private Person.Builder getPerson(String name, int id) {
+        return Person.newBuilder().setName(name).setId(id);
     }
 
     private AddressBook getAddressBook() {

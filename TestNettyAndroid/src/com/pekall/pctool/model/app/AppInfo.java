@@ -1,21 +1,20 @@
+
 package com.pekall.pctool.model.app;
 
-import java.io.File;
 
 public class AppInfo {
-	public String displayName;
-	public String packageName;
-	public String versionName;
-	public int versionCode;
-	public byte[] icon;
-	public long size;
-	public File apkFile;
+    public String label;
+    public String packageName;
+    public String versionName;
+    public int versionCode;
+    public byte[] icon;
+    public long apkFileSize;
+    public String apkFilePath;
 
-	@Override
-	public String toString() {
-		return "AppInfo [displayName=" + displayName + ", packageName="
-				+ packageName + ", versionName=" + versionName
-				+ ", versionCode=" + versionCode + ", size=" + size
-				+ ", apkFile=" + apkFile + "]";
-	}
+    @Override
+    public String toString() {
+        return "AppInfo [label=" + label + ", packageName=" + packageName + ", versionName=" + versionName
+                + ", versionCode=" + versionCode + ", apkFileSize=" + apkFileSize + ", apkFilePath=" + apkFilePath
+                + "]";
+    }
 }

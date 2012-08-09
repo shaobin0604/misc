@@ -1,0 +1,21 @@
+// See README.txt for information and build instructions.
+
+package com.pekall.pctool.protos;
+
+option java_package = "com.pekall.pctool.protos";
+option java_outer_classname = "AppInfoProtos";
+//option optimize_for = LITE_RUNTIME;
+
+message AppInfoP {
+  required string label = 1;
+  required string package_name = 2;
+  required string version_name = 3;
+  required int32 version_code = 4;
+  required bytes icon = 5;
+  required int64 apk_file_size = 6;
+  required string apk_file_path = 7;
+}
+
+message AppInfoPList {
+  repeated AppInfoP app_infos = 1;
+}
