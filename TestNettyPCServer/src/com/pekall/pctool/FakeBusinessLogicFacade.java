@@ -1,43 +1,15 @@
 
-package com.pekall.pctool.model;
+package com.pekall.pctool;
 
-import android.content.Context;
-
-import com.example.tutorial.AddressBookProtos.AddressBook;
-import com.example.tutorial.AddressBookProtos.Person;
 import com.google.protobuf.ByteString;
-import com.pekall.pctool.model.app.AppUtil;
-import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AppLocationType;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppType;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
-import com.pekall.pctool.protos.MsgDefProtos.MsgRecord;
 
 public class FakeBusinessLogicFacade {
 
-    private Context mContext;
-
-    public FakeBusinessLogicFacade(Context context) {
-        this.mContext = context;
-    }
-
-    public AddressBook getAddressBook() {
-        AddressBook.Builder builder = AddressBook.newBuilder();
-        builder.addPerson(getPerson("李雷", 1));
-        builder.addPerson(getPerson("韩梅梅", 2));
-        return builder.build();
-    }
-
-    private Person getPerson(String name, int id) {
-        return Person.newBuilder().setName(name).setId(id).build();
-    }
-    
-    public AppInfoPList getAppInfoPList() {
-        return AppUtil.getAppInfoPList(mContext);
-    }
-    
     public CmdResponse queryAppRecordList() {
         CmdResponse.Builder response = CmdResponse.newBuilder();
         response.setType(CmdType.CMD_QUERY_APP);

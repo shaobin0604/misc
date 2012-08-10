@@ -1,5 +1,6 @@
-
 package com.pekall.pctool;
+
+
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
@@ -9,12 +10,6 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import android.content.UriMatcher;
-import android.net.Uri;
-
-import com.example.tutorial.AddressBookProtos.AddressBook;
-import com.pekall.pctool.model.FakeBusinessLogicFacade;
-import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
@@ -46,18 +41,7 @@ import java.net.URLDecoder;
 public class MainServerHandler extends SimpleChannelUpstreamHandler {
 
     private static final int RPC_END_POINT = 1;
-    private static final int APPS = 2;
-    private static final int TEST = 3;
-
-    private static final UriMatcher sURIMatcher = new UriMatcher(
-            UriMatcher.NO_MATCH);
-
-    static {
-        sURIMatcher.addURI("localhost", "rpc", RPC_END_POINT);
-        sURIMatcher.addURI("localhost", "apps", APPS);
-        sURIMatcher.addURI("localhost", "test", TEST);
-    }
-
+   
     private FakeBusinessLogicFacade mLogicFacade;
 
     public MainServerHandler(FakeBusinessLogicFacade facade) {
@@ -76,38 +60,9 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
 
         Slog.d("path:" + path + ", method: " + method);
 
-        Uri url = Uri.parse("content://localhost" + path);
-
-        int match = sURIMatcher.match(url);
-
-        Slog.d("url = " + url);
-        Slog.d("match = " + match);
-
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
 
-        switch (match) {
-            case RPC_END_POINT: {
-                if (HttpMethod.POST.equals(method)) {
-                    handleRpc(request, response);
-                } else {
-                    Slog.e("not http post request");
-                }
-                break;
-            }
-
-            case APPS: {
-                handleApps(request, response);
-                break;
-            }
-            case TEST: {
-                handleTest(request, response);
-                break;
-            }
-            default: {
-                handleNotFound(request, response);
-                break;
-            }
-        }
+        handleRpc(request, response);
 
         Channel ch = e.getChannel();
         // Write the initial line and the header.
@@ -119,7 +74,12 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
         
         Slog.d("handleRpc");
         
+        Slog.d("content length = " + request.getHeader(CONTENT_LENGTH));
+        Slog.d("content type = " + request.getHeader(CONTENT_TYPE));
+        
         ChannelBuffer content = request.getContent();
+        
+        Slog.d("content length = " + content.readableBytes());
         
         ChannelBufferInputStream cbis = new ChannelBufferInputStream(content);
         
@@ -153,28 +113,6 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
-
-    private void handleApps(HttpRequest request, HttpResponse response) {
-        AppInfoPList appInfoPList = mLogicFacade.getAppInfoPList();
-
-        ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-        buffer.writeBytes(appInfoPList.toByteArray());
-
-        response.setContent(buffer);
-        response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-        response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
-    }
-
-    private void handleTest(HttpRequest request, HttpResponse response) {
-        AddressBook addressBook = mLogicFacade.getAddressBook();
-
-        ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-        buffer.writeBytes(addressBook.toByteArray());
-
-        response.setContent(buffer);
-        response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-        response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
     }
 
     private void handleNotFound(HttpRequest request, HttpResponse response) {

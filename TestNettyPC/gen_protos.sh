@@ -1,3 +1,3 @@
 #!/bin/bash
 
-protoc --proto_path=protos --java_out=src protos/app_info.proto
+protoc --proto_path=protos --java_out=src protos/msgdef_v1.0.proto

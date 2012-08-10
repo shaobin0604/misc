@@ -1,0 +1,257 @@
+package com.pekall.pctool.protos;
+
+option java_package = "com.pekall.pctool.protos";
+option java_outer_classname = "MsgDefProtos";
+
+option optimize_for = SPEED;
+
+//命令类型枚举定义
+enum CmdType
+{
+	CMD_HEART_BEAT = 0;			//心跳消息
+	CMD_QUERY_SMS = 1;			//查询检索短信（可指定条件参数）
+	CMD_DELETE_SMS = 2;			//删除短消息
+	CMD_SEND_SMS = 3;			//发送一条短消息
+	CMD_SYNC_SMS = 4;			//对SMS消息数据进行同步
+	
+	CMD_QUERY_MMS = 5;			//查询检索彩信（可指定条件参数）
+	CMD_DELETE_MMS = 6;			//删除彩信
+	CMD_SEND_MMS = 7;			//发送一条彩信
+	CMD_SYNC_MMS = 8;			//对MMS消息数据进行同步
+	
+	CMD_REICEIVED_NEW_MSG = 9;  //手机侧收到新短信或者彩信时主动给响应给pc侧（带完整消息内容）
+	
+	CMD_GET_ALL_ACCOUNTS = 10;	//获取所有有效联系人账户信息
+	CMD_QUERY_CONTACTS = 11;	//查询检索联系人信息（可指定条件参数）
+	CMD_ADD_CONTACT = 12;		//新建联系人
+	CMD_DELETE_CONTACT = 13;	//删除联系人
+	CMD_EDIT_CONTACT = 14;		//编辑联系人信息
+	CMD_SYNC_CONTACTS = 15;		//同步联系人信息（pc和手机、outlook和手机）
+	
+	CMD_QUERY_AGENDAS = 16;		//查询日程信息（可指定条件）
+	CMD_ADD_AGENDA = 17;		//添加日程
+	CMD_DELETE_AGENDA = 18; 	//删除日程
+	CMD_EDIT_AGENDA = 19;		//编辑日程
+	CMD_SYNC_AGENDAS = 20;		//同步日程（pc和手机、outlook和手机）
+	
+	CMD_QUERY_APP = 21;			//查询已安装的应用程序
+	CMD_DOWNLOAD_APK = 22;		//下载apk
+}
+
+//应用类型
+enum AppType
+{
+	SYSTEM = 0;
+	USER = 1;
+}
+
+//应用安装位置
+enum AppLocationType
+{
+	INNER = 0;	//手机内部存储
+	OUTER = 1;  //外部存储
+}
+
+message AppRecord
+{
+	optional string		 		app_name = 1;
+	optional AppType 	 		type = 2;
+	optional AppLocationType 	location = 3;
+	optional string 	 		package_name = 4;
+	optional string 		 	version_name = 5; //版本号 1.2.1
+	optional uint32 	 		version_code = 6; //类似svn build 号
+	optional uint32		 		size = 7; 		  //大小：byte
+	optional bytes		 		app_icon = 8;	  //应用图标数据
+}
+
+//消息（SMS，MMS）来源类型
+enum MsgOriginType			
+{
+	ANY = 0;				//任意（所有）
+	INBOX = 1;				//收件箱
+	SENTBOX = 2;			//已发箱
+	OUTBOX = 3;				//发件箱
+	DRAFTBOX = 4;			//草稿箱
+}
+
+enum MsgProtocolType
+{
+	SMS = 0;
+	MMS = 1;
+}
+
+//消息（SMS和MMS）记录定义
+message MsgRecord
+{
+	optional uint64 			msg_id = 1;
+	optional MsgProtocolType 	protocol_type = 2;
+	optional MsgOriginType		origin = 3;
+	optional string				subject = 4;
+	optional string 			phone_num = 5;
+	optional uint64				msg_time = 6; 	//接收时间或发送时间
+	optional bytes 				content = 7; 	//短信为文本，彩信为PDU数据包
+	optional bool				read_tag = 8;	//是否已读
+}
+
+//账户
+message AccountRecord
+{
+	optional string type = 1;
+	optional string	name = 2;
+}
+
+//分组记录
+message GroupRecord
+{
+	optional uint64 		id = 1;
+	optional AccountRecord 	account_info = 2;
+	optional string 		name = 3;
+	optional string 		note = 4;
+}
+
+//电话号码记录
+message PhoneRecord
+{
+	//电话类型
+	enum PhoneType
+	{
+		MOBILE = 0;			//移动电话
+		HOME = 1;			//家庭电话
+		WORK = 2;			//工作电话
+		USER_DEFINED = 99;	//用户自定义
+	}
+	optional uint64		id = 1;
+	optional string 	number = 2;
+	optional PhoneType 	type = 3;
+	optional string		name = 4; //当type为自定义时，此字段为自定义名称
+}
+
+//邮件地址记录
+message EmailRecord
+{
+	//邮件地址类型
+	enum EmailType
+	{
+		WORK = 0;			//工作邮箱
+		HOME = 1;			//家庭邮箱
+		USER_DEFINED = 99;	//自定义
+	}
+	optional uint64 	id = 1;
+	optional string 	address = 2; //邮箱地址
+	optional EmailType 	type = 3;
+	optional string		name = 4; 	//当type为自定义时，此字段为自定义名称
+}
+
+message IMRecord
+{
+	//IM类型
+	enum IMType
+	{
+		QQ = 0;
+		MSN = 1;
+		YAHOO = 2;
+		AIM = 3;
+		SKYPE = 4;
+		GTALK = 5;
+		ICQ = 6;
+		JABBER = 7;
+		USER_DEFINED = 99;
+	}
+	optional int32 		uint64 = 1;
+	optional string 	account = 2; //IM 帐号
+	optional IMType 	type = 3;
+	optional string		name = 4; 	//当type为自定义时，此字段为自定义名称
+}
+//地址记录
+message AddressRecord
+{
+	//地址类型
+	enum AddressType
+	{
+		WORK = 0;
+		HOME = 1;
+		USER_DEFINED = 99;
+	}
+	optional uint64 		id = 1;
+	optional string 		address = 2;
+	optional AddressType 	type = 3;
+	optional string			name = 4; 	//当type为自定义时，此字段为自定义名称
+}
+
+//组织机构记录
+message OrgRecord
+{
+	//组织机构类型
+	enum OrgType
+	{
+		COMPANY = 0;
+		USER_DEFINED = 99;
+	}
+	optional uint64 	id = 1;
+	optional string 	org_name = 2;
+	optional OrgType 	type = 3;
+	optional string		name = 4; 	//当type为自定义时，此字段为自定义名称
+}
+
+//联系人
+message ContactRecord
+{
+	optional uint64			id = 1;
+	optional string 		name = 2;
+	optional string 		nickname = 3;
+	optional bytes			photo = 4;				//头像数据
+	optional AccountRecord 	account_info = 5;
+	optional uint64  		group_id = 6;
+	repeated PhoneRecord	phone = 7;
+	repeated EmailRecord	email = 8;
+	repeated IMRecord		im = 9;
+	repeated AddressRecord  address = 10;
+	repeated OrgRecord		org = 11;
+}
+
+//日历
+message CalendarRecord
+{
+	optional uint64 id = 1;
+	optional string name = 2;
+	optional string note = 3;
+}
+
+//日程/事件
+message AgendaRecord
+{
+	optional uint64 agenda_id = 1;
+	optional uint64 calendar_id = 2;
+	optional string subject = 3;
+	optional string place = 4;
+	optional uint64	start_time = 5;
+	optional uint64 end_time = 6;
+	optional int32	alert_time = 7;	//提醒间隔，单位秒
+	optional string	note = 8;
+	//重复周期，方式
+}
+
+//顶层请求消息
+message CmdRequest
+{
+	required CmdType 		type = 1;			//命令类型
+	repeated int32			record_id = 2;		//用于删除动作所对应的要删除的记录id列表
+	optional MsgRecord 		msg_params = 3; 	//针对SMS，MMS的查询、新增、编辑操作可能的参数
+	optional ContactRecord  contact_params = 4;	//针对联系人的查询，新增、编辑操作的参数
+	optional AgendaRecord 	agenda_params = 5;	//针对日历的查询，新增，编辑操作的参数
+	optional AppRecord		app_params = 6;		//应用记录参数
+}
+
+//顶层响应消息
+message CmdResponse
+{
+	required CmdType		type = 1; 			//和请求对应
+	required int32			result_code = 2;	//结果代码：0表示成功，非0表示失败！
+	required string 		result_msg = 3;	 	//result_code为0时，可填写‘OK’，失败时可填写错误描述文本
+	repeated MsgRecord 		msg_record = 4;		//查询SMS、MMS返回的记录列表 	
+	repeated ContactRecord  contact_record = 5;	//查询联系人返回的列表
+	repeated AgendaRecord 	agenda_record = 6;	//查询日历返回的列表
+	repeated AppRecord		app_record = 7;		//应用列表
+	repeated AccountRecord	account_record = 8; //账户列表
+	repeated GroupRecord	group_record = 9;	//联系人分组记录列表
+}
