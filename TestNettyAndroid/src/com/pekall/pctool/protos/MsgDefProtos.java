@@ -452,9 +452,9 @@ public final class MsgDefProtos {
     boolean hasVersionCode();
     int getVersionCode();
     
-    // optional uint32 size = 7;
+    // optional uint64 size = 7;
     boolean hasSize();
-    int getSize();
+    long getSize();
     
     // optional bytes app_icon = 8;
     boolean hasAppIcon();
@@ -615,13 +615,13 @@ public final class MsgDefProtos {
       return versionCode_;
     }
     
-    // optional uint32 size = 7;
+    // optional uint64 size = 7;
     public static final int SIZE_FIELD_NUMBER = 7;
-    private int size_;
+    private long size_;
     public boolean hasSize() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
-    public int getSize() {
+    public long getSize() {
       return size_;
     }
     
@@ -642,7 +642,7 @@ public final class MsgDefProtos {
       packageName_ = "";
       versionName_ = "";
       versionCode_ = 0;
-      size_ = 0;
+      size_ = 0L;
       appIcon_ = com.google.protobuf.ByteString.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
@@ -676,7 +676,7 @@ public final class MsgDefProtos {
         output.writeUInt32(6, versionCode_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeUInt32(7, size_);
+        output.writeUInt64(7, size_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeBytes(8, appIcon_);
@@ -716,7 +716,7 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(7, size_);
+          .computeUInt64Size(7, size_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
@@ -858,7 +858,7 @@ public final class MsgDefProtos {
         bitField0_ = (bitField0_ & ~0x00000010);
         versionCode_ = 0;
         bitField0_ = (bitField0_ & ~0x00000020);
-        size_ = 0;
+        size_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000040);
         appIcon_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000080);
@@ -1047,7 +1047,7 @@ public final class MsgDefProtos {
             }
             case 56: {
               bitField0_ |= 0x00000040;
-              size_ = input.readUInt32();
+              size_ = input.readUInt64();
               break;
             }
             case 66: {
@@ -1238,15 +1238,15 @@ public final class MsgDefProtos {
         return this;
       }
       
-      // optional uint32 size = 7;
-      private int size_ ;
+      // optional uint64 size = 7;
+      private long size_ ;
       public boolean hasSize() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
-      public int getSize() {
+      public long getSize() {
         return size_;
       }
-      public Builder setSize(int value) {
+      public Builder setSize(long value) {
         bitField0_ |= 0x00000040;
         size_ = value;
         onChanged();
@@ -1254,7 +1254,7 @@ public final class MsgDefProtos {
       }
       public Builder clearSize() {
         bitField0_ = (bitField0_ & ~0x00000040);
-        size_ = 0;
+        size_ = 0L;
         onChanged();
         return this;
       }
@@ -13407,7 +13407,7 @@ public final class MsgDefProtos {
       "ppType\022;\n\010location\030\003 \001(\0162).com.pekall.pc" +
       "tool.protos.AppLocationType\022\024\n\014package_n" +
       "ame\030\004 \001(\t\022\024\n\014version_name\030\005 \001(\t\022\024\n\014versi" +
-      "on_code\030\006 \001(\r\022\014\n\004size\030\007 \001(\r\022\020\n\010app_icon\030" +
+      "on_code\030\006 \001(\r\022\014\n\004size\030\007 \001(\004\022\020\n\010app_icon\030" +
       "\010 \001(\014\"\357\001\n\tMsgRecord\022\016\n\006msg_id\030\001 \001(\004\022@\n\rp" +
       "rotocol_type\030\002 \001(\0162).com.pekall.pctool.p" +
       "rotos.MsgProtocolType\0227\n\006origin\030\003 \001(\0162\'.",

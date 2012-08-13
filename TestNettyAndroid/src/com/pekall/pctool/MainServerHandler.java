@@ -14,6 +14,7 @@ import android.net.Uri;
 
 import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.pekall.pctool.model.FakeBusinessLogicFacade;
+import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
@@ -27,8 +28,11 @@ import org.jboss.netty.buffer.DynamicChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelFutureProgressListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.DefaultFileRegion;
 import org.jboss.netty.channel.ExceptionEvent;
+import org.jboss.netty.channel.FileRegion;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
@@ -39,15 +43,22 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 
 public class MainServerHandler extends SimpleChannelUpstreamHandler {
+
+    // server error code
 
     private static final int RPC_END_POINT = 1;
     private static final int APPS = 2;
     private static final int TEST = 3;
+    private static final int EXPORT_APP = 4;
+    private static final int IMPORT_APP = 5;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(
             UriMatcher.NO_MATCH);
@@ -56,6 +67,8 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
         sURIMatcher.addURI("localhost", "rpc", RPC_END_POINT);
         sURIMatcher.addURI("localhost", "apps", APPS);
         sURIMatcher.addURI("localhost", "test", TEST);
+        sURIMatcher.addURI("localhost", "export/*", EXPORT_APP);
+        sURIMatcher.addURI("localhost", "import/*", IMPORT_APP);
     }
 
     private FakeBusinessLogicFacade mLogicFacade;
@@ -88,71 +101,160 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
         switch (match) {
             case RPC_END_POINT: {
                 if (HttpMethod.POST.equals(method)) {
-                    handleRpc(request, response);
+                    handleRPC(request, response);
+
+                    Channel ch = e.getChannel();
+                    // Write the initial line and the header.
+                    ChannelFuture future = ch.write(response);
+                    future.addListener(ChannelFutureListener.CLOSE);
                 } else {
                     Slog.e("not http post request");
                 }
                 break;
             }
+            case EXPORT_APP: {
+                if (HttpMethod.GET.equals(method)) {
+                    String packageName = url.getPathSegments().get(1);
+                    handleExportApp(packageName, e);
+                }
+                break;
+            }
+            case IMPORT_APP: {
+                if (HttpMethod.POST.equals(method)) {
 
-            case APPS: {
-                handleApps(request, response);
+                }
                 break;
             }
-            case TEST: {
-                handleTest(request, response);
-                break;
-            }
+
             default: {
                 handleNotFound(request, response);
+                Channel ch = e.getChannel();
+                // Write the initial line and the header.
+                ChannelFuture future = ch.write(response);
+                future.addListener(ChannelFutureListener.CLOSE);
                 break;
             }
         }
 
-        Channel ch = e.getChannel();
-        // Write the initial line and the header.
-        ChannelFuture future = ch.write(response);
-        future.addListener(ChannelFutureListener.CLOSE);
     }
 
-    private void handleRpc(HttpRequest request, HttpResponse response) {
-        
-        Slog.d("handleRpc");
-        
+    private void handleRPC(HttpRequest request, HttpResponse response) {
+
+        Slog.d("handleRPC");
+
         ChannelBuffer content = request.getContent();
-        
+
         ChannelBufferInputStream cbis = new ChannelBufferInputStream(content);
-        
+
         try {
             CmdRequest cmdRequest = CmdRequest.parseFrom(cbis);
             CmdType cmdType = cmdRequest.getType();
-            
+
             Slog.d("cmdType = " + cmdType);
             switch (cmdType) {
                 case CMD_QUERY_APP:
-                    AppRecord appRecord = cmdRequest.getAppParams();
-                    if (appRecord != null) {
-                        Slog.d("type = " + appRecord.getType());
-                        Slog.d("location = " + appRecord.getLocation());
-                    }
-                    
-                    CmdResponse cmdResponse = mLogicFacade.queryAppRecordList();
-                    
-                    ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-                    buffer.writeBytes(cmdResponse.toByteArray());
-
-                    response.setContent(buffer);
-                    response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-                    response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
+                    handleQueryApp(cmdRequest, response);
                     break;
 
                 default:
                     break;
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Slog.e("Error when handleRPC", e);
         }
+    }
+
+    private void handleQueryApp(CmdRequest cmdRequest, HttpResponse response) {
+        Slog.d("handleQueryApp E");
+        CmdResponse cmdResponse = mLogicFacade.queryApp();
+        setHttpResponseRPC(response, cmdResponse);
+        Slog.d("handleQueryApp X");
+    }
+
+    private void setHttpResponseRPC(HttpResponse response, CmdResponse cmdResponse) {
+        ChannelBuffer buffer = new DynamicChannelBuffer(2048);
+        buffer.writeBytes(cmdResponse.toByteArray());
+
+        response.setContent(buffer);
+        response.setHeader(CONTENT_TYPE, "application/x-protobuf");
+        response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
+    }
+
+    private void handleExportApp(final String packageName, MessageEvent event) {
+        Slog.d("packageName = " + packageName);
+        try {
+            InputStream is = mLogicFacade.exportApp(packageName);
+            if (is instanceof FileInputStream) {
+                Slog.d("use zero-copy");
+
+                HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+
+                FileChannel src = ((FileInputStream) is).getChannel();
+
+                response.setHeader(CONTENT_TYPE, "application/vnd.android.package-archive");
+                long fileLength = src.size();
+                response.setHeader(CONTENT_LENGTH, fileLength);
+
+                Channel ch = event.getChannel();
+
+                // Write the initial line and the header.
+                ch.write(response);
+
+                final FileRegion region =
+                        new DefaultFileRegion(src, 0, fileLength);
+                ChannelFuture writeFuture = ch.write(region);
+                writeFuture.addListener(new ChannelFutureProgressListener() {
+                    public void operationComplete(ChannelFuture future) {
+                        region.releaseExternalResources();
+                    }
+
+                    public void operationProgressed(
+                            ChannelFuture future, long amount, long current, long total) {
+                        Slog.d(String.format("%s: %d / %d (+%d)%n", packageName, current, total, amount));
+                    }
+                });
+            }
+        } catch (AppNotExistException e) {
+            Slog.e("Error app not exist", e);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
+
+            response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+            response.setContent(ChannelBuffers.copiedBuffer(
+                    "Failure: " + NOT_FOUND.toString() + "\r\n",
+                    CharsetUtil.UTF_8));
+
+            // Close the connection as soon as the error message is sent.
+            event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        } catch (IOException e) {
+            Slog.e("Error when export app", e);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
+
+            response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+            response.setContent(ChannelBuffers.copiedBuffer(
+                    "Failure: " + INTERNAL_SERVER_ERROR.toString() + "\r\n",
+                    CharsetUtil.UTF_8));
+
+            // Close the connection as soon as the error message is sent.
+            event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    private void handleImportApp(final String packageName, MessageEvent e) {
+        Slog.d("packageName = " + packageName);
+        
+        
+    }
+
+    private void handleQueryAppTest(CmdRequest cmdRequest, HttpResponse response) {
+        AppRecord appRecord = cmdRequest.getAppParams();
+        if (appRecord != null) {
+            Slog.d("type = " + appRecord.getType());
+            Slog.d("location = " + appRecord.getLocation());
+        }
+
+        CmdResponse cmdResponse = mLogicFacade.queryAppRecordList();
+
+        setHttpResponseRPC(response, cmdResponse);
     }
 
     private void handleApps(HttpRequest request, HttpResponse response) {

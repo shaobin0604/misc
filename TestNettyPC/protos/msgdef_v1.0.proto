@@ -60,7 +60,7 @@ message AppRecord
 	optional string 	 		package_name = 4;
 	optional string 		 	version_name = 5; //版本号 1.2.1
 	optional uint32 	 		version_code = 6; //类似svn build 号
-	optional uint32		 		size = 7; 		  //大小：byte
+	optional uint64		 		size = 7; 		  //大小：byte
 	optional bytes		 		app_icon = 8;	  //应用图标数据
 }
 
