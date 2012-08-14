@@ -9,12 +9,17 @@ import com.google.protobuf.ByteString;
 import com.pekall.pctool.model.app.AppInfo;
 import com.pekall.pctool.model.app.AppUtil;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
+import com.pekall.pctool.model.sms.Sms;
+import com.pekall.pctool.model.sms.SmsUtil;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
-import com.pekall.pctool.protos.MsgDefProtos.AppLocationType;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
-import com.pekall.pctool.protos.MsgDefProtos.AppType;
+import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppLocationType;
+import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppType;
+import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
+import com.pekall.pctool.protos.MsgDefProtos.MsgOriginType;
+import com.pekall.pctool.protos.MsgDefProtos.SMSRecord;
 
 import java.io.InputStream;
 import java.util.List;
@@ -30,6 +35,9 @@ public class FakeBusinessLogicFacade {
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
     
     private static final String RESULT_MSG_OK = "OK";
+    private static final String RESULT_MSG_ERR_ILLEGAL_ARGUMENT = "Illegal argument";
+    
+    private static final String RESULT_MSG_ERR_INTERNAL = "Internal error";
 
     private Context mContext;
 
@@ -37,36 +45,108 @@ public class FakeBusinessLogicFacade {
         this.mContext = context;
     }
     
+    public CmdResponse defaultCmdResponse() {
+        CmdResponse.Builder response = CmdResponse.newBuilder();
+        
+        response.setCmdType(CmdType.CMD_HEART_BEAT);
+        response.setResultCode(RESULT_CODE_ERR_ILLEAGAL_ARGUMENT);
+        response.setResultMsg(RESULT_MSG_ERR_ILLEGAL_ARGUMENT);
+        
+        return response.build();
+    }
+    
     //-------------------------------------------------------------------------
-    //  APP related method
+    //  Sms related method
+    //-------------------------------------------------------------------------
+    
+    public CmdResponse querySms() {
+        List<Sms> smsList = SmsUtil.getSmsList(mContext);
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_QUERY_SMS);
+        responseBuilder.setResultCode(RESULT_CODE_OK);
+        responseBuilder.setResultMsg(RESULT_MSG_OK);
+        
+        SMSRecord.Builder smsBuilder = SMSRecord.newBuilder();
+        
+        for (Sms sms : smsList) {
+            smsBuilder.setMsgId(sms.rowId);
+            smsBuilder.setMsgOrigin(smsTypeToMsgOriginType(sms.type));
+            smsBuilder.setPhoneNum(sms.address);
+            smsBuilder.setMsgText(sms.body);
+            smsBuilder.setMsgTime(sms.date);
+            smsBuilder.setReadTag(sms.read == Sms.READ_TRUE);
+        }
+
+        return responseBuilder.build();
+    }
+    
+    public CmdResponse deleteSms(CmdRequest request) {
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_DELETE_SMS);
+        
+        if (SmsUtil.deleteSms(mContext, request.getRecordIdList())) {
+            responseBuilder.setResultCode(RESULT_CODE_OK);
+            responseBuilder.setResultMsg(RESULT_MSG_OK);
+        } else {
+            responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
+            responseBuilder.setResultMsg(RESULT_MSG_ERR_INTERNAL);
+        }
+        
+        return responseBuilder.build();
+    }
+    
+    public CmdRequest importSms(CmdRequest request) {
+        
+    }
+    
+    private static MsgOriginType smsTypeToMsgOriginType(int smsType) {
+        switch (smsType) {
+            case Sms.TYPE_RECEIVED:
+                return MsgOriginType.INBOX;
+            case Sms.TYPE_SENT:
+                return MsgOriginType.SENTBOX;
+            case Sms.TYPE_DRAFT:
+                return MsgOriginType.DRAFTBOX;
+            case Sms.TYPE_OUTBOX:
+            case Sms.TYPE_QUEUED:
+            case Sms.TYPE_FAILED:
+                return MsgOriginType.OUTBOX;
+            default:
+                throw new IllegalArgumentException("Unknown smsType: " + smsType);
+        }
+    }
+    
+    //-------------------------------------------------------------------------
+    //  App related method
     //-------------------------------------------------------------------------
     
     public CmdResponse queryApp() {
         List<AppInfo> appInfos = AppUtil.getAppInfos(mContext);
         
-        CmdResponse.Builder response = CmdResponse.newBuilder();
-        response.setType(CmdType.CMD_QUERY_APP);
-        response.setResultCode(RESULT_CODE_OK);
-        response.setResultMsg(RESULT_MSG_OK);
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_QUERY_APP);
+        responseBuilder.setResultCode(RESULT_CODE_OK);
+        responseBuilder.setResultMsg(RESULT_MSG_OK);
         
-        AppRecord.Builder app = AppRecord.newBuilder();
+        AppRecord.Builder appBuilder = AppRecord.newBuilder();
         
         for (AppInfo appInfo : appInfos) {
-            app.setAppName(appInfo.label);
-            app.setType(appInfo.appType == AppInfo.FLAG_APP_TYPE_SYSTEM ? AppType.SYSTEM : AppType.USER);
-            app.setLocation(appInfo.installLocation == AppInfo.FLAG_INSTALL_LOCATION_INTERNAL ? AppLocationType.INNER : AppLocationType.OUTER);
-            app.setPackageName(appInfo.packageName);
-            app.setVersionCode(appInfo.versionCode);
-            app.setVersionName(appInfo.versionName);
-            app.setSize(appInfo.apkFileSize);
-            app.setAppIcon(ByteString.copyFrom(appInfo.icon));
+            appBuilder.setAppName(appInfo.label);
+            appBuilder.setAppType(appInfo.appType == AppInfo.FLAG_APP_TYPE_SYSTEM ? AppType.SYSTEM : AppType.USER);
+            appBuilder.setLocationType(appInfo.installLocation == AppInfo.FLAG_INSTALL_LOCATION_INTERNAL ? AppLocationType.INTERNAL : AppLocationType.EXTERNAL);
+            appBuilder.setPackageName(appInfo.packageName);
+            appBuilder.setVersionCode(appInfo.versionCode);
+            appBuilder.setVersionName(appInfo.versionName);
+            appBuilder.setSize(appInfo.apkFileSize);
+            appBuilder.setAppIcon(ByteString.copyFrom(appInfo.icon));
             
-            response.addAppRecord(app.build());
+            responseBuilder.addAppRecord(appBuilder.build());
             
-            app.clear();
+            appBuilder.clear();
         }
         
-        return response.build();
+        return responseBuilder.build();
     }
     
     public InputStream exportApp(String packageName) throws AppNotExistException {
@@ -95,15 +175,15 @@ public class FakeBusinessLogicFacade {
     
     public CmdResponse queryAppRecordList() {
         CmdResponse.Builder response = CmdResponse.newBuilder();
-        response.setType(CmdType.CMD_QUERY_APP);
+        response.setCmdType(CmdType.CMD_QUERY_APP);
         response.setResultCode(0);
         response.setResultMsg("OK");
         
         AppRecord.Builder app = AppRecord.newBuilder();
         
         app.setAppName("新浪微博");
-        app.setType(AppType.USER);
-        app.setLocation(AppLocationType.INNER);
+        app.setAppType(AppType.USER);
+        app.setLocationType(AppLocationType.INTERNAL);
         app.setPackageName("com.weibo");
         app.setVersionName("v2.0");
         app.setVersionCode(123456);
@@ -115,8 +195,8 @@ public class FakeBusinessLogicFacade {
         app.clear();
 
         app.setAppName("腾讯微博");
-        app.setType(AppType.USER);
-        app.setLocation(AppLocationType.INNER);
+        app.setAppType(AppType.USER);
+        app.setLocationType(AppLocationType.INTERNAL);
         app.setPackageName("com.tencent.weibo");
         app.setVersionName("v2.3");
         app.setVersionCode(654321);

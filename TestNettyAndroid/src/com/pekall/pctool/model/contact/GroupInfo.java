@@ -1,10 +1,11 @@
+
 package com.pekall.pctool.model.contact;
 
 public class GroupInfo {
-    
+
     public String name;
-    public String accountName;
-    public String accountType;
-    public String grId;
+    public String note;
+    public AccountInfo accountInfo=new AccountInfo();
+    public long grId;
 
 }

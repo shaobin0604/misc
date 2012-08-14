@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AppUtil {
+    
+    private AppUtil() {}
+    
     public static class AppNotExistException extends Exception {
         private String mPackageName;
 

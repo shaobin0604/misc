@@ -102,14 +102,16 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
             case RPC_END_POINT: {
                 if (HttpMethod.POST.equals(method)) {
                     handleRPC(request, response);
-
-                    Channel ch = e.getChannel();
-                    // Write the initial line and the header.
-                    ChannelFuture future = ch.write(response);
-                    future.addListener(ChannelFutureListener.CLOSE);
                 } else {
                     Slog.e("not http post request");
+                    response.setStatus(HttpResponseStatus.BAD_REQUEST);
+                    response.setHeader(CONTENT_LENGTH, 0);
                 }
+                Channel ch = e.getChannel();
+                // Write the initial line and the header.
+                ChannelFuture future = ch.write(response);
+                future.addListener(ChannelFutureListener.CLOSE);
+                
                 break;
             }
             case EXPORT_APP: {
@@ -127,7 +129,7 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
             }
 
             default: {
-                handleNotFound(request, response);
+                response.setStatus(NOT_FOUND);
                 Channel ch = e.getChannel();
                 // Write the initial line and the header.
                 ChannelFuture future = ch.write(response);
@@ -148,36 +150,36 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
 
         try {
             CmdRequest cmdRequest = CmdRequest.parseFrom(cbis);
-            CmdType cmdType = cmdRequest.getType();
-
+            CmdType cmdType = cmdRequest.getCmdType();
+            CmdResponse cmdResponse;
             Slog.d("cmdType = " + cmdType);
             switch (cmdType) {
-                case CMD_QUERY_APP:
-                    handleQueryApp(cmdRequest, response);
+                case CMD_QUERY_APP: {
+                    cmdResponse = mLogicFacade.queryApp();
                     break;
-
-                default:
+                }
+                
+                case CMD_QUERY_SMS: {
+                    cmdResponse = mLogicFacade.querySms();
                     break;
+                }
+                default: {
+                    cmdResponse = mLogicFacade.defaultCmdResponse();
+                    break;
+                }
             }
+            ChannelBuffer buffer = new DynamicChannelBuffer(2048);
+            buffer.writeBytes(cmdResponse.toByteArray());
+            
+            response.setContent(buffer);
+            response.setHeader(CONTENT_TYPE, "application/x-protobuf");
+            response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
         } catch (IOException e) {
-            Slog.e("Error when handleRPC", e);
+            Slog.e("Error when handleRPC, send 500 internal server error", e);
+            
+            response.setStatus(INTERNAL_SERVER_ERROR);
+            response.setHeader(CONTENT_LENGTH, 0);
         }
-    }
-
-    private void handleQueryApp(CmdRequest cmdRequest, HttpResponse response) {
-        Slog.d("handleQueryApp E");
-        CmdResponse cmdResponse = mLogicFacade.queryApp();
-        setHttpResponseRPC(response, cmdResponse);
-        Slog.d("handleQueryApp X");
-    }
-
-    private void setHttpResponseRPC(HttpResponse response, CmdResponse cmdResponse) {
-        ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-        buffer.writeBytes(cmdResponse.toByteArray());
-
-        response.setContent(buffer);
-        response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-        response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
     }
 
     private void handleExportApp(final String packageName, MessageEvent event) {
@@ -248,13 +250,18 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
     private void handleQueryAppTest(CmdRequest cmdRequest, HttpResponse response) {
         AppRecord appRecord = cmdRequest.getAppParams();
         if (appRecord != null) {
-            Slog.d("type = " + appRecord.getType());
-            Slog.d("location = " + appRecord.getLocation());
+            Slog.d("type = " + appRecord.getAppType());
+            Slog.d("location = " + appRecord.getLocationType());
         }
 
         CmdResponse cmdResponse = mLogicFacade.queryAppRecordList();
 
-        setHttpResponseRPC(response, cmdResponse);
+        ChannelBuffer buffer = new DynamicChannelBuffer(2048);
+        buffer.writeBytes(cmdResponse.toByteArray());
+        
+        response.setContent(buffer);
+        response.setHeader(CONTENT_TYPE, "application/x-protobuf");
+        response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
     }
 
     private void handleApps(HttpRequest request, HttpResponse response) {
@@ -277,10 +284,6 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
         response.setContent(buffer);
         response.setHeader(CONTENT_TYPE, "application/x-protobuf");
         response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
-    }
-
-    private void handleNotFound(HttpRequest request, HttpResponse response) {
-        response.setStatus(NOT_FOUND);
     }
 
     private static String sanitizeUri(String uri) {

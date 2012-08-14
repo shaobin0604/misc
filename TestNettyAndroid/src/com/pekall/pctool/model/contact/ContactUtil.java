@@ -1,30 +1,39 @@
 
 package com.pekall.pctool.model.contact;
 
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Im;
-import android.provider.ContactsContract.CommonDataKinds.Note;
+import android.provider.ContactsContract.CommonDataKinds.Nickname;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Data;
+import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.RawContacts;
 
+import com.pekall.pctool.model.contact.Contact.AddressRecord;
+import com.pekall.pctool.model.contact.Contact.EmailRecord;
+import com.pekall.pctool.model.contact.Contact.IMRecord;
+import com.pekall.pctool.model.contact.Contact.OrgRecord;
+import com.pekall.pctool.model.contact.Contact.PhoneRecord;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * the helper class helps to do with the contact
@@ -40,6 +49,7 @@ public class ContactUtil {
     public static final String SIM2_ACCOUNT_NAME = "contacts.account.name.sim2";
     public static final String SIM2_ACCOUNT_TYPE = "contacts.account.type.sim";
     public static final int CONTACTS_COLLECT_FLAG = 1;
+    public static final int Custom_DEFINE_TYPE = 0;
 
     /**
      * This utility class cannot be instantiated
@@ -55,147 +65,181 @@ public class ContactUtil {
     public static Contact getContactByRawId(Context context, long rawId) {
         Contact c = new Contact();
         String rawContactId = String.valueOf(rawId);
+        c._ID = Integer.parseInt(String.valueOf(rawId));
+        Uri rawContactUri = RawContacts.CONTENT_URI;
+        ContentResolver resolver = context.getContentResolver();
+        
+        
+        Cursor cursorOfAccount = resolver.query(rawContactUri, new String[] {
+                RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE
+        }, RawContacts._ID + "=?", new String[] {
+                rawContactId
+        }, null);
+        while (cursorOfAccount.moveToNext()) {
+            c.accountInfo.accountName = cursorOfAccount.getString(cursorOfAccount
+                    .getColumnIndex(RawContacts.ACCOUNT_NAME));
+            c.accountInfo.accountType = cursorOfAccount.getString(cursorOfAccount
+                    .getColumnIndex(RawContacts.ACCOUNT_TYPE));
+        }
+        cursorOfAccount.close();
+        
+        // get group
+        Cursor cursorOfGroup = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
+                Data.DATA1
+        }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + "=?", new String[] {
+                rawContactId, GroupMembership.CONTENT_ITEM_TYPE
+        }, null);
+        while (cursorOfGroup.moveToNext()) {
+            c.groupInfo.grId = cursorOfGroup.getLong(cursorOfGroup.getColumnIndex(Data.DATA1));
+            break;
+        }
+        cursorOfGroup.close();
+        
+        
+        Cursor cursorOfGroupInfo = context.getContentResolver().query(Groups.CONTENT_URI, new String[] {
+                Groups.TITLE, Groups.NOTES
+        }, Groups._ID + " = ?  ", new String[] {
+                String.valueOf(c.groupInfo.grId)
+        }, null);
+        while (cursorOfGroupInfo.moveToNext()) {
+            c.groupInfo.name = cursorOfGroupInfo.getString(cursorOfGroupInfo.getColumnIndex(Groups.TITLE));
+            c.groupInfo.note = convertToString(cursorOfGroupInfo.getString(cursorOfGroupInfo
+                    .getColumnIndex(Groups.NOTES)));
+            break;
+        }
+        cursorOfGroupInfo.close();
+        
+        
         // get the contact name
         Cursor cursorOfName = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
-            Data.DISPLAY_NAME
-        // --------->data1
-                }, Data.RAW_CONTACT_ID + " = ? ", new String[] {
-                    rawContactId
-                }, null);
+                Data.DISPLAY_NAME
+                // --------->data1
+        }, Data.RAW_CONTACT_ID + " = ? ", new String[] {
+                rawContactId
+        }, null);
         while (cursorOfName.moveToNext()) {
-            c.Name = cursorOfName.getString(cursorOfName.getColumnIndex(Data.DISPLAY_NAME));
+            c.name = cursorOfName.getString(cursorOfName.getColumnIndex(Data.DISPLAY_NAME));
             // we only need one name for a contact
-            System.out.println("解析出名字：" + c.Name);
             break;
         }
         cursorOfName.close();
+        
+        
+        // nick name
+        Cursor cursorOfNickName = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
+                Data.DATA1
+                // --------->data1
+        }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
+                rawContactId, Nickname.TYPE
+        }, null);
+        while (cursorOfNickName.moveToNext()) {
+            c.nickname = cursorOfName.getString(cursorOfName.getColumnIndex(Data.DATA1));
+            // we only need one name for a contact
+            break;
+        }
+        cursorOfNickName.close();
+        
+        
         // phone Number
         Cursor cursorOfPhone = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
                 Phone.NUMBER,// ----data1
-                Phone.TYPE,
+                Phone.TYPE, Phone.DATA3
+                // -----custom data name
         }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
                 rawContactId, Phone.CONTENT_ITEM_TYPE,
         }, null);
         while (cursorOfPhone.moveToNext()) {
-            Map<String, String> m = new HashMap<String, String>();
-            String phoneType = cursorOfPhone.getString(cursorOfPhone.getColumnIndex(Phone.TYPE));
-            String phone = cursorOfPhone.getString(cursorOfPhone.getColumnIndex(Phone.NUMBER));
-            m.put(Phone.TYPE, phoneType);
-            m.put(Phone.NUMBER, phone);
-            System.out.println("电话類型:" + phoneType);
-            System.out.println("电话:" + phone);
-            c.Number.add(m);
+            PhoneRecord pr = new PhoneRecord();
+            pr.type = cursorOfPhone.getLong(cursorOfPhone.getColumnIndex(Phone.TYPE));
+            pr.number = cursorOfPhone.getString(cursorOfPhone.getColumnIndex(Phone.NUMBER));
+            if (pr.type == Custom_DEFINE_TYPE) {
+                pr.customName = cursorOfPhone.getString(cursorOfPhone.getColumnIndex(Phone.DATA3));
+            }
+            c.phoneRecord.add(pr);
         }
         cursorOfPhone.close();
+
+        
         // email
         Cursor cursorOfEmail = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
                 Email.ADDRESS,// data1
-                Email.TYPE
+                Email.TYPE, Email.DATA3
         }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
                 rawContactId, Email.CONTENT_ITEM_TYPE,
         }, null);
         while (cursorOfEmail.moveToNext()) {
-            Map<String, String> m = new HashMap<String, String>();
-            String emailType = cursorOfEmail.getString(cursorOfEmail
-                    .getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
-            String email = cursorOfEmail.getString(cursorOfEmail.getColumnIndex(Email.DATA1));
-            m.put(Email.TYPE, emailType);
-            m.put(Email.ADDRESS, email);
-            System.out.println("邮件:" + email);
-            System.out.println("邮件類型:" + emailType);
-            c.Email.add(m);
+            EmailRecord er = new EmailRecord();
+            er.type = cursorOfEmail.getLong(cursorOfEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+            er.email = cursorOfEmail.getString(cursorOfEmail.getColumnIndex(Email.ADDRESS));
+            if (er.type == Custom_DEFINE_TYPE) {
+                er.customName = cursorOfEmail.getString(cursorOfEmail.getColumnIndex(Email.DATA3));
+            }
+            c.emailRecord.add(er);
         }
         cursorOfEmail.close();
+        
+        
         // im
         Cursor cursorOfIm = context.getContentResolver().query(Data.CONTENT_URI, // 查询data表
                 new String[] {
                         Im.PROTOCOL, // --->data5(type)
-                        Data.DATA1
+                        Data.DATA1, Data.DATA3
                 // IM IM.type means home work and so on
                 }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
                         rawContactId, Im.CONTENT_ITEM_TYPE,
                 }, null);
         while (cursorOfIm.moveToNext()) {
-            Map<String, String> m = new HashMap<String, String>();
-            String imType = cursorOfIm.getString(cursorOfIm.getColumnIndex(Im.PROTOCOL));
-            String im = cursorOfIm.getString(cursorOfIm.getColumnIndex(Data.DATA1));
-            m.put(Im.DATA, im);
-            m.put(Im.TYPE, imType);
-            System.out.print("即时消息类型:" + imType + "----->");
-            System.out.println("即时消息:" + im);
-            c.Exchange.add(m);
+            IMRecord ir = new IMRecord();
+            ir.type = cursorOfIm.getLong(cursorOfIm.getColumnIndex(Im.PROTOCOL));
+            ir.im = cursorOfIm.getString(cursorOfIm.getColumnIndex(Data.DATA1));
+            if (ir.type == Custom_DEFINE_TYPE) {
+                ir.customName = cursorOfIm.getString(cursorOfIm.getColumnIndex(Data.DATA3));
+            }
+            c.imRecord.add(ir);
         }
         cursorOfIm.close();
+        
+        
         // address
-        Cursor cursorOfAddress = context.getContentResolver().query(
-                Data.CONTENT_URI,
-                new String[] {
-                        StructuredPostal.TYPE, StructuredPostal.CITY, StructuredPostal.STREET,
-                        StructuredPostal.POSTCODE, StructuredPostal.REGION
-                }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
-                        rawContactId, StructuredPostal.CONTENT_ITEM_TYPE,
-                }, null);
+        Cursor cursorOfAddress = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
+                StructuredPostal.FORMATTED_ADDRESS, StructuredPostal.TYPE, Data.DATA3
+        }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
+                rawContactId, StructuredPostal.CONTENT_ITEM_TYPE,
+        }, null);
         while (cursorOfAddress.moveToNext()) {
-            Map<String, AddressInfo> m = new HashMap<String, AddressInfo>();
-            AddressInfo ai = new AddressInfo();
-            String addressType = cursorOfAddress.getString(cursorOfAddress
+            AddressRecord ar = new AddressRecord();
+            ar.type = cursorOfAddress.getLong(cursorOfAddress
                     .getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.TYPE));
-            String region = cursorOfAddress.getString(cursorOfAddress.getColumnIndex(StructuredPostal.REGION));
-            String street = cursorOfAddress.getString(cursorOfAddress.getColumnIndex(StructuredPostal.STREET));
-            String city = cursorOfAddress.getString(cursorOfAddress.getColumnIndex(StructuredPostal.CITY));
-            String postcode = cursorOfAddress.getString(cursorOfAddress.getColumnIndex(StructuredPostal.POSTCODE));
-            if (region == null || street == null || city == null || postcode == null) {
-                region = "";
-                street = "";
-                city = "";
-                postcode = "";
+            ar.address = cursorOfAddress.getString(cursorOfAddress.getColumnIndex(StructuredPostal.FORMATTED_ADDRESS));
+            ar.address = convertToString(ar.address);
+            if (ar.type == Custom_DEFINE_TYPE) {
+                ar.customName = cursorOfAddress.getString(cursorOfAddress.getColumnIndex(Data.DATA3));
             }
-            ai.city = city;
-            ai.province = region;
-            ai.postCode = postcode;
-            ai.street = street;
-            ai.type = addressType;
-            m.put(StructuredPostal.TYPE, ai);
-            System.out.println("省:" + region);
-            System.out.println("城市" + city);
-            System.out.println("接到:" + street);
-            System.out.println("邮编:" + postcode);
-            c.Address.add(m);
+            c.addressRecord.add(ar);
         }
         cursorOfAddress.close();
+        
+        
         // organization
         Cursor cursorOfOrganization = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
-                Organization.COMPANY, Organization.TITLE, Organization.TYPE
+                Organization.COMPANY, Organization.TYPE, Data.DATA3
         }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
                 rawContactId, Organization.CONTENT_ITEM_TYPE,
         }, null);
         while (cursorOfOrganization.moveToNext()) {
-            Map<String, String> m = new HashMap<String, String>();
-            String company = cursorOfOrganization.getString(cursorOfOrganization.getColumnIndex(Organization.COMPANY));
-            String title = cursorOfOrganization.getString(cursorOfOrganization.getColumnIndex(Organization.TITLE));
-            m.put(Organization.COMPANY, company);
-            m.put(Organization.TITLE, title);
-            System.out.print("组织:" + company + "------>");
-            System.out.println("职位:" + title);
-            c.Organization.add(m);
+            OrgRecord or = new OrgRecord();
+            or.type = cursorOfOrganization.getLong(cursorOfOrganization.getColumnIndex(Organization.TYPE));
+            or.org = convertToString(cursorOfOrganization.getString(cursorOfOrganization
+                    .getColumnIndex(Organization.COMPANY)));
+            if (or.type == Custom_DEFINE_TYPE) {
+                or.customName = cursorOfOrganization.getString(cursorOfOrganization.getColumnIndex(Data.DATA3));
+            }
+            c.orgRecord.add(or);
         }
         cursorOfOrganization.close();
-        // comments
-        Cursor cursorOfNote = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
-            Note.NOTE,
-        }, Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE + " = ? ", new String[] {
-                rawContactId, Note.CONTENT_ITEM_TYPE,
-        }, null);
-        while (cursorOfNote.moveToNext()) {
-            String note = cursorOfNote.getString(cursorOfNote.getColumnIndex(Note.NOTE));
-            if (null != note && !"".equals(note)) {
-                System.out.println("备注:" + note);
-                c.Comment = note;
-            }
-        }
-        cursorOfNote.close();
+        
+        
         return c;
-
     }
 
     /**
@@ -207,14 +251,13 @@ public class ContactUtil {
      */
     public static List<Contact> getAllContacts(Context context) {
         List<Contact> l = new ArrayList<Contact>();
-        Cursor cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, null, null, null,
-                null);
-        System.out.println("--------totlal count------------->" + cursor.getCount());
+        Cursor cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, new String[] {
+                RawContacts._ID
+        }, null, null, null);
         while (cursor.moveToNext()) {
             long rawContactId = cursor.getLong(cursor.getColumnIndex(ContactsContract.RawContacts._ID));
             l.add(getContactByRawId(context, rawContactId));
         }
-        System.out.println("---------------l.size------------------------------------" + l.size());
         return l;
     }
 
@@ -228,6 +271,8 @@ public class ContactUtil {
      */
     public static List<Contact> getAccountContacts(Context context, AccountInfo account) {
         List<Contact> l = new ArrayList<Contact>();
+        if (account == null)
+            return l;
         String where = ContactsContract.RawContacts.ACCOUNT_NAME + "=?" + " and "
                 + ContactsContract.RawContacts.ACCOUNT_TYPE + "=?";
         Cursor cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, null, where,
@@ -283,132 +328,42 @@ public class ContactUtil {
         }
         return ls;
     }
+    
+    public static final byte SIM1_AVAILABLE = 0x00000001;
+    public static final byte SIM2_AVAILABLE = 0x00000002;
 
     /**
-     * judge whther it has SIMCard judge SIMcard 1 or SIMcard 2 or both return 1
-     * SIMcard1 has return 2 SIMcard2 has return 3 both has return 0 none
+     * 
      * 
      * @param context
      * @return
      */
-    public static int getSimCardState(Context context) {
-        int count = 0;
+    public static byte getSimCardState(Context context) {
+        byte simState = 0;
+        
+        // sim1
         String where = ContactsContract.RawContacts.ACCOUNT_NAME + "=?" + " and "
                 + ContactsContract.RawContacts.ACCOUNT_TYPE + "=?";
         Cursor cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, null, where,
                 new String[] {
                         SIM1_ACCOUNT_NAME, SIM1_ACCOUNT_TYPE
                 }, null);
-        if (cursor.getCount() > 0)
-            count++;
+        if (cursor.getCount() > 0) {
+            simState |= SIM1_AVAILABLE;
+        }
         cursor.close();
+        
+        // sim2
         cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, null, where,
                 new String[] {
                         SIM2_ACCOUNT_NAME, SIM2_ACCOUNT_TYPE
                 }, null);
-        if (cursor.getCount() > 0)
-            count += 2;
-        cursor.close();
-        return count;
-    }
-
-    /**
-     * print all contacts only for test
-     * 
-     * @param List<contact>
-     */
-
-    public static void print(List<Contact> l) {
-        for (Iterator<Contact> iter = l.iterator(); iter.hasNext();) {
-            Contact c = iter.next();
-            System.out.print("联系人姓名" + c.Name);
-            for (Iterator<Map<String, String>> numberIter = c.Number.iterator(); numberIter.hasNext();) {
-                Map<String, String> m = numberIter.next();
-                if (Integer.parseInt(m.get(Phone.TYPE)) == Phone.TYPE_HOME) {
-                    System.out.print("   电话类型" + "家庭电话   ");
-                }
-                if (Integer.parseInt(m.get(Phone.TYPE)) == Phone.TYPE_OTHER) {
-                    System.out.print("   电话类型" + "其他电话  ");
-                }
-                if (Integer.parseInt(m.get(Phone.TYPE)) == Phone.TYPE_MOBILE) {
-                    System.out.println("  电话类型" + "个人电话  ");
-                }
-                if (Integer.parseInt(m.get(Phone.TYPE)) == Phone.TYPE_OTHER_FAX) {
-                    System.out.print("   电话类型" + " 传真电话  ");
-                }
-                if (Integer.parseInt(m.get(Phone.TYPE)) == Phone.TYPE_WORK) {
-                    System.out.print("  电话类型" + "  工作电话  ");
-                }
-                System.out.println("电话号码" + m.get(Phone.NUMBER));
-            }
-            for (Iterator<Map<String, String>> emailIter = c.Email.iterator(); emailIter.hasNext();) {
-                Map<String, String> m = emailIter.next();
-                if (Integer.parseInt(m.get(Email.TYPE)) == Email.TYPE_HOME) {
-                    System.out.print("邮件类型" + "家庭邮件");
-                }
-                if (Integer.parseInt(m.get(Email.TYPE)) == Email.TYPE_OTHER) {
-                    System.out.print("邮件类型" + "其他邮件");
-                }
-                if (Integer.parseInt(m.get(Email.TYPE)) == Email.TYPE_WORK) {
-                    System.out.print("邮件类型" + "工作邮箱");
-                }
-                System.out.println("邮箱地址" + m.get(Email.ADDRESS));
-            }
-            for (Iterator<Map<String, AddressInfo>> addressIter = c.Address.iterator(); addressIter.hasNext();) {
-                Map<String, AddressInfo> m = addressIter.next();
-                if (Integer.parseInt(m.get(StructuredPostal.TYPE).type) == StructuredPostal.TYPE_HOME) {
-                    System.out.print("地址类型" + "家庭地址");
-                }
-                if (Integer.parseInt(m.get(StructuredPostal.TYPE).type) == StructuredPostal.TYPE_OTHER) {
-                    System.out.print("地址类型" + "其他地址");
-                }
-                if (Integer.parseInt(m.get(StructuredPostal.TYPE).type) == StructuredPostal.TYPE_WORK) {
-                    System.out.print("地址类型" + "工作地址");
-                }
-                System.out.print("省--直辖市" + m.get(StructuredPostal.TYPE).province);
-                System.out.print("城市" + m.get(StructuredPostal.TYPE).city);
-                System.out.print("街道" + m.get(StructuredPostal.TYPE).street);
-                System.out.print("编码" + m.get(StructuredPostal.TYPE).postCode);
-                System.out.println();
-            }
-            for (Iterator<Map<String, String>> imIter = c.Exchange.iterator(); imIter.hasNext();) {
-                Map<String, String> m = imIter.next();
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_AIM) {
-                    System.out.print("通讯工具类型" + "AIM");
-                }
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_GOOGLE_TALK) {
-                    System.out.print("通讯工具类型" + "PROTOCOL_GOOGLE_TALK");
-                }
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_JABBER) {
-                    System.out.print("通讯工具类型" + "PROTOCOL_JABBER");
-                }
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_QQ) {
-                    System.out.print("通讯工具类型" + "QQ");
-                }
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_MSN) {
-                    System.out.print("通讯工具类型" + "MSN");
-                }
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_YAHOO) {
-                    System.out.print("通讯工具类型" + "PROTOCOL_YAHOO");
-                }
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_ICQ) {
-                    System.out.print("通讯工具类型" + "PROTOCOL_ICQ");
-                }
-                if (Integer.parseInt(m.get(Im.TYPE)) == Im.PROTOCOL_SKYPE) {
-                    System.out.print("通讯工具类型" + "PROTOCOL_SKYPE");
-                }
-                System.out.println("通讯工具号码" + m.get(Im.DATA));
-            }
-            for (Iterator<Map<String, String>> organIter = c.Email.iterator(); organIter.hasNext();) {
-                Map<String, String> m = organIter.next();
-                System.out.print("公司" + m.get(Organization.COMPANY));
-                System.out.print("职位" + m.get(Organization.TITLE));
-                System.out.println();
-            }
-            if (c.Comment != null)
-                System.out.print("备注" + c.Comment);
-            System.out.println("");
+        if (cursor.getCount() > 0) {
+            simState |= SIM2_AVAILABLE;
         }
+        cursor.close();
+        
+        return simState;
     }
 
     /**
@@ -419,9 +374,9 @@ public class ContactUtil {
 
     public static boolean delContact(Context context, String name) {
         Cursor cursor = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
-            Data.RAW_CONTACT_ID
+                Data.RAW_CONTACT_ID
         }, ContactsContract.Contacts.DISPLAY_NAME + "=?", new String[] {
-            name
+                name
         }, null);
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
         if (cursor.moveToFirst()) {
@@ -477,6 +432,23 @@ public class ContactUtil {
     }
 
     /**
+     * add a group to Contact if the contact has no group
+     */
+    public static boolean addGroupToContact(Context context, long grId, long rawId) {
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(Data.DATA1, grId);
+            cv.put(Data.RAW_CONTACT_ID, rawId);
+            cv.put(Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE);
+            context.getContentResolver().insert(Data.CONTENT_URI, cv);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+
+    }
+
+    /**
      * update contact
      * 
      * @param context
@@ -485,36 +457,69 @@ public class ContactUtil {
      */
     public static boolean updateContact(Context context, Contact c) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        Map<String, String> m = new HashMap<String, String>();
-        Map<String, AddressInfo> m1 = new HashMap<String, AddressInfo>();
+        PhoneRecord pr = new PhoneRecord();
+        EmailRecord er = new EmailRecord();
+        OrgRecord or = new OrgRecord();
+        IMRecord ir = new IMRecord();
+        AddressRecord ar = new AddressRecord();
 
-        // update Phone
-        if (c.Number.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Number.iterator(); iter.hasNext();) {
-                m = iter.next();
+        if (c.accountInfo == null) {
+            c.accountInfo = new AccountInfo();
+            c.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
+            c.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
+        }
+
+        // TODO: 判断顺序
+        if (!c.groupInfo.name.equals("") && c.groupInfo.name != null) {
+            // has group
+            if (getGroupState(context, c._ID)) {
+                // update group
                 ops.add(ContentProviderOperation
                         .newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(
-                                Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?"
-                                        + " AND " + Phone.TYPE + "=?", new String[] {
-                                        String.valueOf(c._ID), Phone.CONTENT_ITEM_TYPE, m.get(Phone.TYPE)
-                                }).withValue(Phone.NUMBER, m.get(Phone.NUMBER)).build());
+                        .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                                new String[] {
+                                        String.valueOf(c._ID), GroupMembership.CONTENT_ITEM_TYPE
+                                }).withValue(Data.DATA1, c.groupInfo.grId).build());
+            } else {
+                if (!addGroupToContact(context, c.groupInfo.grId, c._ID)) {
+                    return false;
+                }
             }
         }
+        // update account
+        ops.add(ContentProviderOperation.newUpdate(ContactsContract.RawContacts.CONTENT_URI)
+                .withSelection(RawContacts._ID + "=?", new String[] {
+                        String.valueOf(c._ID)
+                }).withValue(RawContacts.ACCOUNT_NAME, c.accountInfo.accountName)
+                .withValue(RawContacts.ACCOUNT_TYPE, c.accountInfo.accountType).build());
+        // update nickname
+        ops.add(ContentProviderOperation
+                .newUpdate(ContactsContract.Data.CONTENT_URI)
+                .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                        new String[] {
+                                String.valueOf(c._ID), Nickname.CONTENT_ITEM_TYPE
+                        }).withValue(Nickname.NAME, c.nickname).build());
+        // update Phone
+        for (Iterator<PhoneRecord> iter = c.phoneRecord.iterator(); iter.hasNext();) {
+            pr = iter.next();
+            ops.add(ContentProviderOperation
+                    .newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                            Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?" + " AND "
+                                    + Phone.TYPE + "=?", new String[] {
+                                    String.valueOf(c._ID), Phone.CONTENT_ITEM_TYPE, String.valueOf(pr.type)
+                            }).withValue(Phone.NUMBER, pr.number).build());
+        }
         // update Email
-        if (c.Email.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Number.iterator(); iter.hasNext();) {
-                m = iter.next();
-                ops.add(ContentProviderOperation
-                        .newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(
-                                Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?"
-                                        + " AND " + Email.TYPE + "=?",
-                                new String[] {
-                                        String.valueOf(c._ID), Email.CONTENT_ITEM_TYPE,
-                                        String.valueOf(m.get(Email.TYPE))
-                                }).withValue(Email.DATA, m.get(Email.ADDRESS)).build());
-            }
+        for (Iterator<EmailRecord> iter = c.emailRecord.iterator(); iter.hasNext();) {
+            er = iter.next();
+            ops.add(ContentProviderOperation
+                    .newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                            Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?" + " AND "
+                                    + Email.TYPE + "=?", new String[] {
+                                    String.valueOf(c._ID), Email.CONTENT_ITEM_TYPE, String.valueOf(er.type)
+                            }).withValue(Email.ADDRESS, er.email).withValue(Email.DATA3, er.customName).build());
         }
         // update Name
         ops.add(ContentProviderOperation
@@ -522,62 +527,51 @@ public class ContactUtil {
                 .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
                         new String[] {
                                 String.valueOf(c._ID), StructuredName.CONTENT_ITEM_TYPE
-                        }).withValue(StructuredName.DISPLAY_NAME, c.Name).build());
-
+                        }).withValue(StructuredName.DISPLAY_NAME, c.name).build());
         // update Organization
-        if (c.Organization.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Organization.iterator(); iter.hasNext();) {
-                m = iter.next();
-                ops.add(ContentProviderOperation
-                        .newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                                new String[] {
-                                        String.valueOf(c._ID), Organization.CONTENT_ITEM_TYPE
-                                }).withValue(Organization.TITLE, m.get(Organization.TITLE))
-                        .withValue(Organization.COMPANY, m.get(Organization.COMPANY)).build());
-            }
-        }
-        // update Comments
-        if (null != c.Comment && !"".equals(c.Comment)) {
+        for (Iterator<OrgRecord> iter = c.orgRecord.iterator(); iter.hasNext();) {
+            or = iter.next();
             ops.add(ContentProviderOperation
                     .newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                            new String[] {
-                                    String.valueOf(c._ID), Note.CONTENT_ITEM_TYPE
-                            }).withValue(Note.NOTE, c.Comment).build());
+                    .withSelection(
+                            Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?" + " AND "
+                                    + Organization.TYPE + "=?", new String[] {
+                                    String.valueOf(c._ID), Organization.CONTENT_ITEM_TYPE, String.valueOf(or.type)
+                            }).withValue(Organization.COMPANY, or.org).build());
         }
-
         // update Address
-        for (Iterator<Map<String, AddressInfo>> iter = c.Address.iterator(); iter.hasNext();) {
-            m1 = iter.next();
+        for (Iterator<AddressRecord> iter = c.addressRecord.iterator(); iter.hasNext();) {
+            ar = iter.next();
             ops.add(ContentProviderOperation
                     .newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                            new String[] {
-                                    String.valueOf(c._ID), StructuredPostal.CONTENT_ITEM_TYPE
-                            }).withValue(StructuredPostal.REGION, m1.get(StructuredPostal.TYPE).province)
-                    .withValue(StructuredPostal.CITY, m1.get(StructuredPostal.TYPE).city)
-                    .withValue(StructuredPostal.STREET, m1.get(StructuredPostal.TYPE).street)
-                    .withValue(StructuredPostal.POSTCODE, m1.get(StructuredPostal.TYPE).postCode).build());
+                    .withSelection(
+                            Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?" + " AND "
+                                    + StructuredPostal.TYPE + "=?", new String[] {
+                                    String.valueOf(c._ID), StructuredPostal.CONTENT_ITEM_TYPE, String.valueOf(ar.type)
+                            }).withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address).build());
         }
-
-        // uodate Im
-        if (c.Exchange.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Exchange.iterator(); iter.hasNext();) {
-                m = iter.next();
-                ops.add(ContentProviderOperation
-                        .newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                                new String[] {
-                                        String.valueOf(c._ID), Im.CONTENT_ITEM_TYPE
-                                }).withValue(Im.TYPE, m.get(Im.TYPE)).withValue(Im.DATA, m.get(Im.DATA)).build());
-            }
+        // update InfoM
+        for (Iterator<IMRecord> iter = c.imRecord.iterator(); iter.hasNext();) {
+            ir = iter.next();
+            ops.add(ContentProviderOperation
+                    .newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(
+                            Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?" + " AND "
+                                    + Im.TYPE + "=?", new String[] {
+                                    String.valueOf(c._ID), Im.CONTENT_ITEM_TYPE, String.valueOf(ir.type)
+                            }).withValue(Im.DATA1, ir.im).build());
         }
+        
         try {
             context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-        } catch (Exception e) {
-            return false;
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (OperationApplicationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+        
         return true;
     }
 
@@ -589,103 +583,117 @@ public class ContactUtil {
      * @param AccountInfo
      * @return
      */
-    public static boolean addContact(Context context, Contact c, AccountInfo ac) {
+    public static boolean addContact(Context context, Contact c, AccountInfo ac, GroupInfo gr) {
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        Map<String, String> m = new HashMap<String, String>();
-        Map<String, AddressInfo> m1 = new HashMap<String, AddressInfo>();
+
+        if (ac == null) {
+            ac = new AccountInfo();
+            ac.accountName = DEFAULT_ACCOUNT_NAME;
+            ac.accountType = DEFAULT_ACCOUNT_TYPE;
+        }
+
         // rawcontacts'account
         // don't give c._Id value because it is automaticly increased
         ops.add(ContentProviderOperation
                 .newInsert(ContactsContract.RawContacts.CONTENT_URI)
-                .withValue(ContactsContract.RawContacts._ID, c._ID)
                 .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, ac.accountType)
                 .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, ac.accountName)
                 .withValue(ContactsContract.RawContacts.AGGREGATION_MODE,
                         ContactsContract.RawContacts.AGGREGATION_MODE_DISABLED).build());
+        // add group
+        if (gr != null) {
+            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
+                    .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
+                    .withValue(Data.DATA1, gr.grId).build());
+        }
         // name
-        if (!c.Name.equals("")) {
+        if (!c.name.equals("")) {
             ops.add(ContentProviderOperation
                     .newInsert(ContactsContract.Data.CONTENT_URI)
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
                     .withValue(ContactsContract.Data.MIMETYPE,
                             ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, c.Name).build());
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, c.name).build());
         }
-        // Organnization
-        if (c.Organization.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Organization.iterator(); iter.hasNext();) {
-                m = iter.next();
+        // Organization
+        if (c.orgRecord.size() > 0) {
+            for (Iterator<OrgRecord> iter = c.orgRecord.iterator(); iter.hasNext();) {
+                OrgRecord or = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, m.get(Organization.COMPANY))
-                        .withValue(ContactsContract.CommonDataKinds.Organization.TITLE, m.get(Organization.TITLE))
-                        .withValue(ContactsContract.CommonDataKinds.Organization.TYPE,
-                                ContactsContract.CommonDataKinds.Organization.TYPE_WORK).build());
+                        .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, or.org)
+                        .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, or.type)
+                        .withValue(ContactsContract.CommonDataKinds.Organization.DATA3, or.customName).build());
             }
         }
         // phone number
-        if (c.Number.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Number.iterator(); iter.hasNext();) {
-                m = iter.next();
+        if (c.phoneRecord.size() > 0) {
+            for (Iterator<PhoneRecord> iter = c.phoneRecord.iterator(); iter.hasNext();) {
+                PhoneRecord pr = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, m.get(Phone.NUMBER))
-                        .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, m.get(Phone.TYPE)).build());
+                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, pr.number)
+                        .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, pr.type)
+                        .withValue(ContactsContract.CommonDataKinds.Phone.DATA3, pr.customName).build());
             }
         }
         // email
-        if (c.Email.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Email.iterator(); iter.hasNext();) {
-                m = iter.next();
+        if (c.emailRecord.size() > 0) {
+            for (Iterator<EmailRecord> iter = c.emailRecord.iterator(); iter.hasNext();) {
+                EmailRecord er = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Email.DATA, m.get(Email.ADDRESS))
-                        .withValue(ContactsContract.CommonDataKinds.Email.TYPE, m.get(Email.TYPE)).build());
+                        .withValue(ContactsContract.CommonDataKinds.Email.DATA, er.email)
+                        .withValue(ContactsContract.CommonDataKinds.Email.TYPE, er.type)
+                        .withValue(ContactsContract.CommonDataKinds.Email.DATA3, er.customName).build());
             }
         }
         // address
-        if (c.Address.size() > 0) {
-            for (Iterator<Map<String, AddressInfo>> iter = c.Address.iterator(); iter.hasNext();) {
-                m1 = iter.next();
+        if (c.addressRecord.size() > 0) {
+            for (Iterator<AddressRecord> iter = c.addressRecord.iterator(); iter.hasNext();) {
+                AddressRecord ar = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.STREET,
-                                m1.get(StructuredPostal.STREET))
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.CITY,
-                                m1.get(StructuredPostal.CITY))
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.REGION,
-                                m1.get(StructuredPostal.REGION))
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE,
-                                m1.get(StructuredPostal.POSTCODE))
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE,
-                                m1.get(StructuredPostal.TYPE)).build());
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, ar.type)
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, ar.address)
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.DATA3, ar.customName).build());
             }
         }
         // IM
-        if (c.Exchange.size() > 0) {
-            for (Iterator<Map<String, String>> iter = c.Exchange.iterator(); iter.hasNext();) {
-                m = iter.next();
+        if (c.imRecord.size() > 0) {
+            for (Iterator<IMRecord> iter = c.imRecord.iterator(); iter.hasNext();) {
+                IMRecord ir = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Im.DATA1, m.get(Im.DATA))
-                        .withValue(ContactsContract.CommonDataKinds.Im.PROTOCOL, m.get(Im.TYPE)).build());
+                        .withValue(ContactsContract.CommonDataKinds.Im.DATA1, ir.im)
+                        .withValue(ContactsContract.CommonDataKinds.Im.PROTOCOL, ir.type)
+                        .withValue(ContactsContract.CommonDataKinds.Im.DATA3, ir.customName).build());
             }
+        }
+
+        // nick name
+        if (c.nickname != null && !"".equals(c.nickname)) {
+            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, c._ID)
+                    .withValue(ContactsContract.Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, c.nickname).build());
         }
         try {
             context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
@@ -701,8 +709,14 @@ public class ContactUtil {
      * 
      * @param context
      */
+
     public static List<GroupInfo> queryGroup(Context context, AccountInfo ai) {
         Uri uri = ContactsContract.Groups.CONTENT_URI;
+        if (ai == null) {
+            ai = new AccountInfo();
+            ai.accountName = DEFAULT_ACCOUNT_NAME;
+            ai.accountType = DEFAULT_ACCOUNT_TYPE;
+        }
         String where = ContactsContract.Groups.ACCOUNT_NAME + "=?" + " and " + ContactsContract.Groups.ACCOUNT_TYPE
                 + "=?";
         Cursor mr = context.getContentResolver().query(uri, null, where, new String[] {
@@ -711,16 +725,10 @@ public class ContactUtil {
         List<GroupInfo> ls = new ArrayList<GroupInfo>();
         while (mr.moveToNext()) {
             GroupInfo gi = new GroupInfo();
-            gi.grId = mr.getString(mr.getColumnIndex(ContactsContract.Groups._ID));
+            gi.grId = mr.getLong(mr.getColumnIndex(ContactsContract.Groups._ID));
             gi.name = mr.getString(mr.getColumnIndex(ContactsContract.Groups.TITLE));
-            gi.accountType = mr.getString(mr.getColumnIndex(ContactsContract.Groups.ACCOUNT_TYPE));
-            gi.accountName = mr.getString(mr.getColumnIndex(ContactsContract.Groups.ACCOUNT_NAME));
-            System.out.println("--------------->" + mr.getString(mr.getColumnIndex(ContactsContract.Groups._ID)));
-            System.out.println("--------------->" + mr.getString(mr.getColumnIndex(ContactsContract.Groups.TITLE)));
-            System.out.println("--------------->"
-                    + mr.getString(mr.getColumnIndex(ContactsContract.Groups.ACCOUNT_NAME)));
-            System.out.println("--------------->"
-                    + mr.getString(mr.getColumnIndex(ContactsContract.Groups.ACCOUNT_TYPE)));
+            gi.accountInfo.accountType = mr.getString(mr.getColumnIndex(ContactsContract.Groups.ACCOUNT_TYPE));
+            gi.accountInfo.accountName = mr.getString(mr.getColumnIndex(ContactsContract.Groups.ACCOUNT_NAME));
             ls.add(gi);
         }
         return ls;
@@ -735,36 +743,38 @@ public class ContactUtil {
      */
     public static List<Contact> getContactsByGroup(Context context, GroupInfo gi) {
         List<Contact> ls = new ArrayList<Contact>();
+        if (gi == null)
+            gi = new GroupInfo();
         String[] RAW_PROJECTION = new String[] {
-            Data.RAW_CONTACT_ID,
+                Data.RAW_CONTACT_ID,
         };
         String RAW_CONTACTS_WHERE = ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "=?" + " and "
                 + ContactsContract.Data.MIMETYPE + "=" + "'"
                 + ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE + "'";
         Cursor mr = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI, RAW_PROJECTION,
                 RAW_CONTACTS_WHERE, new String[] {
-                    gi.grId
+                    String.valueOf(gi.grId)
                 }, null);
         while (mr.moveToNext()) {
             long rawId = mr.getLong(mr.getColumnIndex(Data.RAW_CONTACT_ID));
-            System.out.println("--------------->" + rawId);
             ls.add(getContactByRawId(context, rawId));
         }
         return ls;
     }
 
     /**
-     * get all collect contacts
+     * get all Favorite contacts
+     * 
      * @param context
      * @return
      */
-    public static List<Contact> getCollectContacts(Context context) {
+    public static List<Contact> getFavoriteContacts(Context context) {
         List<Contact> l = new ArrayList<Contact>();
         String where = RawContacts.STARRED + "=?";
         Cursor cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, new String[] {
-            RawContacts._ID
+                RawContacts._ID
         }, where, new String[] {
-            String.valueOf(CONTACTS_COLLECT_FLAG)
+                String.valueOf(CONTACTS_COLLECT_FLAG)
         }, null);
         while (cursor.moveToNext()) {
             long rawContactId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
@@ -774,4 +784,33 @@ public class ContactUtil {
 
     }
 
+    /**
+     * @param context
+     * @return
+     */
+    public static boolean getGroupState(Context context, long rawId) {
+        Cursor cr = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
+                Data.DATA1
+        }, Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[] {
+                String.valueOf(rawId), GroupMembership.CONTENT_ITEM_TYPE
+        }, null);
+
+        int k = cr.getCount();
+        cr.close();
+        if (k > 0) {
+            return true;
+        }
+        return false;
+
+    }
+
+    /**
+     * @param obj
+     * @return
+     */
+    public static String convertToString(Object obj) {
+        if (obj == null)
+            return "";
+        return obj.toString();
+    }
 }
