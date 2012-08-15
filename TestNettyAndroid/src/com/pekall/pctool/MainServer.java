@@ -3,7 +3,7 @@ package com.pekall.pctool;
 
 import android.content.Context;
 
-import com.pekall.pctool.model.FakeBusinessLogicFacade;
+import com.pekall.pctool.model.HandlerFacade;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -48,7 +48,7 @@ public class MainServer {
             pipeline.addLast("decoder", new HttpRequestDecoder());
             pipeline.addLast("encoder", new HttpResponseEncoder());
             // http处理handler
-            pipeline.addLast("handler", new MainServerHandler(new FakeBusinessLogicFacade(mContext)));
+            pipeline.addLast("handler", new MainServerHandler(new HandlerFacade(mContext)));
             return pipeline;
         }
     }

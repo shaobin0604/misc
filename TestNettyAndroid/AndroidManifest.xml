@@ -1,30 +1,40 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.pekall.pctool"
     android:versionCode="1"
-    android:versionName="1.0" xmlns:tools="http://schemas.android.com/tools">
+    android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="15" />
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="15" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
 
-    <application android:label="@string/app_name"
+    <application
         android:icon="@drawable/ic_launcher"
-        android:theme="@style/AppTheme">
-		<service android:name=".MainService"/>
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <service android:name=".MainService" />
         <service android:name=".FTPServerService" />
-        
-        <receiver android:name=".AmCommandReceiver" tools:ignore="ExportedReceiver">
+
+        <receiver
+            android:name=".AmCommandReceiver"
+            tools:ignore="ExportedReceiver" >
             <intent-filter>
-                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_START"/>
-                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_STOP"/>
-                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START"/>
-                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP"/>
+                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_START" />
+                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_STOP" />
+                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START" />
+                <action android:name="com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP" />
             </intent-filter>
         </receiver>
     </application>
+
 </manifest>

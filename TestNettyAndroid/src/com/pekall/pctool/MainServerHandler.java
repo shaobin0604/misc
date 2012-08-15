@@ -13,7 +13,7 @@ import android.content.UriMatcher;
 import android.net.Uri;
 
 import com.example.tutorial.AddressBookProtos.AddressBook;
-import com.pekall.pctool.model.FakeBusinessLogicFacade;
+import com.pekall.pctool.model.HandlerFacade;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
@@ -71,10 +71,10 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
         sURIMatcher.addURI("localhost", "import/*", IMPORT_APP);
     }
 
-    private FakeBusinessLogicFacade mLogicFacade;
+    private HandlerFacade mHandlerFacade;
 
-    public MainServerHandler(FakeBusinessLogicFacade facade) {
-        this.mLogicFacade = facade;
+    public MainServerHandler(HandlerFacade facade) {
+        this.mHandlerFacade = facade;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
                 // Write the initial line and the header.
                 ChannelFuture future = ch.write(response);
                 future.addListener(ChannelFutureListener.CLOSE);
-                
+
                 break;
             }
             case EXPORT_APP: {
@@ -150,33 +150,63 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
 
         try {
             CmdRequest cmdRequest = CmdRequest.parseFrom(cbis);
-            CmdType cmdType = cmdRequest.getCmdType();
-            CmdResponse cmdResponse;
-            Slog.d("cmdType = " + cmdType);
-            switch (cmdType) {
-                case CMD_QUERY_APP: {
-                    cmdResponse = mLogicFacade.queryApp();
-                    break;
+
+            if (cmdRequest.hasCmdType()) {
+                CmdType cmdType = cmdRequest.getCmdType();
+                CmdResponse cmdResponse;
+                Slog.d("cmdType = " + cmdType);
+                switch (cmdType) {
+                    case CMD_QUERY_APP: {
+                        cmdResponse = mHandlerFacade.queryApp(cmdRequest);
+                        break;
+                    }
+
+                    //
+                    // SMS related methods
+                    //
+                    case CMD_QUERY_SMS: {
+                        cmdResponse = mHandlerFacade.querySms(cmdRequest);
+                        break;
+                    }
+
+                    case CMD_DELETE_SMS: {
+                        cmdResponse = mHandlerFacade.deleteSms(cmdRequest);
+                        break;
+                    }
+
+                    case CMD_IMPORT_SMS: {
+                        cmdResponse = mHandlerFacade.importSms(cmdRequest);
+                        break;
+                    }
+
+                    //
+                    // Calendar related methods
+                    //
+                    case CMD_QUERY_CALENDAR: {
+                        cmdResponse = mHandlerFacade.queryCalendar(cmdRequest);
+                        break;
+                    }
+
+                    default: {
+                        cmdResponse = mHandlerFacade.defaultCmdResponse();
+                        break;
+                    }
                 }
+                ChannelBuffer buffer = new DynamicChannelBuffer(2048);
+                buffer.writeBytes(cmdResponse.toByteArray());
+
+                response.setContent(buffer);
+                response.setHeader(CONTENT_TYPE, "application/x-protobuf");
+                response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
+            } else {
+                Slog.e("Error insufficient params: cmdType");
                 
-                case CMD_QUERY_SMS: {
-                    cmdResponse = mLogicFacade.querySms();
-                    break;
-                }
-                default: {
-                    cmdResponse = mLogicFacade.defaultCmdResponse();
-                    break;
-                }
+                response.setStatus(BAD_REQUEST);
+                response.setHeader(CONTENT_LENGTH, 0);
             }
-            ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-            buffer.writeBytes(cmdResponse.toByteArray());
-            
-            response.setContent(buffer);
-            response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-            response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
         } catch (IOException e) {
             Slog.e("Error when handleRPC, send 500 internal server error", e);
-            
+
             response.setStatus(INTERNAL_SERVER_ERROR);
             response.setHeader(CONTENT_LENGTH, 0);
         }
@@ -185,7 +215,7 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
     private void handleExportApp(final String packageName, MessageEvent event) {
         Slog.d("packageName = " + packageName);
         try {
-            InputStream is = mLogicFacade.exportApp(packageName);
+            InputStream is = mHandlerFacade.exportApp(packageName);
             if (is instanceof FileInputStream) {
                 Slog.d("use zero-copy");
 
@@ -243,8 +273,7 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
 
     private void handleImportApp(final String packageName, MessageEvent e) {
         Slog.d("packageName = " + packageName);
-        
-        
+
     }
 
     private void handleQueryAppTest(CmdRequest cmdRequest, HttpResponse response) {
@@ -254,18 +283,18 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
             Slog.d("location = " + appRecord.getLocationType());
         }
 
-        CmdResponse cmdResponse = mLogicFacade.queryAppRecordList();
+        CmdResponse cmdResponse = mHandlerFacade.queryAppRecordList();
 
         ChannelBuffer buffer = new DynamicChannelBuffer(2048);
         buffer.writeBytes(cmdResponse.toByteArray());
-        
+
         response.setContent(buffer);
         response.setHeader(CONTENT_TYPE, "application/x-protobuf");
         response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
     }
 
     private void handleApps(HttpRequest request, HttpResponse response) {
-        AppInfoPList appInfoPList = mLogicFacade.getAppInfoPList();
+        AppInfoPList appInfoPList = mHandlerFacade.getAppInfoPList();
 
         ChannelBuffer buffer = new DynamicChannelBuffer(2048);
         buffer.writeBytes(appInfoPList.toByteArray());
@@ -276,7 +305,7 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     private void handleTest(HttpRequest request, HttpResponse response) {
-        AddressBook addressBook = mLogicFacade.getAddressBook();
+        AddressBook addressBook = mHandlerFacade.getAddressBook();
 
         ChannelBuffer buffer = new DynamicChannelBuffer(2048);
         buffer.writeBytes(addressBook.toByteArray());

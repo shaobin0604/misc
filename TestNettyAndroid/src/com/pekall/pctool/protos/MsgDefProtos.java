@@ -14,11 +14,11 @@ public final class MsgDefProtos {
     CMD_QUERY_SMS(1, 1),
     CMD_DELETE_SMS(2, 2),
     CMD_SEND_SMS(3, 3),
-    CMD_SYNC_SMS(4, 4),
+    CMD_IMPORT_SMS(4, 4),
     CMD_QUERY_MMS(5, 5),
     CMD_DELETE_MMS(6, 6),
     CMD_SEND_MMS(7, 7),
-    CMD_SYNC_MMS(8, 8),
+    CMD_IMPORT_MMS(8, 8),
     CMD_REICEIVED_NEW_MSG(9, 9),
     CMD_GET_ALL_GROUPS(10, 10),
     CMD_ADD_GROUP(11, 11),
@@ -45,11 +45,11 @@ public final class MsgDefProtos {
     public static final int CMD_QUERY_SMS_VALUE = 1;
     public static final int CMD_DELETE_SMS_VALUE = 2;
     public static final int CMD_SEND_SMS_VALUE = 3;
-    public static final int CMD_SYNC_SMS_VALUE = 4;
+    public static final int CMD_IMPORT_SMS_VALUE = 4;
     public static final int CMD_QUERY_MMS_VALUE = 5;
     public static final int CMD_DELETE_MMS_VALUE = 6;
     public static final int CMD_SEND_MMS_VALUE = 7;
-    public static final int CMD_SYNC_MMS_VALUE = 8;
+    public static final int CMD_IMPORT_MMS_VALUE = 8;
     public static final int CMD_REICEIVED_NEW_MSG_VALUE = 9;
     public static final int CMD_GET_ALL_GROUPS_VALUE = 10;
     public static final int CMD_ADD_GROUP_VALUE = 11;
@@ -80,11 +80,11 @@ public final class MsgDefProtos {
         case 1: return CMD_QUERY_SMS;
         case 2: return CMD_DELETE_SMS;
         case 3: return CMD_SEND_SMS;
-        case 4: return CMD_SYNC_SMS;
+        case 4: return CMD_IMPORT_SMS;
         case 5: return CMD_QUERY_MMS;
         case 6: return CMD_DELETE_MMS;
         case 7: return CMD_SEND_MMS;
-        case 8: return CMD_SYNC_MMS;
+        case 8: return CMD_IMPORT_MMS;
         case 9: return CMD_REICEIVED_NEW_MSG;
         case 10: return CMD_GET_ALL_GROUPS;
         case 11: return CMD_ADD_GROUP;
@@ -135,7 +135,7 @@ public final class MsgDefProtos {
     }
     
     private static final CmdType[] VALUES = {
-      CMD_HEART_BEAT, CMD_QUERY_SMS, CMD_DELETE_SMS, CMD_SEND_SMS, CMD_SYNC_SMS, CMD_QUERY_MMS, CMD_DELETE_MMS, CMD_SEND_MMS, CMD_SYNC_MMS, CMD_REICEIVED_NEW_MSG, CMD_GET_ALL_GROUPS, CMD_ADD_GROUP, CMD_DELETE_GROUP, CMD_EDIT_GROUP, CMD_GET_ALL_ACCOUNTS, CMD_QUERY_CONTACTS, CMD_ADD_CONTACT, CMD_DELETE_CONTACT, CMD_EDIT_CONTACT, CMD_SYNC_CONTACTS, CMD_QUERY_CALENDAR, CMD_QUERY_AGENDAS, CMD_ADD_AGENDA, CMD_DELETE_AGENDA, CMD_EDIT_AGENDA, CMD_SYNC_AGENDAS, CMD_QUERY_APP, CMD_UPLOAD_APK, CMD_DOWNLOAD_APK, 
+      CMD_HEART_BEAT, CMD_QUERY_SMS, CMD_DELETE_SMS, CMD_SEND_SMS, CMD_IMPORT_SMS, CMD_QUERY_MMS, CMD_DELETE_MMS, CMD_SEND_MMS, CMD_IMPORT_MMS, CMD_REICEIVED_NEW_MSG, CMD_GET_ALL_GROUPS, CMD_ADD_GROUP, CMD_DELETE_GROUP, CMD_EDIT_GROUP, CMD_GET_ALL_ACCOUNTS, CMD_QUERY_CONTACTS, CMD_ADD_CONTACT, CMD_DELETE_CONTACT, CMD_EDIT_CONTACT, CMD_SYNC_CONTACTS, CMD_QUERY_CALENDAR, CMD_QUERY_AGENDAS, CMD_ADD_AGENDA, CMD_DELETE_AGENDA, CMD_EDIT_AGENDA, CMD_SYNC_AGENDAS, CMD_QUERY_APP, CMD_UPLOAD_APK, CMD_DOWNLOAD_APK, 
     };
     
     public static CmdType valueOf(
@@ -163,15 +163,19 @@ public final class MsgDefProtos {
     ANY(0, 0),
     INBOX(1, 1),
     SENTBOX(2, 2),
-    OUTBOX(3, 3),
-    DRAFTBOX(4, 4),
+    DRAFTBOX(3, 3),
+    OUTBOX(4, 4),
+    FAILED(5, 5),
+    QUEUED(6, 6),
     ;
     
     public static final int ANY_VALUE = 0;
     public static final int INBOX_VALUE = 1;
     public static final int SENTBOX_VALUE = 2;
-    public static final int OUTBOX_VALUE = 3;
-    public static final int DRAFTBOX_VALUE = 4;
+    public static final int DRAFTBOX_VALUE = 3;
+    public static final int OUTBOX_VALUE = 4;
+    public static final int FAILED_VALUE = 5;
+    public static final int QUEUED_VALUE = 6;
     
     
     public final int getNumber() { return value; }
@@ -181,8 +185,10 @@ public final class MsgDefProtos {
         case 0: return ANY;
         case 1: return INBOX;
         case 2: return SENTBOX;
-        case 3: return OUTBOX;
-        case 4: return DRAFTBOX;
+        case 3: return DRAFTBOX;
+        case 4: return OUTBOX;
+        case 5: return FAILED;
+        case 6: return QUEUED;
         default: return null;
       }
     }
@@ -213,7 +219,7 @@ public final class MsgDefProtos {
     }
     
     private static final MsgOriginType[] VALUES = {
-      ANY, INBOX, SENTBOX, OUTBOX, DRAFTBOX, 
+      ANY, INBOX, SENTBOX, DRAFTBOX, OUTBOX, FAILED, QUEUED, 
     };
     
     public static MsgOriginType valueOf(
@@ -16528,27 +16534,27 @@ public final class MsgDefProtos {
       "pcsuite.AppRecord\0225\n\016account_record\030\n \003(" +
       "\0132\035.pekall.pcsuite.AccountRecord\0221\n\014grou" +
       "p_record\030\013 \003(\0132\033.pekall.pcsuite.GroupRec" +
-      "ord*\361\004\n\007CmdType\022\022\n\016CMD_HEART_BEAT\020\000\022\021\n\rC" +
+      "ord*\365\004\n\007CmdType\022\022\n\016CMD_HEART_BEAT\020\000\022\021\n\rC" +
       "MD_QUERY_SMS\020\001\022\022\n\016CMD_DELETE_SMS\020\002\022\020\n\014CM" +
-      "D_SEND_SMS\020\003\022\020\n\014CMD_SYNC_SMS\020\004\022\021\n\rCMD_QU" +
-      "ERY_MMS\020\005\022\022\n\016CMD_DELETE_MMS\020\006\022\020\n\014CMD_SEN" +
-      "D_MMS\020\007\022\020\n\014CMD_SYNC_MMS\020\010\022\031\n\025CMD_REICEIV" +
-      "ED_NEW_MSG\020\t\022\026\n\022CMD_GET_ALL_GROUPS\020\n\022\021\n\r" +
-      "CMD_ADD_GROUP\020\013\022\024\n\020CMD_DELETE_GROUP\020\014\022\022\n",
-      "\016CMD_EDIT_GROUP\020\r\022\030\n\024CMD_GET_ALL_ACCOUNT" +
-      "S\020\016\022\026\n\022CMD_QUERY_CONTACTS\020\017\022\023\n\017CMD_ADD_C" +
-      "ONTACT\020\020\022\026\n\022CMD_DELETE_CONTACT\020\021\022\024\n\020CMD_" +
-      "EDIT_CONTACT\020\022\022\025\n\021CMD_SYNC_CONTACTS\020\023\022\026\n" +
-      "\022CMD_QUERY_CALENDAR\020\024\022\025\n\021CMD_QUERY_AGEND" +
-      "AS\020\025\022\022\n\016CMD_ADD_AGENDA\020\026\022\025\n\021CMD_DELETE_A" +
-      "GENDA\020\027\022\023\n\017CMD_EDIT_AGENDA\020\030\022\024\n\020CMD_SYNC" +
-      "_AGENDAS\020\031\022\021\n\rCMD_QUERY_APP\020\032\022\022\n\016CMD_UPL" +
-      "OAD_APK\020\033\022\024\n\020CMD_DOWNLOAD_APK\020\034*J\n\rMsgOr" +
-      "iginType\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001\022\013\n\007SENTBOX\020",
-      "\002\022\n\n\006OUTBOX\020\003\022\014\n\010DRAFTBOX\020\004*1\n\tModifyTag" +
-      "\022\010\n\004SAME\020\000\022\007\n\003ADD\020\001\022\007\n\003DEL\020\002\022\010\n\004EDIT\020\003B*" +
-      "\n\030com.pekall.pctool.protosB\014MsgDefProtos" +
-      "H\001"
+      "D_SEND_SMS\020\003\022\022\n\016CMD_IMPORT_SMS\020\004\022\021\n\rCMD_" +
+      "QUERY_MMS\020\005\022\022\n\016CMD_DELETE_MMS\020\006\022\020\n\014CMD_S" +
+      "END_MMS\020\007\022\022\n\016CMD_IMPORT_MMS\020\010\022\031\n\025CMD_REI" +
+      "CEIVED_NEW_MSG\020\t\022\026\n\022CMD_GET_ALL_GROUPS\020\n" +
+      "\022\021\n\rCMD_ADD_GROUP\020\013\022\024\n\020CMD_DELETE_GROUP\020",
+      "\014\022\022\n\016CMD_EDIT_GROUP\020\r\022\030\n\024CMD_GET_ALL_ACC" +
+      "OUNTS\020\016\022\026\n\022CMD_QUERY_CONTACTS\020\017\022\023\n\017CMD_A" +
+      "DD_CONTACT\020\020\022\026\n\022CMD_DELETE_CONTACT\020\021\022\024\n\020" +
+      "CMD_EDIT_CONTACT\020\022\022\025\n\021CMD_SYNC_CONTACTS\020" +
+      "\023\022\026\n\022CMD_QUERY_CALENDAR\020\024\022\025\n\021CMD_QUERY_A" +
+      "GENDAS\020\025\022\022\n\016CMD_ADD_AGENDA\020\026\022\025\n\021CMD_DELE" +
+      "TE_AGENDA\020\027\022\023\n\017CMD_EDIT_AGENDA\020\030\022\024\n\020CMD_" +
+      "SYNC_AGENDAS\020\031\022\021\n\rCMD_QUERY_APP\020\032\022\022\n\016CMD" +
+      "_UPLOAD_APK\020\033\022\024\n\020CMD_DOWNLOAD_APK\020\034*b\n\rM" +
+      "sgOriginType\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001\022\013\n\007SENT",
+      "BOX\020\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006OUTBOX\020\004\022\n\n\006FAILE" +
+      "D\020\005\022\n\n\006QUEUED\020\006*1\n\tModifyTag\022\010\n\004SAME\020\000\022\007" +
+      "\n\003ADD\020\001\022\007\n\003DEL\020\002\022\010\n\004EDIT\020\003B*\n\030com.pekall" +
+      ".pctool.protosB\014MsgDefProtosH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

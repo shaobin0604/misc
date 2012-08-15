@@ -1,9 +1,9 @@
 package pekall.pcsuite;
 
+option optimize_for = SPEED;
+
 option java_package = "com.pekall.pctool.protos";
 option java_outer_classname = "MsgDefProtos";
-
-option optimize_for = SPEED;
 
 //命令类型枚举定义
 enum CmdType
@@ -12,12 +12,12 @@ enum CmdType
 	CMD_QUERY_SMS = 1;			//查询检索短信（可指定条件参数）
 	CMD_DELETE_SMS = 2;			//删除短消息
 	CMD_SEND_SMS = 3;			//发送一条短消息
-	CMD_SYNC_SMS = 4;			//对SMS消息数据进行同步
+	CMD_IMPORT_SMS = 4;			//导入短消息
 	
 	CMD_QUERY_MMS = 5;			//查询检索彩信（可指定条件参数）
 	CMD_DELETE_MMS = 6;			//删除彩信
 	CMD_SEND_MMS = 7;			//发送一条彩信
-	CMD_SYNC_MMS = 8;			//对MMS消息数据进行同步
+	CMD_IMPORT_MMS = 8;			//对MMS消息数据进行同步
 	
 	CMD_REICEIVED_NEW_MSG = 9;  //手机侧收到新短信或者彩信时主动给响应给pc侧（带完整消息内容）
 	
@@ -76,10 +76,12 @@ message AppRecord
 enum MsgOriginType			
 {
 	ANY = 0;				//任意（所有）
-	INBOX = 1;				//收件箱
-	SENTBOX = 2;			//已发箱
-	OUTBOX = 3;				//发件箱
-	DRAFTBOX = 4;			//草稿箱
+	INBOX = 1;				//收件箱,Received
+	SENTBOX = 2;			//已发箱,Sent
+	DRAFTBOX = 3;			//草稿箱,Draft
+	OUTBOX = 4;				//发件箱,Outbox
+	FAILED = 5;				//Failed
+	QUEUED = 6;				//Queued
 }
 
 //SMS短消息记录定义
