@@ -1,4 +1,4 @@
-package com.pekall.pctool.model.calendar;
+package com.pekall.pctool.model.account;
 
 public class AccountInfo {
 

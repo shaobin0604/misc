@@ -1,49 +1,74 @@
 
 package com.pekall.pctool.model.contact;
 
+import com.pekall.pctool.model.account.AccountInfo;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Contact {
-    public int _ID;// rawId
+    public long id;// rawId
     public String name;
     public String nickname;
-    public List<PhoneRecord> phoneRecord = new ArrayList<PhoneRecord>();
-    public List<EmailRecord> emailRecord = new ArrayList<EmailRecord>();
-    public List<IMRecord> imRecord = new ArrayList<IMRecord>();
-    public List<AddressRecord> addressRecord = new ArrayList<AddressRecord>();
-    public List<OrgRecord> orgRecord = new ArrayList<OrgRecord>();
+    public byte[] photo;
     public AccountInfo accountInfo = new AccountInfo();
-    public GroupInfo groupInfo = new GroupInfo();
+    public List<PhoneInfo> phoneInfos = new ArrayList<PhoneInfo>();
+    public List<EmailInfo> emailInfos = new ArrayList<EmailInfo>();
+    public List<ImInfo> imInfos = new ArrayList<ImInfo>();
+    public List<AddressInfo> addressInfos = new ArrayList<AddressInfo>();
+    public List<OrgInfo> orgInfos = new ArrayList<OrgInfo>();
+    public List<GroupInfo> groupInfos = new ArrayList<GroupInfo>();
 
-    public static class PhoneRecord {
-        public long type;
+    public static class PhoneInfo {
+        public long id;
+        public int type;
         public String number;
         public String customName;
+        public int    modifyFlag;
     }
 
-    public static class EmailRecord {
-        public long type;
+    public static class EmailInfo {
+        public long id;
+        public int type;
         public String email;
         public String customName;
+        public int    modifyFlag;
     }
 
-    public static class IMRecord {
-        public long type;
+    public static class ImInfo {
+        public long id;
+        public int type;
         public String im;
         public String customName;
+        public int    modifyFlag;
     }
 
-    public static class AddressRecord {
-        public long type;
+    public static class AddressInfo {
+        public long id;
+        public String country;
+        public String province;
+        public String city;
+        public String street;
+        public String postcode;
+        public int type;
         public String address;
         public String customName;
+        public int    modifyFlag;
     }
 
-    public static class OrgRecord {
-        public long type;
+    public static class OrgInfo {
+        public long id;
+        public int type;
         public String org;
         public String customName;
+        public int    modifyFlag;
+    }
+    
+    public static class ModifyTag {
+        public static int  same = 0;   //未修改
+        public static int  add = 1;    //增加
+        public static int  del = 2;    //删除
+        public static int  edit = 3;   //修改
     }
 
 }

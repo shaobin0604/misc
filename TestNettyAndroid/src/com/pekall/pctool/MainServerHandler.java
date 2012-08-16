@@ -186,7 +186,35 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
                         cmdResponse = mHandlerFacade.queryCalendar(cmdRequest);
                         break;
                     }
+                    
+                    case CMD_QUERY_AGENDAS: {
+                        cmdResponse = mHandlerFacade.queryAgenda(cmdRequest);
+                        break;
+                    }
 
+                    case CMD_ADD_AGENDA: {
+                        cmdResponse = mHandlerFacade.addAgenda(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_EDIT_AGENDA: {
+                        cmdResponse = mHandlerFacade.updateAgenda(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_DELETE_AGENDA: {
+                        cmdResponse = mHandlerFacade.deleteAgenda(cmdRequest);
+                        break;
+                    }
+                    
+                    //
+                    // Contact related methods
+                    //
+                    case CMD_GET_ALL_ACCOUNTS: {
+                        cmdResponse = mHandlerFacade.queryAccount(cmdRequest);
+                        break;
+                    }
+                    
                     default: {
                         cmdResponse = mHandlerFacade.defaultCmdResponse();
                         break;

@@ -11,6 +11,9 @@ import android.provider.CalendarContract;
 import android.provider.CalendarContract.Calendars;
 import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Reminders;
+import android.text.TextUtils;
+
+import com.pekall.pctool.model.account.AccountInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,8 @@ import java.util.TimeZone;
 public class CalendarUtil {
 
     private static final String TIME_ZONE = TimeZone.getDefault().toString();
+    
+    public static final int INVALID_CALENDAR_ID = -1;
     
     /**
      * account
@@ -64,7 +69,6 @@ public class CalendarUtil {
             CalendarInfo ci = new CalendarInfo();
             ci.caId = cur.getLong(PROJECTION_CALENDAR_ID_INDEX);
             ci.name = cur.getString(PROJECTION_CALENDAR_NAME_INDEX);
-            ci.accountInfo = new AccountInfo();
             ci.accountInfo.accountName = cur.getString(PROJECTION_ACCOUNT_NAME_INDEX);
             ci.accountInfo.accountType = cur.getString(PROJECTION_ACCOUNT_TYPE_INDEX);
             calendarInfoList.add(ci);
@@ -164,7 +168,7 @@ public class CalendarUtil {
         values.put(Events.DESCRIPTION, eventInfo.note);
         values.put(Events.RRULE, eventInfo.rrule);
         values.put(Events.DTSTART, eventInfo.startTime);
-        if (eventInfo.rrule != null || !"".equals(eventInfo.rrule)) {
+        if (!TextUtils.isEmpty(eventInfo.rrule)) {
             String duration = "P" + (eventInfo.endTime - eventInfo.startTime) + "S";
             values.put(Events.DURATION, duration);
             values.put(Events.DTEND, "");
@@ -173,16 +177,18 @@ public class CalendarUtil {
         }
         Uri myUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfo.evId);
         int rows = cr.update(myUri, values, null, null);
-        if (rows == 0)
+        if (rows == 0) {
             return false;
+        }
         if (eventInfo.alertTime != 0) {
             values = new ContentValues();
             values.put(Reminders.MINUTES, eventInfo.alertTime);
             rows = cr.update(Reminders.CONTENT_URI, values, Reminders.EVENT_ID + "=?", new String[] {
                     String.valueOf(eventInfo.evId)
             });
-            if (rows == 0)
+            if (rows == 0) {
                 return false;
+            }
         }
         return true;
     }
@@ -191,23 +197,32 @@ public class CalendarUtil {
      * 删除一个事件
      */
     public static boolean deleteEvent(Context context, EventInfo eventInfo) {
+        return deleteEvent(context, eventInfo.evId);
+    }
+    
+    public static boolean deleteEvent(Context context, long eventInfoId) {
         ContentResolver cr = context.getContentResolver();
-        Uri deleteUri = null;
-        deleteUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfo.evId);
+        Uri deleteUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfoId);
         int rows = cr.delete(deleteUri, null, null);
-        if (rows > 0)
+        if (rows > 0) {
             return true;
-        return false;
+        } else {
+            return false;
+        }
     }
 
     /**
      * 查询某个事件下面的提醒时间
      */
     public static int[] getReminderTime(Context context, EventInfo eventInfo) {
+        return getReminderTime(context, eventInfo.evId);
+    }
+    
+    public static int[] getReminderTime(Context context, long eventInfoId) {
         ContentResolver cr = context.getContentResolver();
         String selection = Reminders.EVENT_ID + " = ? ";
         String[] selectionArgs = new String[] {
-                String.valueOf(eventInfo.evId)
+                String.valueOf(eventInfoId)
         };
         Cursor cur = cr.query(Reminders.CONTENT_URI, new String[] {
                 Reminders._ID, Reminders.MINUTES
@@ -228,7 +243,7 @@ public class CalendarUtil {
      * @param cr
      * @return
      */
-    public static List<EventInfo> getEvents(Context context, CalendarInfo cr) {
+    public static List<EventInfo> getEvents(Context context, long calendarId) {
         List<EventInfo> er = new ArrayList<EventInfo>();
         Cursor cur = null;
         Uri uri = Events.CONTENT_URI;
@@ -236,12 +251,12 @@ public class CalendarUtil {
                 Events._ID, Events.TITLE, Events.DESCRIPTION, Events.DTSTART, Events.DTEND, Events.RRULE,
                 Events.EVENT_LOCATION
         };
-        if (null == cr) {
+        if (calendarId <= 0) {
             cur = context.getContentResolver().query(uri, projection, null, null, null);
         } else {
             String selection = Events.CALENDAR_ID + "=?";
             String selectionArgs[] = {
-                    String.valueOf(cr.caId)
+                    String.valueOf(calendarId)
             };
             cur = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
         }
@@ -259,7 +274,7 @@ public class CalendarUtil {
             if (reminds.length > 0) {
                 evr.alertTime = reminds[0];
             }
-            evr.calendarId = cr.caId;
+            evr.calendarId = calendarId;
 
             er.add(evr);
         }

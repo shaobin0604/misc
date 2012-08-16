@@ -1,18 +1,25 @@
 
 package com.pekall.pctool.model;
 
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+
 import android.content.Context;
 
 import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.example.tutorial.AddressBookProtos.Person;
 import com.google.protobuf.ByteString;
 import com.pekall.pctool.Slog;
+import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.app.AppInfo;
 import com.pekall.pctool.model.app.AppUtil;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
 import com.pekall.pctool.model.calendar.CalendarInfo;
 import com.pekall.pctool.model.calendar.CalendarUtil;
 import com.pekall.pctool.model.calendar.EventInfo;
+import com.pekall.pctool.model.contact.Contact;
+import com.pekall.pctool.model.contact.Contact.PhoneInfo;
+import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.model.contact.GroupInfo;
 import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
@@ -25,7 +32,12 @@ import com.pekall.pctool.protos.MsgDefProtos.CalendarRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
+import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
+import com.pekall.pctool.protos.MsgDefProtos.GroupRecord;
+import com.pekall.pctool.protos.MsgDefProtos.ModifyTag;
 import com.pekall.pctool.protos.MsgDefProtos.MsgOriginType;
+import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
+import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 import com.pekall.pctool.protos.MsgDefProtos.SMSRecord;
 
 import java.io.InputStream;
@@ -38,9 +50,6 @@ public class HandlerFacade {
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
 
     private static final String RESULT_MSG_OK = "OK";
-    private static final String RESULT_MSG_ERR_ILLEGAL_ARGUMENT = "Illegal argument";
-    private static final String RESULT_MSG_ERR_INSUFFICIENT_ARGUMENT = "Insufficient argument";
-    private static final String RESULT_MSG_ERR_INTERNAL = "Internal error";
     
 
     private Context mContext;
@@ -53,8 +62,8 @@ public class HandlerFacade {
         CmdResponse.Builder response = CmdResponse.newBuilder();
 
         response.setCmdType(CmdType.CMD_HEART_BEAT);
-        response.setResultCode(RESULT_CODE_ERR_ILLEGAL_ARGUMENT);
-        response.setResultMsg(RESULT_MSG_ERR_ILLEGAL_ARGUMENT);
+        response.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
+        response.setResultMsg("Error insufficient params: cmd type");
 
         return response.build();
     }
@@ -105,8 +114,10 @@ public class HandlerFacade {
                 responseBuilder.setResultCode(RESULT_CODE_OK);
                 responseBuilder.setResultMsg(RESULT_MSG_OK);
             } else {
+                final String msg = "Error SmsUtil.deleteSms";
+                Slog.e(msg);
                 responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
-                responseBuilder.setResultMsg(RESULT_MSG_ERR_INTERNAL);
+                responseBuilder.setResultMsg(msg);
             }
         }
         Slog.d("deleteSms X");
@@ -138,9 +149,10 @@ public class HandlerFacade {
                 responseBuilder.setResultCode(RESULT_CODE_OK);
                 responseBuilder.setResultMsg(RESULT_MSG_OK);
             } else {
-                Slog.e("Error SmsUtil.importSms");
+                final String msg = "Error SmsUtil.importSms";
+                Slog.e(msg);
                 responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
-                responseBuilder.setResultMsg(RESULT_MSG_ERR_INTERNAL);
+                responseBuilder.setResultMsg(msg);
             }
         } else {
             final String msg = "Error insufficient params: sms param";
@@ -229,12 +241,42 @@ public class HandlerFacade {
         Slog.d("queryCalendar X");
         return responseBuilder.build();
     }
+    
 
     public CmdResponse queryAgenda(CmdRequest request) {
         Slog.d("queryAgenda E");
         
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_AGENDAS);
+        
+        long calendarId = CalendarUtil.INVALID_CALENDAR_ID;
+        if (request.hasAgendaParams()) {
+            AgendaRecord agendaRecord = request.getAgendaParams();
+            calendarId = agendaRecord.getCalendarId();
+        }
+        
+        Slog.d("calendarId = " + calendarId);
+        
+        List<EventInfo> eventInfoList = CalendarUtil.getEvents(mContext, calendarId);
+        
+        AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
+        
+        for (EventInfo eventInfo : eventInfoList) {
+            agendaRecordBuilder.setId(eventInfo.evId);
+            agendaRecordBuilder.setCalendarId(eventInfo.calendarId);
+            agendaRecordBuilder.setSubject(eventInfo.title);
+            agendaRecordBuilder.setLocation(eventInfo.place);
+            agendaRecordBuilder.setStartTime(eventInfo.startTime);
+            agendaRecordBuilder.setEndTime(eventInfo.endTime);
+            agendaRecordBuilder.setRepeatRule(eventInfo.rrule);
+            agendaRecordBuilder.setAlertTime(eventInfo.alertTime);
+            agendaRecordBuilder.setNote(eventInfo.note);
+            
+            responseBuilder.addAgendaRecord(agendaRecordBuilder.build());
+            
+            agendaRecordBuilder.clear();
+        }
+        
         
         Slog.d("queryAgenda X");
         
@@ -280,7 +322,284 @@ public class HandlerFacade {
         Slog.d("addAgenda X");
         return responseBuilder.build();
     }
+    
+    public CmdResponse updateAgenda(CmdRequest cmdRequest) {
+        Slog.d("updateAgenda E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_EDIT_AGENDA);
+        
+        if (cmdRequest.hasAgendaParams()) {
+            AgendaRecord agendaRecord = cmdRequest.getAgendaParams();
+            EventInfo eventInfo = new EventInfo();
+            
+            eventInfo.evId = agendaRecord.getId();
+            eventInfo.calendarId = agendaRecord.getCalendarId();
+            eventInfo.title = agendaRecord.getSubject();
+            eventInfo.place = agendaRecord.getLocation();
+            eventInfo.startTime = agendaRecord.getStartTime();
+            eventInfo.endTime = agendaRecord.getEndTime();
+            eventInfo.alertTime = agendaRecord.getAlertTime();
+            eventInfo.rrule = agendaRecord.getRepeatRule();
+            eventInfo.note = agendaRecord.getNote();
+            
+            if (CalendarUtil.updateEvent(mContext, eventInfo)) {
+                responseBuilder.setResultCode(RESULT_CODE_OK);
+                responseBuilder.setResultMsg(RESULT_MSG_OK);
+            } else {
+                final String msg = "Error CalendarUtil.updateEvent";
+                Slog.e(msg);
+                responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
+                responseBuilder.setResultMsg(msg);
+            }
+        } else {
+            final String msg = "Error insufficient params: agenda";
+            Slog.e(msg);
+            responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
+            responseBuilder.setResultMsg(msg);
+        }
+        
+        Slog.d("updateAgenda X");
+        return responseBuilder.build();
+    }
+    
+    public CmdResponse deleteAgenda(CmdRequest cmdRequest) {
+        Slog.d("deleteAgenda E");
+        
+        boolean success = false;
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_DELETE_AGENDA);
+        
+        List<Long> recordIdList = cmdRequest.getRecordIdList();
+        if (recordIdList != null && recordIdList.size() > 0) {
+            for (long eventInfoId : recordIdList) {
+                success = CalendarUtil.deleteEvent(mContext, eventInfoId);
+                if (!success) {
+                    break;
+                }
+            }
+            
+            if (success) {
+                responseBuilder.setResultCode(RESULT_CODE_OK);
+                responseBuilder.setResultMsg(RESULT_MSG_OK);
+            } else {
+                final String msg = "Error CalendarUtil.deleteEvent";
+                Slog.e(msg);
+                responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
+                responseBuilder.setResultMsg(msg);
+            }
+            
+        } else {
+            final String msg = "Error insufficient params: record id list";
+            Slog.e(msg);
+            responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
+            responseBuilder.setResultMsg(msg);
+        }
+        Slog.d("deleteAgenda X");
+        return responseBuilder.build();
+    }
+    
+    // ------------------------------------------------------------------------
+    // Account related method
+    // ------------------------------------------------------------------------
 
+    public CmdResponse queryAccount(CmdRequest request) {
+        Slog.d("queryAccount E");
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_GET_ALL_ACCOUNTS);
+        
+        List<AccountInfo> accountInfoList = ContactUtil.getAllAccounts(mContext);
+        
+        AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+        for (AccountInfo accountInfo : accountInfoList) {
+            accountRecordBuilder.setName(accountInfo.accountName);
+            accountRecordBuilder.setType(accountInfo.accountType);
+            
+            responseBuilder.addAccountRecord(accountRecordBuilder.build());
+            accountRecordBuilder.clear();
+        }
+        Slog.d("queryAccount X");
+        return responseBuilder.build();
+    }
+    
+    // ------------------------------------------------------------------------
+    // Group related method
+    // ------------------------------------------------------------------------
+    
+    public CmdResponse queryGroup(CmdRequest request) {
+        Slog.d("queryGroup E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_GET_ALL_GROUPS);
+        
+        List<AccountInfo> accountInfoList = ContactUtil.getAllAccounts(mContext);
+        
+        AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+        GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
+        
+        
+        for (AccountInfo accountInfo : accountInfoList) {
+            List<GroupInfo> groupInfoList = ContactUtil.queryGroup(mContext, accountInfo);
+            
+            accountRecordBuilder.setName(accountInfo.accountName);
+            accountRecordBuilder.setType(accountInfo.accountType);
+            
+            for (GroupInfo groupInfo : groupInfoList) {
+                groupRecordBuilder.setId(groupInfo.grId);
+                groupRecordBuilder.setDataId(groupInfo.dataId);
+                groupRecordBuilder.setAccountInfo(accountRecordBuilder.build());
+                groupRecordBuilder.setName(groupInfo.name);
+                groupRecordBuilder.setNote(groupInfo.note);
+                groupRecordBuilder.setModifyTag(ModifyTag.SAME);
+                
+                responseBuilder.addGroupRecord(groupRecordBuilder.build());
+                
+                groupRecordBuilder.clear();
+            }
+            
+            accountRecordBuilder.clear();
+        }
+        Slog.d("queryGroup X");
+        return responseBuilder.build();
+    }
+    
+    // TODO:
+    public CmdResponse addGroup(CmdRequest request) {
+        Slog.d("addGroup E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_ADD_GROUP);
+        
+        if (request.hasGroupParams()) {
+            GroupRecord groupRecord = request.getGroupParams();
+            
+            
+            
+        } else {
+            
+        }
+        
+        Slog.d("addGroup X");
+        return responseBuilder.build();
+    }
+    
+    public CmdResponse updateGroup(CmdRequest request) {
+        Slog.d("updateGroup E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_EDIT_GROUP);
+        
+        if (request.hasGroupParams()) {
+            GroupRecord groupRecord = request.getGroupParams();
+            
+            
+            
+        } else {
+            
+        }
+        
+        Slog.d("updateGroup X");
+        return responseBuilder.build();
+    }
+    
+    public CmdResponse deleteGroup(CmdRequest request) {
+        Slog.d("deleteGroup E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_DELETE_GROUP);
+        
+        if (request.hasGroupParams()) {
+            GroupRecord groupRecord = request.getGroupParams();
+            
+            
+            
+        } else {
+            
+        }
+        
+        Slog.d("deleteGroup X");
+        return responseBuilder.build();
+    }
+    
+    // ------------------------------------------------------------------------
+    // Contact related method
+    // ------------------------------------------------------------------------
+    public CmdResponse queryContact(CmdRequest request) {
+        Slog.d("queryContact E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
+        
+        // default query all Contact
+        List<Contact> contactList = ContactUtil.getAllContacts(mContext);
+        
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+        AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+        GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
+        PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
+        
+        for (Contact contact : contactList) {
+            contactRecordBuilder.setId(contact.id);
+            contactRecordBuilder.setName(contact.name);
+            contactRecordBuilder.setNickname(contact.nickname);
+            contactRecordBuilder.setPhoto(ByteString.copyFrom(contact.photo));
+            contactRecordBuilder.setPhotoModifyTag(false);
+            
+            accountRecordBuilder.setName(contact.accountInfo.accountName);
+            accountRecordBuilder.setType(contact.accountInfo.accountType);
+            
+            contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
+            
+            // groups
+            for (GroupInfo groupInfo : contact.groupInfos) {
+                groupRecordBuilder.setId(groupInfo.grId); // only id is required
+                
+                contactRecordBuilder.addGroup(groupRecordBuilder.build());
+                
+                groupRecordBuilder.clear();
+            }
+            
+            // phones
+            for (PhoneInfo phoneInfo : contact.phoneInfos) {
+                phoneRecordBuilder.setId(phoneInfo.id);
+                phoneRecordBuilder.setType(toPhoneType(phoneInfo.type));
+                phoneRecordBuilder.setNumber(phoneInfo.number);
+                phoneRecordBuilder.setName(phoneInfo.customName);
+            }
+            
+            responseBuilder.addContactRecord(contactRecordBuilder.build());
+            
+            accountRecordBuilder.clear();
+            contactRecordBuilder.clear();
+        }
+        
+        Slog.d("queryContact X");
+        return responseBuilder.build();
+    }
+    
+    private PhoneType toPhoneType(int commonDataKindsPhoneType) {
+        switch (commonDataKindsPhoneType) {
+            case Phone.TYPE_MOBILE:
+                return PhoneType.MOBILE;
+            case Phone.TYPE_HOME:
+                return PhoneType.HOME;
+            case Phone.TYPE_WORK:
+                return PhoneType.WORK;
+            case Phone.TYPE_FAX_HOME:
+                return PhoneType.WORK_FAX;
+            case Phone.TYPE_FAX_WORK:
+                return PhoneType.HOME_FAX;
+            case Phone.TYPE_PAGER:
+                return PhoneType.PAGER;
+            case Phone.TYPE_MAIN:
+                return PhoneType.MAIN;
+            case Phone.TYPE_CUSTOM:
+                return PhoneType.USER_DEFINED;
+            default:
+                return PhoneType.OTHER;
+        }
+    }
+    
     // ------------------------------------------------------------------------
     // App related method
     // ------------------------------------------------------------------------

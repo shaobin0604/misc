@@ -1,10 +1,8 @@
 package pekall.pcsuite;
 
 option optimize_for = SPEED;
-
 option java_package = "com.pekall.pctool.protos";
 option java_outer_classname = "MsgDefProtos";
-
 //命令类型枚举定义
 enum CmdType
 {
@@ -95,6 +93,23 @@ message SMSRecord
 	optional bool				read_tag = 6;	//是否已读
 }
 
+//彩信幻灯片
+message SlideRecord
+{
+	optional int32	duration = 1;	//播放时长（秒）
+	optional string	text = 2;		//文本
+	optional bytes	image = 3;		//图片
+	optional bytes	audio = 4;		//音频
+	optional bytes	video = 5;		//视频
+}
+
+//彩信附件
+message AttachmentRecord
+{
+	optional string	name = 1;	// 文件名，包括后缀名
+	optional int32	size = 2;	// 文件大小，字节
+	optional bytes	content = 3; // 文件内容
+}
 
 //彩信消息记录定义
 message MMSRecord
@@ -104,8 +119,9 @@ message MMSRecord
 	optional string 			phone_num = 3;
 	optional string				subject = 4;	//主题
 	optional int64				msg_time = 5; 	//接收时间或发送时间
-	optional bytes 				pdu = 6; 		//彩信PDU数据包
-	optional bool				read_tag = 7;	//是否已读
+	optional bool				read_tag = 6;	//是否已读
+	repeated SlideRecord		slide = 7;	 	//幻灯片
+	repeated AttachmentRecord	attachment = 8; //附件文件
 }
 
 //编辑动作类型
@@ -141,11 +157,15 @@ message PhoneRecord
 	//电话类型
 	enum PhoneType
 	{
-		MOBILE = 0;			//移动电话
-		HOME = 1;			//家庭电话
-		WORK = 2;			//工作电话
-		FAX = 3;			//传真
-		OTHER = 4;			//其他
+		MOBILE = 0;			//手机
+		WORK = 1;			//单位
+		HOME = 2;			//住宅
+		MAIN = 3;			//总机
+		WORK_FAX = 4;		//单位传真
+		HOME_FAX = 5;		//住宅传真
+		PAGER = 6;			//寻呼机
+		OTHER = 7;			//其他
+		
 		USER_DEFINED = 99;	//用户自定义
 	}
 	optional int64		id = 1;
