@@ -156,6 +156,9 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
                 CmdResponse cmdResponse;
                 Slog.d("cmdType = " + cmdType);
                 switch (cmdType) {
+                    //
+                    // APP related methods
+                    //
                     case CMD_QUERY_APP: {
                         cmdResponse = mHandlerFacade.queryApp(cmdRequest);
                         break;
@@ -212,6 +215,26 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
                     //
                     case CMD_GET_ALL_ACCOUNTS: {
                         cmdResponse = mHandlerFacade.queryAccount(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_GET_ALL_GROUPS: {
+                        cmdResponse = mHandlerFacade.queryGroup(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_ADD_GROUP: {
+                        cmdResponse = mHandlerFacade.addGroup(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_EDIT_GROUP: {
+                        cmdResponse = mHandlerFacade.updateGroup(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_DELETE_GROUP: {
+                        cmdResponse = mHandlerFacade.deleteGroup(cmdRequest);
                         break;
                     }
                     

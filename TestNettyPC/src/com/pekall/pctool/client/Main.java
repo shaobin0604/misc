@@ -5,9 +5,7 @@ import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.example.tutorial.AddressBookProtos.Person;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoP;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
-import com.pekall.pctool.protos.MsgDefProtos.AppLocationType;
-import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
-import com.pekall.pctool.protos.MsgDefProtos.AppType;
+import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
@@ -54,7 +52,13 @@ public class Main {
         
 //        testGetAppInfoPList();
         
-        testQueryAppRecordList();
+//        testQueryApp();
+        
+//        testQuerySms();
+        
+        testQueryCalendar();
+        
+        testQueryAgenda();
         
         try {
             Thread.sleep(3000);
@@ -91,6 +95,97 @@ public class Main {
         }
     }
 
+    //
+    // APP
+    //
+    private static void testQueryApp() {
+        System.out.println("testQueryApp E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_QUERY_APP);
+
+        postCmdRequest(builder);
+        
+        System.out.println("testQueryApp X");
+    }
+    
+    //
+    // Sms
+    //
+    private static void testQuerySms() {
+        System.out.println("testQuerySms E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_QUERY_SMS);
+        
+        postCmdRequest(builder);
+        
+        System.out.println("testQuerySms X");
+    }
+    
+    //
+    // Calendar
+    //
+    private static void testQueryCalendar() {
+        System.out.println("testQueryCalendar E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_QUERY_CALENDAR);
+        
+        postCmdRequest(builder);
+        
+        System.out.println("testQueryCalendar X");
+    }
+    
+    private static void testQueryAgenda() {
+        System.out.println("testQueryAgenda E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_QUERY_AGENDAS);
+        
+        AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
+        
+        agendaRecordBuilder.setCalendarId(1);
+        
+        builder.setAgendaParams(agendaRecordBuilder);
+        
+        postCmdRequest(builder);
+        
+        System.out.println("testQueryAgenda X");
+    }
+
+    
+    private static void postCmdRequest(CmdRequest.Builder cmdRequestBuilder) {
+
+        HttpClient client = new DefaultHttpClient();
+        HttpPost post = new HttpPost("http://localhost:12580/rpc");
+        post.setHeader("Content-Type", "application/x-protobuf");
+        final CmdRequest cmdRequest = cmdRequestBuilder.build();
+        post.setEntity(new ByteArrayEntity(cmdRequest.toByteArray()));
+        try {
+            HttpResponse response = client.execute(post);
+            HttpEntity entity = response.getEntity();
+            CmdResponse cmdResponse = CmdResponse.parseFrom(entity.getContent());
+            EntityUtils.consume(entity);
+            
+            System.out.println(cmdResponse.toString());
+
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            post.releaseConnection();
+            client.getConnectionManager().shutdown();
+        }
+    }
+    
+    
+    // ------------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------------
     private static void testGetAddressBook() {
         HttpClient client = new DefaultHttpClient();
         HttpGet get = new HttpGet("http://localhost:12580/test");
@@ -142,40 +237,6 @@ public class Main {
             e.printStackTrace();
         } finally {
             get.releaseConnection();
-            client.getConnectionManager().shutdown();
-        }
-    }
-    
-    private static void testQueryAppRecordList() {
-        CmdRequest.Builder cmdRequest = CmdRequest.newBuilder();
-        cmdRequest.setType(CmdType.CMD_QUERY_APP);
-        
-        AppRecord.Builder appRecord = AppRecord.newBuilder();
-        appRecord.setType(AppType.SYSTEM);
-        appRecord.setLocation(AppLocationType.INNER);
-        
-        cmdRequest.setAppParams(appRecord);
-        
-        HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost("http://localhost:12580/rpc");
-        post.setHeader("Content-Type", "application/x-protobuf");
-        post.setEntity(new ByteArrayEntity(cmdRequest.build().toByteArray()));
-        try {
-            HttpResponse response = client.execute(post);
-            HttpEntity entity = response.getEntity();
-            CmdResponse cmdResponse = CmdResponse.parseFrom(entity.getContent());
-            EntityUtils.consume(entity);
-            
-            System.out.println(cmdResponse.toString());
-
-        } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } finally {
-            post.releaseConnection();
             client.getConnectionManager().shutdown();
         }
     }

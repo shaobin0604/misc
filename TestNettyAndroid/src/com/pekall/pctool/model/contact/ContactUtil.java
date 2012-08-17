@@ -6,6 +6,7 @@ import android.accounts.AccountManager;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -50,7 +51,7 @@ public class ContactUtil {
     public static final String SIM2_ACCOUNT_NAME = "contacts.account.name.sim2";
     public static final String SIM2_ACCOUNT_TYPE = "contacts.account.type.sim";
     public static final int USER_DEFINED = 99;
-    public static final int CONTACTS_COLLECT_FLAG = 1;
+    public static final int FAVORITE_CONTACT_FLAG = 1;
 
     /**
      * This utility class cannot be instantiated
@@ -838,6 +839,66 @@ public class ContactUtil {
         }
         return ls;
     }
+    
+    /**
+     * add a group
+     */
+    public static boolean addGroup(Context context, GroupInfo gi) {
+        Uri groupUri = ContactsContract.Groups.CONTENT_URI;
+        if (null == gi.accountInfo.accountName || "".equals(gi.accountInfo.accountName)) {
+            gi.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
+            gi.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
+        }
+        ContentValues cv = new ContentValues();
+        cv.put(Groups.ACCOUNT_NAME, gi.accountInfo.accountName);
+        cv.put(Groups.ACCOUNT_TYPE, gi.accountInfo.accountType);
+        cv.put(Groups.TITLE, gi.name);
+        cv.put(Groups.NOTES, gi.note);
+        Uri newUri = context.getContentResolver().insert(groupUri, cv);
+        if (Long.parseLong(newUri.getLastPathSegment()) > 0)
+            return true;
+        return false;
+    }
+
+    /**
+     * delete a group
+     */
+    public static boolean deleteGroup(Context context, long groupId) {
+        Uri groupUri = Uri.parse(ContactsContract.Groups.CONTENT_URI.toString() + "?"
+                + ContactsContract.CALLER_IS_SYNCADAPTER + "=true");
+        System.out.println(groupUri.toString());
+        // remeber if we let callerIsSyncAdapter=true we delete the group and
+        // contact's data
+        // if we don't attach importance to explain callerIsSyncAdapter
+        // we only make group's data dirty not really deleted and unless sync
+        // contact
+        int rows = context.getContentResolver().delete(groupUri, Groups._ID + "=" + groupId, null);
+        if (rows > 0)
+            return true;
+        return false;
+    }
+
+    /**
+     * edit a group
+     */
+    public static boolean updateGroup(Context context, GroupInfo gi) {
+        Uri groupUri = ContactsContract.Groups.CONTENT_URI;
+//        if (null == gi.accountInfo.accountName || "".equals(gi.accountInfo.accountName)) {
+//            gi.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
+//            gi.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
+//        }
+        ContentValues cv = new ContentValues();
+//        cv.put(Groups.ACCOUNT_NAME, gi.accountInfo.accountName);
+//        cv.put(Groups.ACCOUNT_TYPE, gi.accountInfo.accountType);
+        cv.put(Groups.TITLE, gi.name);
+        cv.put(Groups.NOTES, gi.note);
+        int rows = context.getContentResolver().update(groupUri, cv, Groups._ID + "=?", new String[] {
+            String.valueOf(gi.grId)
+        });
+        if (rows > 0)
+            return true;
+        return false;
+    }
 
     /**
      * get all contacts from one account's one group
@@ -879,7 +940,7 @@ public class ContactUtil {
         Cursor cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, new String[] {
                 RawContacts._ID
         }, where, new String[] {
-                String.valueOf(CONTACTS_COLLECT_FLAG)
+                String.valueOf(FAVORITE_CONTACT_FLAG)
         }, null);
         while (cursor.moveToNext()) {
             long rawContactId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
@@ -890,14 +951,16 @@ public class ContactUtil {
     }
 
     /**
+     * Check whether the specified contact belongs to any group
+     * 
      * @param context
      * @return
      */
-    public static boolean getGroupState(Context context, long rawId) {
+    public static boolean isContactBelongsToAnyGroup(Context context, long contactId) {
         Cursor cr = context.getContentResolver().query(Data.CONTENT_URI, new String[] {
                 Data.DATA1
         }, Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?", new String[] {
-                String.valueOf(rawId), GroupMembership.CONTENT_ITEM_TYPE
+                String.valueOf(contactId), GroupMembership.CONTENT_ITEM_TYPE
         }, null);
 
         int k = cr.getCount();
@@ -945,4 +1008,7 @@ public class ContactUtil {
 
         return null;
     }
+    
+    
+    
 }

@@ -2,6 +2,7 @@
 package com.pekall.pctool.model;
 
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.text.TextUtils;
 
 import android.content.Context;
 
@@ -46,7 +47,7 @@ import java.util.List;
 public class HandlerFacade {
     private static final int RESULT_CODE_OK = 0;
     private static final int RESULT_CODE_ERR_ILLEGAL_ARGUMENT = 100;
-    private static final int RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT = 101;
+    private static final int RESULT_CODE_ERR_INSUFFICIENT_PARAMS = 101;
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
 
     private static final String RESULT_MSG_OK = "OK";
@@ -59,13 +60,13 @@ public class HandlerFacade {
     }
 
     public CmdResponse defaultCmdResponse() {
-        CmdResponse.Builder response = CmdResponse.newBuilder();
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
 
-        response.setCmdType(CmdType.CMD_HEART_BEAT);
-        response.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
-        response.setResultMsg("Error insufficient params: cmd type");
+        responseBuilder.setCmdType(CmdType.CMD_HEART_BEAT);
+        
+        setResultErrorInsufficentParams(responseBuilder, "cmd type");
 
-        return response.build();
+        return responseBuilder.build();
     }
 
     // -------------------------------------------------------------------------
@@ -79,8 +80,6 @@ public class HandlerFacade {
 
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_SMS);
-        responseBuilder.setResultCode(RESULT_CODE_OK);
-        responseBuilder.setResultMsg(RESULT_MSG_OK);
 
         SMSRecord.Builder smsBuilder = SMSRecord.newBuilder();
 
@@ -91,8 +90,13 @@ public class HandlerFacade {
             smsBuilder.setMsgText(sms.body);
             smsBuilder.setMsgTime(sms.date);
             smsBuilder.setReadTag(sms.read == Sms.READ_TRUE);
+            
+            responseBuilder.addSmsRecord(smsBuilder.build());
+            
+            smsBuilder.clear();
         }
 
+        setResultOK(responseBuilder);
         Slog.d("querySms X");
         return responseBuilder.build();
     }
@@ -104,21 +108,14 @@ public class HandlerFacade {
 
         List<Long> recordIdList = request.getRecordIdList();
 
-        if (recordIdList == null || recordIdList.size() > 0) {
-            final String msg = "Error illegal argument, recordIdList is empty";
-            Slog.e(msg);
-            responseBuilder.setResultCode(RESULT_CODE_ERR_ILLEGAL_ARGUMENT);
-            responseBuilder.setResultMsg(msg);
-        } else {
+        if (recordIdList != null && recordIdList.size() > 0) {
             if (SmsUtil.deleteSms(mContext, recordIdList)) {
-                responseBuilder.setResultCode(RESULT_CODE_OK);
-                responseBuilder.setResultMsg(RESULT_MSG_OK);
+                setResultOK(responseBuilder);
             } else {
-                final String msg = "Error SmsUtil.deleteSms";
-                Slog.e(msg);
-                responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
-                responseBuilder.setResultMsg(msg);
+                setResultErrorInternal(responseBuilder, "SmsUtil.deleteSms");
             }
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "recordIdList");
         }
         Slog.d("deleteSms X");
         return responseBuilder.build();
@@ -146,19 +143,12 @@ public class HandlerFacade {
             sms.date = msgTime;
 
             if (SmsUtil.importSms(mContext, sms) > 0) {
-                responseBuilder.setResultCode(RESULT_CODE_OK);
-                responseBuilder.setResultMsg(RESULT_MSG_OK);
+                setResultOK(responseBuilder);
             } else {
-                final String msg = "Error SmsUtil.importSms";
-                Slog.e(msg);
-                responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
-                responseBuilder.setResultMsg(msg);
+                setResultErrorInternal(responseBuilder, "SmsUtil.importSms");
             }
         } else {
-            final String msg = "Error insufficient params: sms param";
-            Slog.e(msg);
-            responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
-            responseBuilder.setResultMsg(msg);
+            setResultErrorInsufficentParams(responseBuilder, "sms");
         }
         Slog.d("importSms X");
         return responseBuilder.build();
@@ -225,7 +215,6 @@ public class HandlerFacade {
         for (CalendarInfo info : calendarInfoList) {
             calendarRecordBuilder.setId(info.caId);
             calendarRecordBuilder.setName(info.name);
-            calendarRecordBuilder.setNote(info.note);
 
             accountRecordBuilder.setName(info.accountInfo.accountName);
             accountRecordBuilder.setType(info.accountInfo.accountType);
@@ -237,6 +226,8 @@ public class HandlerFacade {
             accountRecordBuilder.clear();
             calendarRecordBuilder.clear();
         }
+        
+        setResultOK(responseBuilder);
 
         Slog.d("queryCalendar X");
         return responseBuilder.build();
@@ -264,19 +255,29 @@ public class HandlerFacade {
         for (EventInfo eventInfo : eventInfoList) {
             agendaRecordBuilder.setId(eventInfo.evId);
             agendaRecordBuilder.setCalendarId(eventInfo.calendarId);
-            agendaRecordBuilder.setSubject(eventInfo.title);
-            agendaRecordBuilder.setLocation(eventInfo.place);
+            
+            if (!TextUtils.isEmpty(eventInfo.title)) {
+                agendaRecordBuilder.setSubject(eventInfo.title);
+            }
+            if (!TextUtils.isEmpty(eventInfo.place)) {
+                agendaRecordBuilder.setLocation(eventInfo.place);
+            }
             agendaRecordBuilder.setStartTime(eventInfo.startTime);
             agendaRecordBuilder.setEndTime(eventInfo.endTime);
-            agendaRecordBuilder.setRepeatRule(eventInfo.rrule);
+            if (!TextUtils.isEmpty(eventInfo.rrule)) {
+                agendaRecordBuilder.setRepeatRule(eventInfo.rrule);
+            }
             agendaRecordBuilder.setAlertTime(eventInfo.alertTime);
-            agendaRecordBuilder.setNote(eventInfo.note);
+            if (!TextUtils.isEmpty(eventInfo.note)) {
+                agendaRecordBuilder.setNote(eventInfo.note);
+            }
             
             responseBuilder.addAgendaRecord(agendaRecordBuilder.build());
             
             agendaRecordBuilder.clear();
         }
         
+        setResultOK(responseBuilder);
         
         Slog.d("queryAgenda X");
         
@@ -303,20 +304,13 @@ public class HandlerFacade {
             eventInfo.note = agendaRecord.getNote();
             
             if (CalendarUtil.addEvent(mContext, eventInfo)) {
-                responseBuilder.setResultCode(RESULT_CODE_OK);
-                responseBuilder.setResultMsg(RESULT_MSG_OK);
+                setResultOK(responseBuilder);
             } else {
-                final String msg = "Error CalendarUtil.addEvent";
-                Slog.e(msg);
-                responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
-                responseBuilder.setResultMsg(msg);
+                setResultErrorInternal(responseBuilder, "CalendarUtil.addEvent");
             }
             
         } else {
-            final String msg = "Error insufficient params: agenda param";
-            Slog.e(msg);
-            responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
-            responseBuilder.setResultMsg(msg);
+            setResultErrorInsufficentParams(responseBuilder, "agenda");
         }
         
         Slog.d("addAgenda X");
@@ -344,19 +338,12 @@ public class HandlerFacade {
             eventInfo.note = agendaRecord.getNote();
             
             if (CalendarUtil.updateEvent(mContext, eventInfo)) {
-                responseBuilder.setResultCode(RESULT_CODE_OK);
-                responseBuilder.setResultMsg(RESULT_MSG_OK);
+                setResultOK(responseBuilder);
             } else {
-                final String msg = "Error CalendarUtil.updateEvent";
-                Slog.e(msg);
-                responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
-                responseBuilder.setResultMsg(msg);
+                setResultErrorInternal(responseBuilder, "CalendarUtil.updateEvent");
             }
         } else {
-            final String msg = "Error insufficient params: agenda";
-            Slog.e(msg);
-            responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
-            responseBuilder.setResultMsg(msg);
+            setResultErrorInsufficentParams(responseBuilder, "agenda");
         }
         
         Slog.d("updateAgenda X");
@@ -380,20 +367,13 @@ public class HandlerFacade {
             }
             
             if (success) {
-                responseBuilder.setResultCode(RESULT_CODE_OK);
-                responseBuilder.setResultMsg(RESULT_MSG_OK);
+                setResultOK(responseBuilder);
             } else {
-                final String msg = "Error CalendarUtil.deleteEvent";
-                Slog.e(msg);
-                responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
-                responseBuilder.setResultMsg(msg);
+                setResultErrorInternal(responseBuilder, "CalendarUtil.deleteEvent");
             }
             
         } else {
-            final String msg = "Error insufficient params: record id list";
-            Slog.e(msg);
-            responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_ARGUMENT);
-            responseBuilder.setResultMsg(msg);
+            setResultErrorInsufficentParams(responseBuilder, "record id list");
         }
         Slog.d("deleteAgenda X");
         return responseBuilder.build();
@@ -418,6 +398,7 @@ public class HandlerFacade {
             responseBuilder.addAccountRecord(accountRecordBuilder.build());
             accountRecordBuilder.clear();
         }
+        setResultOK(responseBuilder);
         Slog.d("queryAccount X");
         return responseBuilder.build();
     }
@@ -459,11 +440,13 @@ public class HandlerFacade {
             
             accountRecordBuilder.clear();
         }
+        
+        setResultOK(responseBuilder);
+        
         Slog.d("queryGroup X");
         return responseBuilder.build();
     }
     
-    // TODO:
     public CmdResponse addGroup(CmdRequest request) {
         Slog.d("addGroup E");
         
@@ -473,10 +456,20 @@ public class HandlerFacade {
         if (request.hasGroupParams()) {
             GroupRecord groupRecord = request.getGroupParams();
             
+            GroupInfo groupInfo = new GroupInfo();
             
+            groupInfo.name = groupRecord.getName();
+            groupInfo.note = groupRecord.getNote();
+            groupInfo.accountInfo.accountName = groupRecord.getAccountInfo().getName();
+            groupInfo.accountInfo.accountType = groupRecord.getAccountInfo().getType();
             
+            if (ContactUtil.addGroup(mContext, groupInfo)) {
+                setResultOK(responseBuilder);
+            } else {
+                setResultErrorInternal(responseBuilder, "ContactUtil.addGroup");
+            }
         } else {
-            
+            setResultErrorInsufficentParams(responseBuilder, "group");
         }
         
         Slog.d("addGroup X");
@@ -492,10 +485,19 @@ public class HandlerFacade {
         if (request.hasGroupParams()) {
             GroupRecord groupRecord = request.getGroupParams();
             
+            GroupInfo groupInfo = new GroupInfo();
             
+            groupInfo.grId = groupRecord.getId();
+            groupInfo.name = groupRecord.getName();
+            groupInfo.note = groupRecord.getNote();
             
+            if (ContactUtil.updateGroup(mContext, groupInfo)) {
+                setResultOK(responseBuilder);
+            } else {
+                setResultErrorInternal(responseBuilder, "ContactUtil.updateGroup");
+            }
         } else {
-            
+            setResultErrorInsufficentParams(responseBuilder, "group");
         }
         
         Slog.d("updateGroup X");
@@ -508,14 +510,25 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_DELETE_GROUP);
         
-        if (request.hasGroupParams()) {
-            GroupRecord groupRecord = request.getGroupParams();
-            
-            
-            
+        List<Long> groupIdList = request.getRecordIdList();
+        boolean result = false;
+        if (groupIdList != null && groupIdList.size() > 0) {
+            for (long groupId : groupIdList) {
+                result = ContactUtil.deleteGroup(mContext, groupId);
+                
+                if (!result) {
+                    break;
+                }
+            }
+            if (result) {
+                setResultOK(responseBuilder);
+            } else {
+                setResultErrorInternal(responseBuilder, "ContactUtil.deleteGroup");
+            }
         } else {
-            
+            setResultErrorInsufficentParams(responseBuilder, "recordIdList");
         }
+            
         
         Slog.d("deleteGroup X");
         return responseBuilder.build();
@@ -605,12 +618,12 @@ public class HandlerFacade {
     // ------------------------------------------------------------------------
 
     public CmdResponse queryApp(CmdRequest request) {
+        Slog.d("queryApp E");
         List<AppInfo> appInfos = AppUtil.getAppInfos(mContext);
 
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_APP);
-        responseBuilder.setResultCode(RESULT_CODE_OK);
-        responseBuilder.setResultMsg(RESULT_MSG_OK);
+        
 
         AppRecord.Builder appBuilder = AppRecord.newBuilder();
 
@@ -630,12 +643,49 @@ public class HandlerFacade {
 
             appBuilder.clear();
         }
+        
+        setResultOK(responseBuilder);
 
+        Slog.d("queryApp X");
         return responseBuilder.build();
     }
 
     public InputStream exportApp(String packageName) throws AppNotExistException {
         return AppUtil.getAppApkStream(mContext, packageName);
+    }
+    
+    // -------------------------------------------------------------------------
+    // Utility code
+    // -------------------------------------------------------------------------
+    private static void setResultOK(CmdResponse.Builder responseBuilder) {
+        responseBuilder.setResultCode(RESULT_CODE_OK);
+        responseBuilder.setResultMsg(RESULT_MSG_OK);
+    }
+    
+    private static void setResultErrorInternal(CmdResponse.Builder responseBuilder, String methodCalled) {
+        StringBuilder msgBuilder = new StringBuilder("Error internal method call: ");
+        msgBuilder.append(methodCalled);
+        final String msg = msgBuilder.toString();
+
+        Slog.e(msg);
+        
+        responseBuilder.setResultCode(RESULT_CODE_ERR_INTERNAL);
+        responseBuilder.setResultMsg(msg);
+    }
+    
+    private static void setResultErrorInsufficentParams(CmdResponse.Builder responseBuilder, String... params) {
+        StringBuilder msgBuilder = new StringBuilder("Error insufficient params: [");
+        for (String param : params) {
+            msgBuilder.append(param);
+            msgBuilder.append(", ");
+        }
+        msgBuilder.append(']');
+        final String msg = msgBuilder.toString();
+        
+        Slog.e(msg);
+        
+        responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_PARAMS);
+        responseBuilder.setResultMsg(msg);
     }
 
     // -------------------------------------------------------------------------

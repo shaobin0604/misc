@@ -274,7 +274,6 @@ message CalendarRecord
 	optional int64  		id = 1;
 	optional AccountRecord 	account_info = 2;
 	optional string 		name = 3;
-	optional string 		note = 4;
 }
 
 //日程、事件

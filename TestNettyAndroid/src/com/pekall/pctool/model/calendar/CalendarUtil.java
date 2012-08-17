@@ -1,6 +1,8 @@
 
 package com.pekall.pctool.model.calendar;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -12,6 +14,7 @@ import android.provider.CalendarContract.Calendars;
 import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Reminders;
 import android.text.TextUtils;
+import android.text.format.Time;
 
 import com.pekall.pctool.model.account.AccountInfo;
 
@@ -21,15 +24,19 @@ import java.util.TimeZone;
 
 public class CalendarUtil {
 
-    private static final String TIME_ZONE = TimeZone.getDefault().toString();
-    
+    private static final String TIME_ZONE = "Asia/Shanghai";
+
     public static final int INVALID_CALENDAR_ID = -1;
-    
+
     /**
      * account
      */
     private static final int PROJECTION_ACCOUNT_NAME_INDEX = 2;
     private static final int PROJECTION_ACCOUNT_TYPE_INDEX = 3;
+    private static final String CALENDAR_ACCOUNT_NAME = "LocalAccount";
+    private static final String CALENDAR_ACCOUNT_TYPE = "com.android.calendar.AccountType";
+    private static final String CALENDAR_DEFAULT_NAME = "local calendar";
+
     /**
      * Events
      */
@@ -199,7 +206,7 @@ public class CalendarUtil {
     public static boolean deleteEvent(Context context, EventInfo eventInfo) {
         return deleteEvent(context, eventInfo.evId);
     }
-    
+
     public static boolean deleteEvent(Context context, long eventInfoId) {
         ContentResolver cr = context.getContentResolver();
         Uri deleteUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfoId);
@@ -217,7 +224,7 @@ public class CalendarUtil {
     public static int[] getReminderTime(Context context, EventInfo eventInfo) {
         return getReminderTime(context, eventInfo.evId);
     }
-    
+
     public static int[] getReminderTime(Context context, long eventInfoId) {
         ContentResolver cr = context.getContentResolver();
         String selection = Reminders.EVENT_ID + " = ? ";
@@ -314,30 +321,7 @@ public class CalendarUtil {
     }
 
     /**
-     * add calendar not work it needs sync_adapter
-     * 
-     * @param context
-     */
-    public static void createNewCalendar(Context context) {
-        ContentValues calendar = new ContentValues();
-        calendar.put("_sync_account", sync_account); // My account
-        calendar.put("_sync_account_type", "com.google");
-        // calendar.put("_sync_id", 1); // null
-        calendar.put("name", "ccc");
-        calendar.put("displayName", "xxxxxx");
-        calendar.put("hidden", 0);
-        calendar.put("color", 0xFF008080);
-        calendar.put("access_level", 700);
-        // calendar.put("selected", 0); // 0
-        calendar.put("sync_events", 1);
-        calendar.put("timezone", "Europe/Paris");
-        calendar.put("ownerAccount", sync_account);
-        Uri calendarUri = Calendars.CONTENT_URI;
-        context.getContentResolver().insert(calendarUri, calendar);
-    }
-
-    /**
-     * delete a calendar
+     * delete a calendar then will delete all events
      */
     public static boolean deleteCalendar(Context context, long calendarId) {
         Uri uri = ContentUris.withAppendedId(Calendars.CONTENT_URI, calendarId);
@@ -345,6 +329,49 @@ public class CalendarUtil {
         if (rows > 0)
             return true;
         return false;
-
     }
+
+    /**
+     * add a calendar if has no calendars add a calendar and add a account These
+     * fields are only writable by a sync adapter. To modify them the caller
+     * must include CALLER_IS_SYNCADAPTER
+     * 
+     * @param context
+     * @param calendarRecord
+     * @return
+     */
+    public static Uri addCalendar(Context context, CalendarInfo calendarInfo) {
+        ContentValues values = new ContentValues();
+        AccountManager accountManager = (AccountManager) context
+                .getSystemService(Context.ACCOUNT_SERVICE);
+        Account[] accounts = accountManager.getAccounts();
+        String name = CALENDAR_DEFAULT_NAME;
+        String type = CALENDAR_ACCOUNT_TYPE;
+        // if have accounts
+        if (accounts != null && accounts.length > 0) {
+            name = accounts[0].name;
+            type = accounts[0].type;
+        }
+        values.put(Calendars.ACCOUNT_NAME, name);
+        values.put(Calendars.ACCOUNT_TYPE, type);
+        values.put(Calendars._SYNC_ID, "0");
+        Time time = new Time("UTC");
+        time.setToNow();
+        values.put(Calendars.CAL_SYNC1, "LOCAL://0.0");
+        values.put(Calendars.DIRTY, 0);
+        values.put(Calendars.NAME, calendarInfo.name);
+        values.put(Calendars.CALENDAR_DISPLAY_NAME, calendarInfo.name);
+        values.put(Calendars.CALENDAR_COLOR, -14069085);
+        values.put(Calendars.CALENDAR_ACCESS_LEVEL, 700);
+        values.put(Calendars.CALENDAR_LOCATION, "location");
+        values.put(Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().getID());
+        values.put(Calendars.OWNER_ACCOUNT, calendarInfo.name);
+        final Uri calendarUri = Calendars.CONTENT_URI.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(Calendars.ACCOUNT_NAME, name)
+                .appendQueryParameter(Calendars.ACCOUNT_TYPE, type)
+                .build();
+        return context.getContentResolver().insert(calendarUri, values);
+    }
+
 }

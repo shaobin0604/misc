@@ -12333,10 +12333,6 @@ public final class MsgDefProtos {
     // optional string name = 3;
     boolean hasName();
     String getName();
-    
-    // optional string note = 4;
-    boolean hasNote();
-    String getNote();
   }
   public static final class CalendarRecord extends
       com.google.protobuf.GeneratedMessage
@@ -12422,43 +12418,10 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional string note = 4;
-    public static final int NOTE_FIELD_NUMBER = 4;
-    private java.lang.Object note_;
-    public boolean hasNote() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    public String getNote() {
-      java.lang.Object ref = note_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
-          note_ = s;
-        }
-        return s;
-      }
-    }
-    private com.google.protobuf.ByteString getNoteBytes() {
-      java.lang.Object ref = note_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
-        note_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    
     private void initFields() {
       id_ = 0L;
       accountInfo_ = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance();
       name_ = "";
-      note_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -12481,9 +12444,6 @@ public final class MsgDefProtos {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getNameBytes());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getNoteBytes());
-      }
       getUnknownFields().writeTo(output);
     }
     
@@ -12504,10 +12464,6 @@ public final class MsgDefProtos {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, getNameBytes());
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getNoteBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -12644,8 +12600,6 @@ public final class MsgDefProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
-        note_ = "";
-        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       
@@ -12700,10 +12654,6 @@ public final class MsgDefProtos {
           to_bitField0_ |= 0x00000004;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.note_ = note_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -12728,9 +12678,6 @@ public final class MsgDefProtos {
         }
         if (other.hasName()) {
           setName(other.getName());
-        }
-        if (other.hasNote()) {
-          setNote(other.getNote());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -12780,11 +12727,6 @@ public final class MsgDefProtos {
             case 26: {
               bitField0_ |= 0x00000004;
               name_ = input.readBytes();
-              break;
-            }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              note_ = input.readBytes();
               break;
             }
           }
@@ -12937,42 +12879,6 @@ public final class MsgDefProtos {
       void setName(com.google.protobuf.ByteString value) {
         bitField0_ |= 0x00000004;
         name_ = value;
-        onChanged();
-      }
-      
-      // optional string note = 4;
-      private java.lang.Object note_ = "";
-      public boolean hasNote() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      public String getNote() {
-        java.lang.Object ref = note_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
-          note_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
-      }
-      public Builder setNote(String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
-        note_ = value;
-        onChanged();
-        return this;
-      }
-      public Builder clearNote() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        note_ = getDefaultInstance().getNote();
-        onChanged();
-        return this;
-      }
-      void setNote(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000008;
-        note_ = value;
         onChanged();
       }
       
@@ -18120,57 +18026,57 @@ public final class MsgDefProtos {
       "l.pcsuite.EmailRecord\022$\n\002im\030\n \003(\0132\030.peka" +
       "ll.pcsuite.IMRecord\022.\n\007address\030\013 \003(\0132\035.p" +
       "ekall.pcsuite.AddressRecord\022&\n\003org\030\014 \003(\013",
-      "2\031.pekall.pcsuite.OrgRecord\"m\n\016CalendarR" +
+      "2\031.pekall.pcsuite.OrgRecord\"_\n\016CalendarR" +
       "ecord\022\n\n\002id\030\001 \001(\003\0223\n\014account_info\030\002 \001(\0132" +
       "\035.pekall.pcsuite.AccountRecord\022\014\n\004name\030\003" +
-      " \001(\t\022\014\n\004note\030\004 \001(\t\"\257\001\n\014AgendaRecord\022\n\n\002i" +
-      "d\030\001 \001(\003\022\023\n\013calendar_id\030\002 \001(\003\022\017\n\007subject\030" +
-      "\003 \001(\t\022\020\n\010location\030\004 \001(\t\022\022\n\nstart_time\030\005 " +
-      "\001(\003\022\020\n\010end_time\030\006 \001(\003\022\023\n\013repeat_rule\030\007 \001" +
-      "(\t\022\022\n\nalert_time\030\010 \001(\005\022\014\n\004note\030\t \001(\t\"\366\002\n" +
-      "\nCmdRequest\022)\n\010cmd_type\030\001 \002(\0162\027.pekall.p" +
-      "csuite.CmdType\022\021\n\trecord_id\030\002 \003(\003\022-\n\nsms",
-      "_params\030\003 \001(\0132\031.pekall.pcsuite.SMSRecord" +
-      "\022-\n\nmms_params\030\004 \001(\0132\031.pekall.pcsuite.MM" +
-      "SRecord\0221\n\014group_params\030\005 \001(\0132\033.pekall.p" +
-      "csuite.GroupRecord\0225\n\016contact_params\030\006 \001" +
-      "(\0132\035.pekall.pcsuite.ContactRecord\0223\n\rage" +
-      "nda_params\030\007 \001(\0132\034.pekall.pcsuite.Agenda" +
-      "Record\022-\n\napp_params\030\010 \001(\0132\031.pekall.pcsu" +
-      "ite.AppRecord\"\375\003\n\013CmdResponse\022)\n\010cmd_typ" +
-      "e\030\001 \002(\0162\027.pekall.pcsuite.CmdType\022\023\n\013resu" +
-      "lt_code\030\002 \002(\005\022\022\n\nresult_msg\030\003 \002(\t\022-\n\nsms",
-      "_record\030\004 \003(\0132\031.pekall.pcsuite.SMSRecord" +
-      "\022-\n\nmms_record\030\005 \003(\0132\031.pekall.pcsuite.MM" +
-      "SRecord\0225\n\016contact_record\030\006 \003(\0132\035.pekall" +
-      ".pcsuite.ContactRecord\0227\n\017calendar_recor" +
-      "d\030\007 \003(\0132\036.pekall.pcsuite.CalendarRecord\022" +
-      "3\n\ragenda_record\030\010 \003(\0132\034.pekall.pcsuite." +
-      "AgendaRecord\022-\n\napp_record\030\t \003(\0132\031.pekal" +
-      "l.pcsuite.AppRecord\0225\n\016account_record\030\n " +
-      "\003(\0132\035.pekall.pcsuite.AccountRecord\0221\n\014gr" +
-      "oup_record\030\013 \003(\0132\033.pekall.pcsuite.GroupR",
-      "ecord*\365\004\n\007CmdType\022\022\n\016CMD_HEART_BEAT\020\000\022\021\n" +
-      "\rCMD_QUERY_SMS\020\001\022\022\n\016CMD_DELETE_SMS\020\002\022\020\n\014" +
-      "CMD_SEND_SMS\020\003\022\022\n\016CMD_IMPORT_SMS\020\004\022\021\n\rCM" +
-      "D_QUERY_MMS\020\005\022\022\n\016CMD_DELETE_MMS\020\006\022\020\n\014CMD" +
-      "_SEND_MMS\020\007\022\022\n\016CMD_IMPORT_MMS\020\010\022\031\n\025CMD_R" +
-      "EICEIVED_NEW_MSG\020\t\022\026\n\022CMD_GET_ALL_GROUPS" +
-      "\020\n\022\021\n\rCMD_ADD_GROUP\020\013\022\024\n\020CMD_DELETE_GROU" +
-      "P\020\014\022\022\n\016CMD_EDIT_GROUP\020\r\022\030\n\024CMD_GET_ALL_A" +
-      "CCOUNTS\020\016\022\026\n\022CMD_QUERY_CONTACTS\020\017\022\023\n\017CMD" +
-      "_ADD_CONTACT\020\020\022\026\n\022CMD_DELETE_CONTACT\020\021\022\024",
-      "\n\020CMD_EDIT_CONTACT\020\022\022\025\n\021CMD_SYNC_CONTACT" +
-      "S\020\023\022\026\n\022CMD_QUERY_CALENDAR\020\024\022\025\n\021CMD_QUERY" +
-      "_AGENDAS\020\025\022\022\n\016CMD_ADD_AGENDA\020\026\022\025\n\021CMD_DE" +
-      "LETE_AGENDA\020\027\022\023\n\017CMD_EDIT_AGENDA\020\030\022\024\n\020CM" +
-      "D_SYNC_AGENDAS\020\031\022\021\n\rCMD_QUERY_APP\020\032\022\022\n\016C" +
-      "MD_UPLOAD_APK\020\033\022\024\n\020CMD_DOWNLOAD_APK\020\034*b\n" +
-      "\rMsgOriginType\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001\022\013\n\007SE" +
-      "NTBOX\020\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006OUTBOX\020\004\022\n\n\006FAI" +
-      "LED\020\005\022\n\n\006QUEUED\020\006*1\n\tModifyTag\022\010\n\004SAME\020\000" +
-      "\022\007\n\003ADD\020\001\022\007\n\003DEL\020\002\022\010\n\004EDIT\020\003B*\n\030com.peka",
-      "ll.pctool.protosB\014MsgDefProtosH\001"
+      " \001(\t\"\257\001\n\014AgendaRecord\022\n\n\002id\030\001 \001(\003\022\023\n\013cal" +
+      "endar_id\030\002 \001(\003\022\017\n\007subject\030\003 \001(\t\022\020\n\010locat" +
+      "ion\030\004 \001(\t\022\022\n\nstart_time\030\005 \001(\003\022\020\n\010end_tim" +
+      "e\030\006 \001(\003\022\023\n\013repeat_rule\030\007 \001(\t\022\022\n\nalert_ti" +
+      "me\030\010 \001(\005\022\014\n\004note\030\t \001(\t\"\366\002\n\nCmdRequest\022)\n" +
+      "\010cmd_type\030\001 \002(\0162\027.pekall.pcsuite.CmdType" +
+      "\022\021\n\trecord_id\030\002 \003(\003\022-\n\nsms_params\030\003 \001(\0132",
+      "\031.pekall.pcsuite.SMSRecord\022-\n\nmms_params" +
+      "\030\004 \001(\0132\031.pekall.pcsuite.MMSRecord\0221\n\014gro" +
+      "up_params\030\005 \001(\0132\033.pekall.pcsuite.GroupRe" +
+      "cord\0225\n\016contact_params\030\006 \001(\0132\035.pekall.pc" +
+      "suite.ContactRecord\0223\n\ragenda_params\030\007 \001" +
+      "(\0132\034.pekall.pcsuite.AgendaRecord\022-\n\napp_" +
+      "params\030\010 \001(\0132\031.pekall.pcsuite.AppRecord\"" +
+      "\375\003\n\013CmdResponse\022)\n\010cmd_type\030\001 \002(\0162\027.peka" +
+      "ll.pcsuite.CmdType\022\023\n\013result_code\030\002 \002(\005\022" +
+      "\022\n\nresult_msg\030\003 \002(\t\022-\n\nsms_record\030\004 \003(\0132",
+      "\031.pekall.pcsuite.SMSRecord\022-\n\nmms_record" +
+      "\030\005 \003(\0132\031.pekall.pcsuite.MMSRecord\0225\n\016con" +
+      "tact_record\030\006 \003(\0132\035.pekall.pcsuite.Conta" +
+      "ctRecord\0227\n\017calendar_record\030\007 \003(\0132\036.peka" +
+      "ll.pcsuite.CalendarRecord\0223\n\ragenda_reco" +
+      "rd\030\010 \003(\0132\034.pekall.pcsuite.AgendaRecord\022-" +
+      "\n\napp_record\030\t \003(\0132\031.pekall.pcsuite.AppR" +
+      "ecord\0225\n\016account_record\030\n \003(\0132\035.pekall.p" +
+      "csuite.AccountRecord\0221\n\014group_record\030\013 \003" +
+      "(\0132\033.pekall.pcsuite.GroupRecord*\365\004\n\007CmdT",
+      "ype\022\022\n\016CMD_HEART_BEAT\020\000\022\021\n\rCMD_QUERY_SMS" +
+      "\020\001\022\022\n\016CMD_DELETE_SMS\020\002\022\020\n\014CMD_SEND_SMS\020\003" +
+      "\022\022\n\016CMD_IMPORT_SMS\020\004\022\021\n\rCMD_QUERY_MMS\020\005\022" +
+      "\022\n\016CMD_DELETE_MMS\020\006\022\020\n\014CMD_SEND_MMS\020\007\022\022\n" +
+      "\016CMD_IMPORT_MMS\020\010\022\031\n\025CMD_REICEIVED_NEW_M" +
+      "SG\020\t\022\026\n\022CMD_GET_ALL_GROUPS\020\n\022\021\n\rCMD_ADD_" +
+      "GROUP\020\013\022\024\n\020CMD_DELETE_GROUP\020\014\022\022\n\016CMD_EDI" +
+      "T_GROUP\020\r\022\030\n\024CMD_GET_ALL_ACCOUNTS\020\016\022\026\n\022C" +
+      "MD_QUERY_CONTACTS\020\017\022\023\n\017CMD_ADD_CONTACT\020\020" +
+      "\022\026\n\022CMD_DELETE_CONTACT\020\021\022\024\n\020CMD_EDIT_CON",
+      "TACT\020\022\022\025\n\021CMD_SYNC_CONTACTS\020\023\022\026\n\022CMD_QUE" +
+      "RY_CALENDAR\020\024\022\025\n\021CMD_QUERY_AGENDAS\020\025\022\022\n\016" +
+      "CMD_ADD_AGENDA\020\026\022\025\n\021CMD_DELETE_AGENDA\020\027\022" +
+      "\023\n\017CMD_EDIT_AGENDA\020\030\022\024\n\020CMD_SYNC_AGENDAS" +
+      "\020\031\022\021\n\rCMD_QUERY_APP\020\032\022\022\n\016CMD_UPLOAD_APK\020" +
+      "\033\022\024\n\020CMD_DOWNLOAD_APK\020\034*b\n\rMsgOriginType" +
+      "\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001\022\013\n\007SENTBOX\020\002\022\014\n\010DRA" +
+      "FTBOX\020\003\022\n\n\006OUTBOX\020\004\022\n\n\006FAILED\020\005\022\n\n\006QUEUE" +
+      "D\020\006*1\n\tModifyTag\022\010\n\004SAME\020\000\022\007\n\003ADD\020\001\022\007\n\003D" +
+      "EL\020\002\022\010\n\004EDIT\020\003B*\n\030com.pekall.pctool.prot",
+      "osB\014MsgDefProtosH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -18286,7 +18192,7 @@ public final class MsgDefProtos {
           internal_static_pekall_pcsuite_CalendarRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_CalendarRecord_descriptor,
-              new java.lang.String[] { "Id", "AccountInfo", "Name", "Note", },
+              new java.lang.String[] { "Id", "AccountInfo", "Name", },
               com.pekall.pctool.protos.MsgDefProtos.CalendarRecord.class,
               com.pekall.pctool.protos.MsgDefProtos.CalendarRecord.Builder.class);
           internal_static_pekall_pcsuite_AgendaRecord_descriptor =
