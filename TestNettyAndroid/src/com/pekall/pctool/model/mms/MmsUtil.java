@@ -1,9 +1,22 @@
 
 package com.pekall.pctool.model.mms;
 
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.xml.sax.Attributes;
+
+import android.content.ContentProviderOperation;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
@@ -11,17 +24,9 @@ import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
 
+import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.mms.Mms.Attachment;
 import com.pekall.pctool.model.mms.Mms.Slide;
-
-import org.xml.sax.Attributes;
-
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 
 public class MmsUtil {
 
@@ -32,6 +37,8 @@ public class MmsUtil {
     static final Uri SENT_URI = Uri.parse("content://mms/sent");
     static final Uri OUTBOX_URI = Uri.parse("content://mms/outbox");
     static final Uri DRAFT_URI = Uri.parse("content://mms/draft");
+
+	private static final String MMS_AUTHORITY = "mms";
 
     static Slide slideForParse;
     static ArrayList<String> slideTxtFileNames;
@@ -125,6 +132,23 @@ public class MmsUtil {
         return cxt.getContentResolver().delete(MAIN_MMS_URI, "_id=" + rowId, null) == 1;
     }
 
+    public static boolean delete(Context context, List<Long> rowIds) {
+    	ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+
+        for (long rowId : rowIds) {
+            ops.add(ContentProviderOperation.newDelete(Uri.parse("content://mms/" + rowId)).build());
+        }
+        try {
+            context.getContentResolver().applyBatch(MMS_AUTHORITY, ops);
+            return true;
+        } catch (RemoteException e) {
+            Slog.e("Error when deleteMms", e);
+        } catch (OperationApplicationException e) {
+            Slog.e("Error when deleteMms", e);
+        }
+
+        return false;
+    }
 
     private static Uri mapBoxUri(MmsBox mmsBox) {
         switch (mmsBox) {
