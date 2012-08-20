@@ -1,9 +1,12 @@
 package com.pekall.pctool.model;
 
-import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.text.TextUtils;
-
 import android.content.Context;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.Im;
+import android.provider.ContactsContract.CommonDataKinds.Organization;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import android.text.TextUtils;
 
 import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.example.tutorial.AddressBookProtos.Person;
@@ -17,6 +20,10 @@ import com.pekall.pctool.model.calendar.CalendarInfo;
 import com.pekall.pctool.model.calendar.CalendarUtil;
 import com.pekall.pctool.model.calendar.EventInfo;
 import com.pekall.pctool.model.contact.Contact;
+import com.pekall.pctool.model.contact.Contact.AddressInfo;
+import com.pekall.pctool.model.contact.Contact.EmailInfo;
+import com.pekall.pctool.model.contact.Contact.ImInfo;
+import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.ContactUtil;
 import com.pekall.pctool.model.contact.GroupInfo;
@@ -26,6 +33,8 @@ import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
+import com.pekall.pctool.protos.MsgDefProtos.AddressRecord;
+import com.pekall.pctool.protos.MsgDefProtos.AddressRecord.AddressType;
 import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppLocationType;
@@ -35,14 +44,22 @@ import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
 import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
+import com.pekall.pctool.protos.MsgDefProtos.EmailRecord;
+import com.pekall.pctool.protos.MsgDefProtos.EmailRecord.EmailType;
 import com.pekall.pctool.protos.MsgDefProtos.GroupRecord;
+import com.pekall.pctool.protos.MsgDefProtos.IMRecord;
+import com.pekall.pctool.protos.MsgDefProtos.IMRecord.IMType;
+import com.pekall.pctool.protos.MsgDefProtos.MMSRecord;
 import com.pekall.pctool.protos.MsgDefProtos.ModifyTag;
 import com.pekall.pctool.protos.MsgDefProtos.MsgOriginType;
+import com.pekall.pctool.protos.MsgDefProtos.OrgRecord;
+import com.pekall.pctool.protos.MsgDefProtos.OrgRecord.OrgType;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 import com.pekall.pctool.protos.MsgDefProtos.SMSRecord;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HandlerFacade {
@@ -68,7 +85,24 @@ public class HandlerFacade {
 
 		return responseBuilder.build();
 	}
-
+	
+	// ------------------------------------------------------------------------
+	// Heartbeat
+	// ------------------------------------------------------------------------
+	
+	public CmdResponse heartbeat(CmdRequest request) {
+	    Slog.d("heartbeat E");
+	    
+	    CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_HEART_BEAT);
+        
+        setResultOK(responseBuilder);
+	    
+	    Slog.d("heartbeat X");
+	    
+	    return responseBuilder.build();
+	}
+	
 	// -------------------------------------------------------------------------
 	// Sms related method
 	// -------------------------------------------------------------------------
@@ -76,13 +110,13 @@ public class HandlerFacade {
 	public CmdResponse querySms(CmdRequest request) {
 		Slog.d("querySms E");
 
-		List<Sms> smsList = SmsUtil.querySmsList(mContext);
-
 		CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
 		responseBuilder.setCmdType(CmdType.CMD_QUERY_SMS);
 
 		SMSRecord.Builder smsBuilder = SMSRecord.newBuilder();
 
+		List<Sms> smsList = SmsUtil.querySmsList(mContext);
+		
 		for (Sms sms : smsList) {
 			smsBuilder.setMsgId(sms.rowId);
 			smsBuilder.setMsgOrigin(smsTypeToMsgOriginType(sms.type));
@@ -205,15 +239,58 @@ public class HandlerFacade {
 	public CmdResponse queryMms(CmdRequest request) {
 		Slog.d("queryMms E");
 
-		// TODO:
-
 		CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
-		responseBuilder.setCmdType(CmdType.CMD_QUERY_CALENDAR);
+		responseBuilder.setCmdType(CmdType.CMD_QUERY_MMS);
+		
+		MMSRecord.Builder mmsRecordBuilder = MMSRecord.newBuilder();
+		
+		List<Mms> mmsList = MmsUtil.query(mContext);
+		
+		for (Mms mms : mmsList) {
+		    mmsRecordBuilder.setMsgId(mms.rowId);
+		    mmsRecordBuilder.setMsgOrigin(value)
+		}
 
 		Slog.d("queryMms X");
 
 		return responseBuilder.build();
 	}
+	
+	private static int msgOriginTypeToMmsType(MsgOriginType msgOriginType) {
+        switch (msgOriginType) {
+        case ANY:
+            return Mms.MESSAGE_BOX_ALL;
+        case INBOX:
+            return Mms.MESSAGE_BOX_INBOX;
+        case SENTBOX:
+            return Mms.MESSAGE_BOX_SENT;
+        case DRAFTBOX:
+            return Mms.MESSAGE_BOX_DRAFTS;
+        case OUTBOX:
+            return Mms.MESSAGE_BOX_OUTBOX;
+
+        default:
+            throw new IllegalArgumentException("Unkown MsgOriginType: "
+                    + msgOriginType);
+        }
+    }
+
+    private static MsgOriginType mmsTypeToMsgOriginType(int mmsType) {
+        switch (mmsType) {
+        case Mms.MESSAGE_BOX_ALL:
+            return MsgOriginType.ANY;
+        case Mms.MESSAGE_BOX_INBOX:
+            return MsgOriginType.INBOX;
+        case Mms.MESSAGE_BOX_SENT:
+            return MsgOriginType.SENTBOX;
+        case Mms.MESSAGE_BOX_DRAFTS:
+            return MsgOriginType.DRAFTBOX;
+        case Mms.MESSAGE_BOX_OUTBOX:
+            return MsgOriginType.OUTBOX;
+        default:
+            throw new IllegalArgumentException("Unknown mmsType: " + mmsType);
+        }
+    }
 
 	public CmdResponse deleteMms(CmdRequest request) {
 		Slog.d("delete Mms E");
@@ -598,6 +675,10 @@ public class HandlerFacade {
 		AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
 		GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
 		PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
+		EmailRecord.Builder emailRecordBuilder = EmailRecord.newBuilder();
+		IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
+		AddressRecord.Builder addressRecordBuilder = AddressRecord.newBuilder();
+		OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
 
 		for (Contact contact : contactList) {
 			contactRecordBuilder.setId(contact.id);
@@ -611,7 +692,7 @@ public class HandlerFacade {
 
 			contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
 
-			// groups
+			// group
 			for (GroupInfo groupInfo : contact.groupInfos) {
 				groupRecordBuilder.setId(groupInfo.grId); // only id is required
 
@@ -620,12 +701,93 @@ public class HandlerFacade {
 				groupRecordBuilder.clear();
 			}
 
-			// phones
+			// phone
 			for (PhoneInfo phoneInfo : contact.phoneInfos) {
 				phoneRecordBuilder.setId(phoneInfo.id);
 				phoneRecordBuilder.setType(toPhoneType(phoneInfo.type));
 				phoneRecordBuilder.setNumber(phoneInfo.number);
-				phoneRecordBuilder.setName(phoneInfo.customName);
+				
+				// the name is optional
+				if (phoneInfo.type == Phone.TYPE_CUSTOM) {
+				    phoneRecordBuilder.setName(phoneInfo.customName);
+				}
+				
+				phoneRecordBuilder.setModifyTag(ModifyTag.SAME);
+				
+				contactRecordBuilder.addPhone(phoneRecordBuilder.build());
+				
+				phoneRecordBuilder.clear();
+			}
+			
+			// email
+			for (EmailInfo emailInfo : contact.emailInfos) {
+			    emailRecordBuilder.setId(emailInfo.id);
+			    emailRecordBuilder.setType(toEmailType(emailInfo.type));
+			    emailRecordBuilder.setEmail(emailInfo.email);
+			    
+			    // the name is optional
+			    if (emailInfo.type == Email.TYPE_CUSTOM) {
+			        emailRecordBuilder.setName(emailInfo.customName);
+			    }
+			    
+			    emailRecordBuilder.setModifyTag(ModifyTag.SAME);
+			    
+			    contactRecordBuilder.addEmail(emailRecordBuilder.build());
+			    
+			    emailRecordBuilder.clear();
+			}
+			
+			// im
+			for (ImInfo imInfo : contact.imInfos) {
+			    imRecordBuilder.setId(imInfo.id);
+			    imRecordBuilder.setType(toImType(imInfo.type));
+			    imRecordBuilder.setAccount(imInfo.account);
+			    
+			    if (imInfo.type == Im.PROTOCOL_CUSTOM) {
+			        imRecordBuilder.setName(imInfo.customName);
+			    }
+			    
+			    imRecordBuilder.setModifyTag(ModifyTag.SAME);
+			    
+			    contactRecordBuilder.addIm(imRecordBuilder.build());
+			    
+			    imRecordBuilder.clear();
+			}
+			
+			// address
+			for (AddressInfo addressInfo : contact.addressInfos) {
+			    addressRecordBuilder.setId(addressInfo.id);
+			    addressRecordBuilder.setAddressType(toAddressType(addressInfo.type));
+			    if (addressInfo.type == StructuredPostal.TYPE_CUSTOM) {
+			        addressRecordBuilder.setName(addressInfo.customName);
+			    }
+			    addressRecordBuilder.setAddress(addressInfo.address);
+			    addressRecordBuilder.setCountry(addressInfo.country);
+			    addressRecordBuilder.setProvince(addressInfo.province);
+			    addressRecordBuilder.setCity(addressInfo.city);
+			    addressRecordBuilder.setRoad(addressInfo.street);
+			    addressRecordBuilder.setPostCode(addressInfo.postcode);
+			    addressRecordBuilder.setModifyTag(ModifyTag.SAME);
+			    
+			    contactRecordBuilder.addAddress(addressRecordBuilder.build());
+			    
+			    addressRecordBuilder.clear();
+			}
+			
+			// organization
+			for (OrgInfo orgInfo : contact.orgInfos) {
+			    orgRecordBuilder.setId(orgInfo.id);
+			    orgRecordBuilder.setType(toOrgType(orgInfo.type));
+			    orgRecordBuilder.setName(orgInfo.org);
+			    if (orgInfo.type == Organization.TYPE_CUSTOM) {
+			        orgRecordBuilder.setName(orgInfo.customName);
+			    }
+			    
+			    orgRecordBuilder.setModifyTag(ModifyTag.SAME);
+			    
+			    contactRecordBuilder.addOrg(orgRecordBuilder.build());
+			    
+			    orgRecordBuilder.clear();
 			}
 
 			responseBuilder.addContactRecord(contactRecordBuilder.build());
@@ -637,8 +799,244 @@ public class HandlerFacade {
 		Slog.d("queryContact X");
 		return responseBuilder.build();
 	}
+    
+	
+	public CmdResponse addContact(CmdRequest request) {
+	    Slog.d("addContact E");
+	    
+	    CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_ADD_CONTACT);
 
-	private PhoneType toPhoneType(int commonDataKindsPhoneType) {
+        if (request.hasContactParams()) {
+            ContactRecord contactRecord = request.getContactParams();
+            
+            if (contactRecord != null) {
+                Contact contact = new Contact();
+                
+                contact.name = contactRecord.getName();
+                contact.nickname = contactRecord.getNickname();
+                contact.photo = contactRecord.getPhoto().toByteArray();
+                
+                AccountRecord accountRecord = contactRecord.getAccountInfo();
+                
+                contact.setAccountInfo(accountRecord.getName(), accountRecord.getType());
+
+                // group
+                for (GroupRecord groupRecord : contactRecord.getGroupList()) {
+                    GroupInfo groupInfo = new GroupInfo();
+                    
+                    // only group id is required
+                    groupInfo.grId = groupRecord.getId();
+                    
+                    contact.addGroupInfo(groupInfo);
+                }
+                
+                // phone
+                for (PhoneRecord phoneRecord : contactRecord.getPhoneList()) {
+                    PhoneInfo phoneInfo = new PhoneInfo();
+                    
+                    phoneInfo.type = toCommonDataKindsPhoneType(phoneRecord.getType());
+                    phoneInfo.number = phoneRecord.getNumber();
+                    phoneInfo.customName = phoneRecord.getName();
+                    
+                    contact.addPhoneInfo(phoneInfo);
+                }
+                
+                // email
+                for (EmailRecord emailRecord : contactRecord.getEmailList()) {
+                    EmailInfo emailInfo = new EmailInfo();
+                    
+                    emailInfo.type = toCommonDataKindsEmailType(emailRecord.getType());
+                    emailInfo.email = emailRecord.getEmail();
+                    emailInfo.customName = emailRecord.getName();
+                    
+                    contact.addEmailInfo(emailInfo);
+                }
+                
+                // im
+                for (IMRecord imRecord : contactRecord.getImList()) {
+                    ImInfo imInfo = new ImInfo();
+                    
+                    imInfo.type = toCommonDataKindsImType(imRecord.getType());
+                    imInfo.account = imRecord.getAccount();
+                    imInfo.customName = imRecord.getName();
+                    
+                    contact.addImInfo(imInfo);
+                }
+                
+                // address
+                for (AddressRecord addressRecord : contactRecord.getAddressList()) {
+                    AddressInfo addressInfo = new AddressInfo();
+                    
+                    addressInfo.type = toCommonDataKindsAddressType(addressRecord.getAddressType());
+                    addressInfo.address = addressRecord.getAddress();
+                    addressInfo.customName = addressRecord.getName();
+                    addressInfo.country = addressRecord.getCountry();
+                    addressInfo.province = addressRecord.getProvince();
+                    addressInfo.city = addressRecord.getCity();
+                    addressInfo.street = addressRecord.getRoad();
+                    addressInfo.postcode = addressRecord.getPostCode();
+                    
+                    contact.addAddressInfo(addressInfo);
+                }
+                
+                // organization
+                for (OrgRecord orgRecord : contactRecord.getOrgList()) {
+                    OrgInfo orgInfo = new OrgInfo();
+                    
+                    orgInfo.type = toCommonDataKindsOrganizationType(orgRecord.getType());
+                    orgInfo.org = orgRecord.getOrgName();
+                    orgInfo.customName = orgRecord.getName();
+                    
+                    contact.addOrgInfo(orgInfo);
+                }
+                
+                if (ContactUtil.addContact(mContext, contact)) {
+                    setResultOK(responseBuilder);
+                } else {
+                    setResultErrorInternal(responseBuilder, "ContactUtil.addContact");
+                }
+            } else {
+                setResultErrorInsufficentParams(responseBuilder, "contact");
+            }
+            
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "contact");
+        }
+	    
+	    Slog.d("addContact X");
+	    
+	    return responseBuilder.build();
+	}
+	
+	
+	
+	public CmdResponse updateContact(CmdRequest request) {
+	    Slog.d("updateContact E");
+	    
+	    CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_EDIT_CONTACT);
+        
+        if (request.hasContactParams()) {
+            ContactRecord contactRecord = request.getContactParams();
+            
+            if (contactRecord != null) {
+                Contact contact = new Contact();
+                
+                contact.name = contactRecord.getName();
+                contact.nickname = contactRecord.getNickname();
+                
+                if (contactRecord.hasPhoto()) {
+                    contact.photo = contactRecord.getPhoto().toByteArray();
+                }
+                
+                contact.shouldUpdatePhoto = contactRecord.getPhotoModifyTag();
+                
+                AccountRecord accountRecord = contactRecord.getAccountInfo();
+                
+                contact.setAccountInfo(accountRecord.getName(), accountRecord.getType());
+
+                // group
+                for (GroupRecord groupRecord : contactRecord.getGroupList()) {
+                    GroupInfo groupInfo = new GroupInfo();
+                    
+                    // only group id is required
+                    groupInfo.grId = groupRecord.getId();
+                    
+                    contact.addGroupInfo(groupInfo);
+                }
+                
+                // phone
+                for (PhoneRecord phoneRecord : contactRecord.getPhoneList()) {
+                    PhoneInfo phoneInfo = new PhoneInfo();
+                    
+                    phoneInfo.type = toCommonDataKindsPhoneType(phoneRecord.getType());
+                    phoneInfo.number = phoneRecord.getNumber();
+                    phoneInfo.customName = phoneRecord.getName();
+                    
+                    contact.addPhoneInfo(phoneInfo);
+                }
+                
+                // email
+                for (EmailRecord emailRecord : contactRecord.getEmailList()) {
+                    EmailInfo emailInfo = new EmailInfo();
+                    
+                    emailInfo.type = toCommonDataKindsEmailType(emailRecord.getType());
+                    emailInfo.email = emailRecord.getEmail();
+                    emailInfo.customName = emailRecord.getName();
+                    
+                    contact.addEmailInfo(emailInfo);
+                }
+                
+                // im
+                for (IMRecord imRecord : contactRecord.getImList()) {
+                    ImInfo imInfo = new ImInfo();
+                    
+                    imInfo.type = toCommonDataKindsImType(imRecord.getType());
+                    imInfo.account = imRecord.getAccount();
+                    imInfo.customName = imRecord.getName();
+                    
+                    contact.addImInfo(imInfo);
+                }
+                
+                // address
+                for (AddressRecord addressRecord : contactRecord.getAddressList()) {
+                    AddressInfo addressInfo = new AddressInfo();
+                    
+                    addressInfo.type = toCommonDataKindsAddressType(addressRecord.getAddressType());
+                    addressInfo.address = addressRecord.getAddress();
+                    addressInfo.customName = addressRecord.getName();
+                    addressInfo.country = addressRecord.getCountry();
+                    addressInfo.province = addressRecord.getProvince();
+                    addressInfo.city = addressRecord.getCity();
+                    addressInfo.street = addressRecord.getRoad();
+                    addressInfo.postcode = addressRecord.getPostCode();
+                    
+                    contact.addAddressInfo(addressInfo);
+                }
+                
+                // organization
+                for (OrgRecord orgRecord : contactRecord.getOrgList()) {
+                    OrgInfo orgInfo = new OrgInfo();
+                    
+                    orgInfo.type = toCommonDataKindsOrganizationType(orgRecord.getType());
+                    orgInfo.org = orgRecord.getOrgName();
+                    orgInfo.customName = orgRecord.getName();
+                    
+                    contact.addOrgInfo(orgInfo);
+                }
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "contact");
+        }
+	    
+	    Slog.d("updateContact X");
+	    return responseBuilder.build();
+	}
+	
+	public CmdResponse deleteContact(CmdRequest request) {
+	    Slog.d("deleteContact E");
+	    
+	    CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_DELETE_CONTACT);
+        
+        List<Long> contactIdList = request.getRecordIdList();
+        
+        if (contactIdList != null && contactIdList.size() > 0) {
+            if (ContactUtil.deleteContact(mContext, contactIdList)) {
+                setResultOK(responseBuilder);
+            } else {
+                setResultErrorInternal(responseBuilder, "ContactUtil.deleteContact");
+            }
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "recordIdList");
+        }
+        
+        Slog.d("deleteContact X");
+        return responseBuilder.build();
+	}
+
+
+    private PhoneType toPhoneType(int commonDataKindsPhoneType) {
 		switch (commonDataKindsPhoneType) {
 		case Phone.TYPE_MOBILE:
 			return PhoneType.MOBILE;
@@ -647,19 +1045,189 @@ public class HandlerFacade {
 		case Phone.TYPE_WORK:
 			return PhoneType.WORK;
 		case Phone.TYPE_FAX_HOME:
-			return PhoneType.WORK_FAX;
-		case Phone.TYPE_FAX_WORK:
 			return PhoneType.HOME_FAX;
+		case Phone.TYPE_FAX_WORK:
+			return PhoneType.WORK_FAX;
 		case Phone.TYPE_PAGER:
 			return PhoneType.PAGER;
 		case Phone.TYPE_MAIN:
 			return PhoneType.MAIN;
 		case Phone.TYPE_CUSTOM:
 			return PhoneType.USER_DEFINED;
+		case Phone.TYPE_OTHER:
+		    return PhoneType.OTHER;
 		default:
 			return PhoneType.OTHER;
 		}
 	}
+    
+    private int toCommonDataKindsPhoneType(PhoneType phoneType) {
+        switch (phoneType) {
+            case MOBILE:
+                return Phone.TYPE_MOBILE;
+            case HOME:
+                return Phone.TYPE_HOME;
+            case WORK:
+                return Phone.TYPE_WORK;
+            case HOME_FAX:
+                return Phone.TYPE_FAX_HOME;
+            case WORK_FAX:
+                return Phone.TYPE_FAX_WORK;
+            case PAGER:
+                return Phone.TYPE_PAGER;
+            case MAIN:
+                return Phone.TYPE_MAIN;
+            case USER_DEFINED:
+                return Phone.TYPE_CUSTOM;
+            case OTHER:
+                return Phone.TYPE_OTHER;
+            default:
+                return Phone.TYPE_OTHER;
+        }
+    }
+    
+    
+	
+	private EmailType toEmailType(int commonDataKindsEmailType) {
+	    switch (commonDataKindsEmailType) {
+            case Email.TYPE_HOME:
+                return EmailType.HOME;
+            case Email.TYPE_WORK:
+                return EmailType.WORK;
+            case Email.TYPE_CUSTOM:
+                return EmailType.USER_DEFINED;
+            case Email.TYPE_OTHER:
+                return EmailType.OTHER;
+            default:
+                return EmailType.OTHER;
+        }
+	}
+	
+	private int toCommonDataKindsEmailType(EmailType emailType) {
+        switch (emailType) {
+            case HOME:
+                return Email.TYPE_HOME;
+            case WORK:
+                return Email.TYPE_WORK;
+            case USER_DEFINED:
+                return Email.TYPE_CUSTOM;
+            case OTHER:
+                return Email.TYPE_OTHER;
+            default:
+                return Email.TYPE_OTHER;
+        }
+    }
+	
+	private IMType toImType(int commonDataKindsImType) {
+	    switch (commonDataKindsImType) {
+            case Im.PROTOCOL_AIM:
+                return IMType.AIM;
+            case Im.PROTOCOL_MSN:
+                return IMType.MSN;
+            case Im.PROTOCOL_YAHOO:
+                return IMType.YAHOO;
+            case Im.PROTOCOL_SKYPE:
+                return IMType.SKYPE;
+            case Im.PROTOCOL_QQ:
+                return IMType.QQ;
+            case Im.PROTOCOL_GOOGLE_TALK:
+                return IMType.GTALK;
+            case Im.PROTOCOL_ICQ:
+                return IMType.ICQ;
+            case Im.PROTOCOL_JABBER:
+                return IMType.JABBER;
+            case Im.PROTOCOL_CUSTOM:
+                return IMType.USER_DEFINED;
+            case Im.PROTOCOL_NETMEETING:
+                return IMType.NETMEETING;
+            default:
+                // FIXME: should not goes here
+                return IMType.NETMEETING;
+        }
+	}
+	
+	private int toCommonDataKindsImType(IMType imType) {
+	    switch (imType) {
+            case AIM:
+                return Im.PROTOCOL_AIM;
+            case MSN:
+                return Im.PROTOCOL_MSN;
+            case YAHOO:
+                return Im.PROTOCOL_YAHOO;
+            case SKYPE:
+                return Im.PROTOCOL_SKYPE;
+            case QQ:
+                return Im.PROTOCOL_QQ;
+            case GTALK:
+                return Im.PROTOCOL_GOOGLE_TALK;
+            case ICQ:
+                return Im.PROTOCOL_ICQ;
+            case JABBER:
+                return Im.PROTOCOL_JABBER;
+            case USER_DEFINED:
+                return Im.PROTOCOL_CUSTOM;
+            case NETMEETING:
+                return Im.PROTOCOL_NETMEETING;
+            default:
+                return Im.PROTOCOL_NETMEETING;
+        }
+	}
+	
+	private AddressType toAddressType(int commonDataKindsAddressType) {
+	    switch (commonDataKindsAddressType) {
+            case StructuredPostal.TYPE_HOME:
+                return AddressType.HOME;
+            case StructuredPostal.TYPE_WORK:
+                return AddressType.WORK;
+            case StructuredPostal.TYPE_CUSTOM:
+                return AddressType.USER_DEFINED;
+            case StructuredPostal.TYPE_OTHER:
+                return AddressType.OTHER;
+            default:
+                return AddressType.OTHER;
+	    }
+	}
+	
+	private int toCommonDataKindsAddressType(AddressType addressType) {
+	    switch (addressType) {
+            case HOME:
+                return StructuredPostal.TYPE_HOME;
+            case WORK:
+                return StructuredPostal.TYPE_WORK;
+            case USER_DEFINED:
+                return StructuredPostal.TYPE_CUSTOM;
+            case OTHER:
+                return StructuredPostal.TYPE_OTHER;
+            default:
+                return StructuredPostal.TYPE_OTHER;
+        }
+	}
+	
+    private OrgType toOrgType(int commonDataKindsOrganizationType) {
+        switch (commonDataKindsOrganizationType) {
+            case Organization.TYPE_WORK:
+                return OrgType.COMPANY;
+            case Organization.TYPE_CUSTOM:
+                return OrgType.USER_DEFINED;
+            case Organization.TYPE_OTHER:
+                return OrgType.OTHER;
+            default:
+                return OrgType.OTHER;
+        }
+    }
+    
+    private int toCommonDataKindsOrganizationType(OrgType orgType) {
+        switch (orgType) {
+            case COMPANY:
+                return Organization.TYPE_WORK;
+            case USER_DEFINED:
+                return Organization.TYPE_CUSTOM;
+            case OTHER:
+                return Organization.TYPE_OTHER;
+            default:
+                return Organization.TYPE_OTHER;
+        }
+    }
 
 	// ------------------------------------------------------------------------
 	// App related method
@@ -795,5 +1363,7 @@ public class HandlerFacade {
 
 		return response.build();
 	}
+
+    
 
 }

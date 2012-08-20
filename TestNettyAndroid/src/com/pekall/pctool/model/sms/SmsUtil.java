@@ -117,9 +117,7 @@ public class SmsUtil {
         return context.getContentResolver().delete(Uri.parse(SMS_ALL + "/" + rowId), null, null) > 0;
     }
 
-    public static boolean deleteSmsAll(Context context) {
-        return context.getContentResolver().delete(SMS_ALL_URI, null, null) > 0;
-    }
+    
 
     public static boolean deleteSms(Context context, List<Long> rowIds) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
@@ -137,6 +135,10 @@ public class SmsUtil {
         }
 
         return false;
+    }
+    
+    public static boolean deleteSmsAll(Context context) {
+        return context.getContentResolver().delete(SMS_ALL_URI, null, null) > 0;
     }
 
     /**

@@ -11,17 +11,47 @@ public class Contact {
     public String name;
     public String nickname;
     public byte[] photo;
+    public boolean shouldUpdatePhoto;
     public AccountInfo accountInfo = new AccountInfo();
+    public List<GroupInfo> groupInfos = new ArrayList<GroupInfo>();
     public List<PhoneInfo> phoneInfos = new ArrayList<PhoneInfo>();
     public List<EmailInfo> emailInfos = new ArrayList<EmailInfo>();
     public List<ImInfo> imInfos = new ArrayList<ImInfo>();
     public List<AddressInfo> addressInfos = new ArrayList<AddressInfo>();
     public List<OrgInfo> orgInfos = new ArrayList<OrgInfo>();
-    public List<GroupInfo> groupInfos = new ArrayList<GroupInfo>();
-
+    
+    public void setAccountInfo(String name, String type) {
+        accountInfo.accountName = name;
+        accountInfo.accountType = type;
+    }
+    
+    public void addGroupInfo(GroupInfo groupInfo) {
+        groupInfos.add(groupInfo);
+    }
+    
+    public void addPhoneInfo(PhoneInfo phoneInfo) {
+        phoneInfos.add(phoneInfo);
+    }
+    
+    public void addEmailInfo(EmailInfo emailInfo) {
+        emailInfos.add(emailInfo);
+    }
+    
+    public void addImInfo(ImInfo imInfo) {
+        imInfos.add(imInfo);
+    }
+    
+    public void addAddressInfo(AddressInfo addressInfo) {
+        addressInfos.add(addressInfo);
+    }
+    
+    public void addOrgInfo(OrgInfo orgInfo) {
+        orgInfos.add(orgInfo);
+    }
+    
     public static class PhoneInfo {
         public long id;
-        public int type;
+        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Phone.html
         public String number;
         public String customName;
         public int    modifyFlag;
@@ -29,7 +59,7 @@ public class Contact {
 
     public static class EmailInfo {
         public long id;
-        public int type;
+        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Email.html
         public String email;
         public String customName;
         public int    modifyFlag;
@@ -37,8 +67,8 @@ public class Contact {
 
     public static class ImInfo {
         public long id;
-        public int type;
-        public String im;
+        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Im.html
+        public String account;
         public String customName;
         public int    modifyFlag;
     }
@@ -50,7 +80,7 @@ public class Contact {
         public String city;
         public String street;
         public String postcode;
-        public int type;
+        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.StructuredPostal.html
         public String address;
         public String customName;
         public int    modifyFlag;
@@ -58,7 +88,7 @@ public class Contact {
 
     public static class OrgInfo {
         public long id;
-        public int type;
+        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Organization.html
         public String org;
         public String customName;
         public int    modifyFlag;

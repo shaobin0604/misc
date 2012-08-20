@@ -11,5 +11,10 @@ public class GroupInfo {
     public long grId;
     public int modifyFlag;
     public long dataId;
+    
+    public void setAccountInfo(String name, String type) {
+        accountInfo.accountName = name;
+        accountInfo.accountType = type;
+    }
 
 }

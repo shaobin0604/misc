@@ -157,6 +157,13 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
                 Slog.d("cmdType = " + cmdType);
                 switch (cmdType) {
                     //
+                    // HEARTBEAT related methods
+                    //
+                    case CMD_HEART_BEAT: {
+                        cmdResponse = mHandlerFacade.heartbeat(cmdRequest);
+                    }
+                    
+                    //
                     // APP related methods
                     //
                     case CMD_QUERY_APP: {
@@ -324,7 +331,8 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
 
     private void handleImportApp(final String packageName, MessageEvent e) {
         Slog.d("packageName = " + packageName);
-
+        
+        // TODO
     }
 
     private void handleQueryAppTest(CmdRequest cmdRequest, HttpResponse response) {

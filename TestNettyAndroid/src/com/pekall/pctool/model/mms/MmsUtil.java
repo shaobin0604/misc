@@ -1,17 +1,8 @@
 
 package com.pekall.pctool.model.mms;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.xml.sax.Attributes;
-
 import android.content.ContentProviderOperation;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
@@ -28,32 +19,36 @@ import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.mms.Mms.Attachment;
 import com.pekall.pctool.model.mms.Mms.Slide;
 
+import org.xml.sax.Attributes;
+
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MmsUtil {
 
     static final String TAG = "pekall android pc suite - mms functions";
-
-    static final Uri MAIN_MMS_URI = Uri.parse("content://mms/");
-    static final Uri INBOX_URI = Uri.parse("content://mms/inbox");
-    static final Uri SENT_URI = Uri.parse("content://mms/sent");
-    static final Uri OUTBOX_URI = Uri.parse("content://mms/outbox");
-    static final Uri DRAFT_URI = Uri.parse("content://mms/draft");
-
-	private static final String MMS_AUTHORITY = "mms";
+    static final Uri MAIN_MMS_URI = Uri.parse("content://mms");
+    private static final String MMS_AUTHORITY = "mms";
 
     static Slide slideForParse;
     static ArrayList<String> slideTxtFileNames;
 
-
-    public static ArrayList<Mms> query(Context cxt, MmsBox whichBox) {
-        ArrayList<Mms> mmsList = new ArrayList<Mms>();
-        Cursor cursor = cxt.getContentResolver().query(mapBoxUri(whichBox), new String[] {
-                "_id", "sub", "date", "read"
+    public static List<Mms> query(Context cxt) {
+        List<Mms> mmsList = new ArrayList<Mms>();
+        Cursor cursor = cxt.getContentResolver().query(MAIN_MMS_URI, new String[] {
+                "_id", "msg_box", "sub", "date", "read"
         }, null, null, "_id desc");
 
         while (cursor.moveToNext()) {
             Mms mms = new Mms();
 
             mms.rowId = cursor.getLong(cursor.getColumnIndex("_id"));
+            mms.msgBoxIndex = cursor.getLong(cursor.getColumnIndex("msg_box"));
 
             Cursor cursorAddress = cxt.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
                     null, null, null, null);
@@ -66,24 +61,25 @@ public class MmsUtil {
                 try {
                     str = new String(str.getBytes("ISO-8859-1"), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, "encoding string " + e.getMessage());
                 }
             }
             mms.subject = str;
+            Log.e("", "msgBox = " + mms.msgBoxIndex + "--- sub = " + mms.subject);
 
             mms.date = cursor.getLong(cursor.getColumnIndex("date"));
             mms.isReaded = cursor.getLong(cursor.getColumnIndex("read"));
 
             /** get smil.xml **/
             Cursor cursorSmil = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
-                "text"
+                    "text"
             }, "ct='application/smil'", null, null);
             String smilContent = "";
             if (cursorSmil.moveToFirst()) {
                 smilContent = cursorSmil.getString(cursorSmil.getColumnIndex("text"));
-                // Log.e("", "wta = " + smilContent);
+                // Log.e("", "smil content = " + smilContent);
             } else {
-                Log.e("", "this mms don't have smil.xml");
+                Log.e(TAG, "this mms don't have smil.xml");
             }
             cursorSmil.close();
 
@@ -93,30 +89,17 @@ public class MmsUtil {
             /** get attachments **/
             Cursor cursorPart = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
             while (cursorPart.moveToNext()) {
-                Attachment attachment = new Attachment();
-
-                long partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
-                String name = cursorPart.getString(cursorPart.getColumnIndex("cl"));
                 String type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
-                // TODO
-                if (name == null)
-                    name = "";
+                long partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
+                String fileName = cursorPart.getString(cursorPart.getColumnIndex("cl"));
+                /** avoid null pointer **/
+                fileName = (fileName == null) ? "" : fileName;
+                type = (type == null) ? "" : type;
 
                 if (!type.equalsIgnoreCase("application/smil")
-                        && (name != null && !name.endsWith(".txt") || !slideTxtFileNames.contains(name))) {
-                    attachment.fileBytes = readAttachments(cxt, partRowId);
-                    if (type.startsWith("image/")) {
-                        String imageSuffix = type.substring("image/".length());
-                        int i = name.lastIndexOf(".");
-                        /** if no suffix name, manually add one **/
-                        attachment.name = (i == -1) ? (name + "." + imageSuffix)
-                                : (name.substring(0, i) + "." + imageSuffix);
-                    } else {
-                        attachment.name = name;
-                    }
-                    mms.attachments.add(attachment);
-                }
-
+                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
+                        && !isSlideFile(mms.attachments, fileName))
+                    loadAttachment(cxt, mms, partRowId, type, fileName);
             }
             cursorPart.close();
 
@@ -128,43 +111,57 @@ public class MmsUtil {
         return mmsList;
     }
 
-    public static boolean delete(Context cxt, long rowId) {
-        return cxt.getContentResolver().delete(MAIN_MMS_URI, "_id=" + rowId, null) == 1;
+    private static void loadAttachment(Context cxt, Mms mms, long partRowId, String type, String fileName) {
+        Attachment attachment = new Attachment();
+
+        InputStream is = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            is = cxt.getContentResolver().openInputStream(makePartIdUri(partRowId));
+            baos = new ByteArrayOutputStream();
+            byte buf[] = new byte[1024];
+            int numRead = 0;
+            while ((numRead = is.read(buf)) != -1)
+                baos.write(buf, 0, numRead);
+            attachment.fileBytes = baos.toByteArray();
+        } catch (IOException e) {
+            Log.e(TAG, "read attachment file bytes " + e.getMessage());
+        } finally {
+            close(is);
+            close(baos);
+        }
+
+        if (type.startsWith("image/")) {
+            String imageSuffix = type.substring("image/".length());
+            int i = fileName.lastIndexOf(".");
+            /** if no suffix name, manually add one **/
+            fileName = (i == -1) ? (fileName + "." + imageSuffix) : (fileName.substring(0, i) + "." + imageSuffix);
+        }
+        attachment.name = fileName;
+
+        mms.attachments.add(attachment);
     }
 
-    public static boolean delete(Context context, List<Long> rowIds) {
-    	ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+    public static boolean delete(Context cxt, long rowId) {
+        return cxt.getContentResolver().delete(ContentUris.withAppendedId(MAIN_MMS_URI, rowId), null, null) == 1;
+    }
+
+    public static boolean delete(Context ctx, List<Long> rowIds) {
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         for (long rowId : rowIds) {
-            ops.add(ContentProviderOperation.newDelete(Uri.parse("content://mms/" + rowId)).build());
+            ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(MAIN_MMS_URI, rowId)).build());
         }
         try {
-            context.getContentResolver().applyBatch(MMS_AUTHORITY, ops);
+            ctx.getContentResolver().applyBatch(MMS_AUTHORITY, ops);
             return true;
         } catch (RemoteException e) {
-            Slog.e("Error when deleteMms", e);
+            Slog.e("Error when deleteSms", e);
         } catch (OperationApplicationException e) {
-            Slog.e("Error when deleteMms", e);
+            Slog.e("Error when deleteSms", e);
         }
 
         return false;
-    }
-
-    private static Uri mapBoxUri(MmsBox mmsBox) {
-        switch (mmsBox) {
-            case MAIN:
-                return MAIN_MMS_URI;
-            case INBOX:
-                return INBOX_URI;
-            case SENT:
-                return SENT_URI;
-            case OUTBOX:
-                return OUTBOX_URI;
-            case DRAFT:
-                return DRAFT_URI;
-            default:
-                return null;
-        }
     }
 
     private static Uri makeIdPartUri(long id) {
@@ -180,16 +177,40 @@ public class MmsUtil {
             try {
                 closeable.close();
             } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, "close error: " + e.getMessage());
             }
         }
     }
 
     private static void parseSmilToSlide(final Context cxt, String smilContent, final Mms mms) {
-        slideTxtFileNames = new ArrayList<String>();
-
         RootElement root = new RootElement("smil");
         Element par = root.getChild("body").getChild("par");
+
+        genericParseSmilToSlide(cxt, mms, par);
+        try {
+            Xml.parse(smilContent, root.getContentHandler());
+        } catch (Exception e) {
+            Log.e(TAG, "parse smil error: " + e.getMessage());
+            /** handle smil with namespace **/
+            parseSmilWithNamespaceToSlide(cxt, smilContent, mms);
+        }
+    }
+
+    private static void parseSmilWithNamespaceToSlide(final Context cxt, String smilContent, final Mms mms) {
+        RootElement root = new RootElement("http://www.w3.org/2001/SMIL20/Language", "smil");
+        Element par = root.getChild("http://www.w3.org/2001/SMIL20/Language", "body").getChild(
+                "http://www.w3.org/2001/SMIL20/Language", "par");
+
+        genericParseSmilToSlide(cxt, mms, par);
+        try {
+            Xml.parse(smilContent, root.getContentHandler());
+        } catch (Exception e) {
+            Log.e(TAG, "parse smil with namespace error: " + e.getMessage());
+        }
+    }
+
+    private static void genericParseSmilToSlide(final Context cxt, final Mms mms, Element par) {
+        slideTxtFileNames = new ArrayList<String>();
 
         par.setStartElementListener(new StartElementListener() {
             @Override
@@ -210,7 +231,7 @@ public class MmsUtil {
                 String txtFileName = attrs.getValue("src");
                 slideTxtFileNames.add(txtFileName);
                 Cursor cursorPart = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
-                    "text"
+                        "text"
                 }, "cl='" + txtFileName + "'", null, null);
                 cursorPart.moveToFirst();
                 slideForParse.text = cursorPart.getString(cursorPart.getColumnIndex("text"));
@@ -221,29 +242,23 @@ public class MmsUtil {
         par.getChild("img").setStartElementListener(new StartElementListener() {
             @Override
             public void start(Attributes attrs) {
-                slideForParse.image = readToBytes(cxt, mms, attrs);
+                slideForParse.imageIndex = gainAttachmentIndex(cxt, mms, attrs);
             }
         });
 
         par.getChild("audio").setStartElementListener(new StartElementListener() {
             @Override
             public void start(Attributes attrs) {
-                slideForParse.audio = readToBytes(cxt, mms, attrs);
+                slideForParse.audioIndex = gainAttachmentIndex(cxt, mms, attrs);
             }
         });
 
         par.getChild("video").setStartElementListener(new StartElementListener() {
             @Override
             public void start(Attributes attrs) {
-                slideForParse.video = readToBytes(cxt, mms, attrs);
+                slideForParse.videoIndex = gainAttachmentIndex(cxt, mms, attrs);
             }
         });
-
-        try {
-            Xml.parse(smilContent, root.getContentHandler());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private static int parseDuration(String str) {
@@ -265,58 +280,35 @@ public class MmsUtil {
         }
     }
 
-    private static byte[] readToBytes(Context cxt, Mms mms, Attributes attrs) {
-        byte[] bytes = null;
+    private static int gainAttachmentIndex(Context cxt, Mms mms, Attributes attrs) {
         String fileName = attrs.getValue("src");
+        String type = null;
+        long partRowId = 0;
+
         Cursor cursorPart = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), null,
                 "cl='" + fileName + "' OR name='" + fileName + "'", null, null);
         if (cursorPart.moveToFirst()) {
-            InputStream is = null;
-            ByteArrayOutputStream baos = null;
-            try {
-                is = cxt.getContentResolver().openInputStream(
-                        makePartIdUri(cursorPart.getLong(cursorPart.getColumnIndex("_id"))));
-                baos = new ByteArrayOutputStream();
-                byte buf[] = new byte[1024];
-                int numRead = 0;
-                while ((numRead = is.read(buf)) != -1)
-                    baos.write(buf, 0, numRead);
-                bytes = baos.toByteArray();
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-            } finally {
-                close(is);
-                close(baos);
-            }
+            type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
+            partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
         }
         cursorPart.close();
-        return bytes;
+
+        /** avoid null pointer **/
+        type = (type == null) ? "" : type;
+        loadAttachment(cxt, mms, partRowId, type, fileName);
+        return mms.attachments.size() - 1;
     }
 
-    private static byte[] readAttachments(Context cxt, long partRowId) {
-        byte[] bytes = null;
-        Uri partIdUri = makePartIdUri(partRowId);
-        InputStream is = null;
-        ByteArrayOutputStream baos = null;
-        try {
-            is = cxt.getContentResolver().openInputStream(partIdUri);
-            baos = new ByteArrayOutputStream();
-            byte buf[] = new byte[1024];
-            int numRead = 0;
-            while ((numRead = is.read(buf)) != -1)
-                baos.write(buf, 0, numRead);
-            bytes = baos.toByteArray();
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-        } finally {
-            close(is);
-            close(baos);
+    private static boolean isSlideFile(ArrayList<Attachment> attachments, String fileName) {
+        for (Attachment a : attachments) {
+            int i = fileName.lastIndexOf(".");
+            String fileNameWithoutSuffix = (i == -1) ? fileName : fileName.substring(0, i);
+            i = a.name.lastIndexOf(".");
+            String attachmentNameWithoutSuffix = (i == -1) ? a.name : a.name.substring(0, i);
+            if (fileNameWithoutSuffix.equals(attachmentNameWithoutSuffix))
+                return true;
         }
-        return bytes;
-    }
-
-    enum MmsBox {
-        MAIN, INBOX, SENT, OUTBOX, DRAFT;
+        return false;
     }
 
 }

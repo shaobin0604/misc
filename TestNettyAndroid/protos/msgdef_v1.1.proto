@@ -183,6 +183,8 @@ message EmailRecord
 	{
 		WORK = 0;			//工作邮箱
 		HOME = 1;			//家庭邮箱
+		OTHER = 2;			//其他
+		
 		USER_DEFINED = 99;	//自定义
 	}
 	optional int64 		id = 1;
@@ -205,6 +207,8 @@ message IMRecord
 		GTALK = 5;
 		ICQ = 6;
 		JABBER = 7;
+		NETMEETING = 8;
+		
 		USER_DEFINED = 99;
 	}
 	optional int64 		id = 1;
@@ -221,6 +225,8 @@ message AddressRecord
 	{
 		WORK = 0;
 		HOME = 1;
+		OTHER = 2;
+		
 		USER_DEFINED = 99;
 	}
 	optional int64 			id = 1;
@@ -242,6 +248,8 @@ message OrgRecord
 	enum OrgType
 	{
 		COMPANY = 0;
+		OTHER = 1;
+		
 		USER_DEFINED = 99;
 	}
 	optional int64 		id = 1;
