@@ -48,7 +48,7 @@ public class MmsUtil {
             Mms mms = new Mms();
 
             mms.rowId = cursor.getLong(cursor.getColumnIndex("_id"));
-            mms.msgBoxIndex = cursor.getLong(cursor.getColumnIndex("msg_box"));
+            mms.msgBoxIndex = cursor.getInt(cursor.getColumnIndex("msg_box"));
 
             Cursor cursorAddress = cxt.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
                     null, null, null, null);
@@ -68,7 +68,7 @@ public class MmsUtil {
             Log.e("", "msgBox = " + mms.msgBoxIndex + "--- sub = " + mms.subject);
 
             mms.date = cursor.getLong(cursor.getColumnIndex("date"));
-            mms.isReaded = cursor.getLong(cursor.getColumnIndex("read"));
+            mms.isReaded = cursor.getInt(cursor.getColumnIndex("read"));
 
             /** get smil.xml **/
             Cursor cursorSmil = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {

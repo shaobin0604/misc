@@ -28,6 +28,8 @@ import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.ContactUtil;
 import com.pekall.pctool.model.contact.GroupInfo;
 import com.pekall.pctool.model.mms.Mms;
+import com.pekall.pctool.model.mms.Mms.Attachment;
+import com.pekall.pctool.model.mms.Mms.Slide;
 import com.pekall.pctool.model.mms.MmsUtil;
 import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
@@ -39,6 +41,7 @@ import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppLocationType;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppType;
+
 import com.pekall.pctool.protos.MsgDefProtos.CalendarRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
@@ -243,13 +246,47 @@ public class HandlerFacade {
 		responseBuilder.setCmdType(CmdType.CMD_QUERY_MMS);
 		
 		MMSRecord.Builder mmsRecordBuilder = MMSRecord.newBuilder();
+		com.pekall.pctool.protos.MsgDefProtos.Slide.Builder slideBuilder = com.pekall.pctool.protos.MsgDefProtos.Slide.newBuilder();
+		com.pekall.pctool.protos.MsgDefProtos.Attachment.Builder attachmentBuilder = com.pekall.pctool.protos.MsgDefProtos.Attachment.newBuilder();
 		
 		List<Mms> mmsList = MmsUtil.query(mContext);
 		
 		for (Mms mms : mmsList) {
 		    mmsRecordBuilder.setMsgId(mms.rowId);
-		    mmsRecordBuilder.setMsgOrigin(value)
+		    mmsRecordBuilder.setMsgOrigin(mmsTypeToMsgOriginType(mms.msgBoxIndex));
+		    mmsRecordBuilder.setPhoneNum(mms.phoneNum);
+		    mmsRecordBuilder.setSubject(mms.subject);
+		    mmsRecordBuilder.setMsgTime(mms.date);
+		    mmsRecordBuilder.setReadTag(mms.isReaded == Mms.READ_TRUE);
+		    
+		    for (Slide slide : mms.slides) {
+		    	slideBuilder.setDuration(slide.duration);
+		    	slideBuilder.setText(slide.text);
+		    	slideBuilder.setImageIndex(slide.imageIndex);
+		    	slideBuilder.setAudioIndex(slide.audioIndex);
+		    	slideBuilder.setVideoIndex(slide.videoIndex);
+		    	
+		    	mmsRecordBuilder.addSlide(slideBuilder.build());
+		    	
+		    	slideBuilder.clear();
+		    }
+
+		    for (Attachment attachment : mms.attachments) {
+		    	attachmentBuilder.setName(attachment.name);
+		    	attachmentBuilder.setSize(attachment.fileBytes.length);
+		    	attachmentBuilder.setFileBytes(ByteString.copyFrom(attachment.fileBytes));
+		    	
+		    	mmsRecordBuilder.addAttachment(attachmentBuilder.build());
+		    	
+		    	attachmentBuilder.clear();
+		    }
+		    
+		    responseBuilder.addMmsRecord(mmsRecordBuilder.build());
+		    
+		    mmsRecordBuilder.clear();
 		}
+		
+		setResultOK(responseBuilder);
 
 		Slog.d("queryMms X");
 
@@ -795,7 +832,7 @@ public class HandlerFacade {
 			accountRecordBuilder.clear();
 			contactRecordBuilder.clear();
 		}
-
+		setResultOK(responseBuilder);
 		Slog.d("queryContact X");
 		return responseBuilder.build();
 	}
@@ -928,7 +965,10 @@ public class HandlerFacade {
                 
                 if (contactRecord.hasPhoto()) {
                     contact.photo = contactRecord.getPhoto().toByteArray();
+                } else {
+                	contact.photo = null;
                 }
+           
                 
                 contact.shouldUpdatePhoto = contactRecord.getPhotoModifyTag();
                 
@@ -936,12 +976,15 @@ public class HandlerFacade {
                 
                 contact.setAccountInfo(accountRecord.getName(), accountRecord.getType());
 
+                // TODO
+                
                 // group
                 for (GroupRecord groupRecord : contactRecord.getGroupList()) {
                     GroupInfo groupInfo = new GroupInfo();
                     
                     // only group id is required
                     groupInfo.grId = groupRecord.getId();
+                    
                     
                     contact.addGroupInfo(groupInfo);
                 }
@@ -1005,6 +1048,7 @@ public class HandlerFacade {
                     
                     contact.addOrgInfo(orgInfo);
                 }
+            }
         } else {
             setResultErrorInsufficentParams(responseBuilder, "contact");
         }
