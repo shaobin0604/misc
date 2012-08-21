@@ -145,7 +145,7 @@ public class CalendarUtil {
         event.put(Events.CALENDAR_ID, eventInfo.calendarId);
         event.put(Events.EVENT_TIMEZONE, TIME_ZONE);
         event.put(Events.RRULE, eventInfo.rrule);
-        if (eventInfo.rrule != null || !"".equals(eventInfo.rrule)) {
+        if (!TextUtils.isEmpty(eventInfo.rrule)) {
             String duration = "P" + (eventInfo.endTime - eventInfo.startTime) + "S";
             event.put(Events.DURATION, duration);
         } else {

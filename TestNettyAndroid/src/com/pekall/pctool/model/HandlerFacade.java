@@ -6,7 +6,6 @@ import android.provider.ContactsContract.CommonDataKinds.Im;
 import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
-import android.text.TextUtils;
 
 import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.example.tutorial.AddressBookProtos.Person;
@@ -41,7 +40,8 @@ import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppLocationType;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppType;
-
+import com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord.AttachmentType;
+import com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CalendarRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
@@ -60,6 +60,7 @@ import com.pekall.pctool.protos.MsgDefProtos.OrgRecord.OrgType;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 import com.pekall.pctool.protos.MsgDefProtos.SMSRecord;
+import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -67,8 +68,7 @@ import java.util.List;
 
 public class HandlerFacade {
 	private static final int RESULT_CODE_OK = 0;
-	private static final int RESULT_CODE_ERR_ILLEGAL_ARGUMENT = 100;
-	private static final int RESULT_CODE_ERR_INSUFFICIENT_PARAMS = 101;
+	private static final int RESULT_CODE_ERR_INSUFFICIENT_PARAMS = 100;
 	private static final int RESULT_CODE_ERR_INTERNAL = 200;
 
 	private static final String RESULT_MSG_OK = "OK";
@@ -78,13 +78,23 @@ public class HandlerFacade {
 	public HandlerFacade(Context context) {
 		this.mContext = context;
 	}
+	
+	/**
+	 * Return str if not null, otherwise empty string
+	 * 
+	 * @param str
+	 * @return the str if not null, otherwise empty string
+	 */
+	private static String normalizeStr(String str) {
+	    return (str == null ? "" : str);
+	}
 
-	public CmdResponse defaultCmdResponse() {
+	public CmdResponse unknownCmdResponse(CmdRequest request) {
 		CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
 
 		responseBuilder.setCmdType(CmdType.CMD_HEART_BEAT);
 
-		setResultErrorInsufficentParams(responseBuilder, "cmd type");
+		setResultErrorInsufficentParams(responseBuilder, "Unknown CMD TYPE");
 
 		return responseBuilder.build();
 	}
@@ -123,8 +133,8 @@ public class HandlerFacade {
 		for (Sms sms : smsList) {
 			smsBuilder.setMsgId(sms.rowId);
 			smsBuilder.setMsgOrigin(smsTypeToMsgOriginType(sms.type));
-			smsBuilder.setPhoneNum(sms.address);
-			smsBuilder.setMsgText(sms.body);
+			smsBuilder.setPhoneNum(normalizeStr(sms.address));
+			smsBuilder.setMsgText(normalizeStr(sms.body));
 			smsBuilder.setMsgTime(sms.date);
 			smsBuilder.setReadTag(sms.read == Sms.READ_TRUE);
 
@@ -246,39 +256,80 @@ public class HandlerFacade {
 		responseBuilder.setCmdType(CmdType.CMD_QUERY_MMS);
 		
 		MMSRecord.Builder mmsRecordBuilder = MMSRecord.newBuilder();
-		com.pekall.pctool.protos.MsgDefProtos.Slide.Builder slideBuilder = com.pekall.pctool.protos.MsgDefProtos.Slide.newBuilder();
-		com.pekall.pctool.protos.MsgDefProtos.Attachment.Builder attachmentBuilder = com.pekall.pctool.protos.MsgDefProtos.Attachment.newBuilder();
+		SlideRecord.Builder slideRecordBuilder = SlideRecord.newBuilder();
+		AttachmentRecord.Builder attachmentRecordBuilder = AttachmentRecord.newBuilder();
 		
 		List<Mms> mmsList = MmsUtil.query(mContext);
 		
 		for (Mms mms : mmsList) {
 		    mmsRecordBuilder.setMsgId(mms.rowId);
 		    mmsRecordBuilder.setMsgOrigin(mmsTypeToMsgOriginType(mms.msgBoxIndex));
-		    mmsRecordBuilder.setPhoneNum(mms.phoneNum);
-		    mmsRecordBuilder.setSubject(mms.subject);
+		    mmsRecordBuilder.setPhoneNum(normalizeStr(mms.phoneNum));
+		    mmsRecordBuilder.setSubject(normalizeStr(mms.subject));
 		    mmsRecordBuilder.setMsgTime(mms.date);
 		    mmsRecordBuilder.setReadTag(mms.isReaded == Mms.READ_TRUE);
 		    
-		    for (Slide slide : mms.slides) {
-		    	slideBuilder.setDuration(slide.duration);
-		    	slideBuilder.setText(slide.text);
-		    	slideBuilder.setImageIndex(slide.imageIndex);
-		    	slideBuilder.setAudioIndex(slide.audioIndex);
-		    	slideBuilder.setVideoIndex(slide.videoIndex);
+		    ArrayList<Slide> slides = mms.slides;
+		    ArrayList<Attachment> attachments = mms.attachments;
+		    
+		    for (Slide slide : slides) {
+		    	slideRecordBuilder.setDuration(slide.duration);
+		    	slideRecordBuilder.setText(normalizeStr(slide.text));
 		    	
-		    	mmsRecordBuilder.addSlide(slideBuilder.build());
+		    	if (slide.imageIndex != -1) {
+		    	    Attachment attachment = attachments.remove(slide.imageIndex);
+		    	    
+		    	    attachmentRecordBuilder.setType(AttachmentType.IMAGE);
+		    	    attachmentRecordBuilder.setName(normalizeStr(attachment.name));
+		    	    attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+		    	    attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
+		    	    
+		    	    slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+		    	    
+		    	    attachmentRecordBuilder.clear();
+		    	}
 		    	
-		    	slideBuilder.clear();
+		    	if (slide.audioIndex != -1) {
+		    	    Attachment attachment = attachments.remove(slide.audioIndex);
+                    
+                    attachmentRecordBuilder.setType(AttachmentType.AUDIO);
+                    attachmentRecordBuilder.setName(normalizeStr(attachment.name));
+                    attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+                    attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
+                    
+                    slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+                    
+                    attachmentRecordBuilder.clear();
+		    	}
+		    	
+		    	if (slide.videoIndex != -1) {
+		    	    Attachment attachment = attachments.remove(slide.videoIndex);
+                    
+                    attachmentRecordBuilder.setType(AttachmentType.VIDEO);
+                    attachmentRecordBuilder.setName(normalizeStr(attachment.name));
+                    attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+                    attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
+                    
+                    slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+                    
+                    attachmentRecordBuilder.clear();
+		    	}
+		    	
+		    	mmsRecordBuilder.addSlide(slideRecordBuilder.build());
+		    	
+		    	slideRecordBuilder.clear();
 		    }
 
-		    for (Attachment attachment : mms.attachments) {
-		    	attachmentBuilder.setName(attachment.name);
-		    	attachmentBuilder.setSize(attachment.fileBytes.length);
-		    	attachmentBuilder.setFileBytes(ByteString.copyFrom(attachment.fileBytes));
+		    // the type of the rest attachments is OTHER
+		    for (Attachment attachment : attachments) {
+		        attachmentRecordBuilder.setType(AttachmentType.OTHER);
+		    	attachmentRecordBuilder.setName(attachment.name);
+		    	attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+		    	attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
 		    	
-		    	mmsRecordBuilder.addAttachment(attachmentBuilder.build());
+		    	mmsRecordBuilder.addAttachment(attachmentRecordBuilder.build());
 		    	
-		    	attachmentBuilder.clear();
+		    	attachmentRecordBuilder.clear();
 		    }
 		    
 		    responseBuilder.addMmsRecord(mmsRecordBuilder.build());
@@ -363,16 +414,15 @@ public class HandlerFacade {
 		CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
 		responseBuilder.setCmdType(CmdType.CMD_QUERY_CALENDAR);
 
-		CalendarRecord.Builder calendarRecordBuilder = CalendarRecord
-				.newBuilder();
+		CalendarRecord.Builder calendarRecordBuilder = CalendarRecord.newBuilder();
 		AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
 
 		for (CalendarInfo info : calendarInfoList) {
 			calendarRecordBuilder.setId(info.caId);
-			calendarRecordBuilder.setName(info.name);
+			calendarRecordBuilder.setName(normalizeStr(info.name));
 
-			accountRecordBuilder.setName(info.accountInfo.accountName);
-			accountRecordBuilder.setType(info.accountInfo.accountType);
+			accountRecordBuilder.setName(normalizeStr(info.accountInfo.accountName));
+			accountRecordBuilder.setType(normalizeStr(info.accountInfo.accountType));
 
 			calendarRecordBuilder.setAccountInfo(accountRecordBuilder.build());
 
@@ -398,6 +448,8 @@ public class HandlerFacade {
 		if (request.hasAgendaParams()) {
 			AgendaRecord agendaRecord = request.getAgendaParams();
 			calendarId = agendaRecord.getCalendarId();
+		} else {
+		    Slog.e("calendar id not provided");
 		}
 
 		Slog.d("calendarId = " + calendarId);
@@ -411,21 +463,13 @@ public class HandlerFacade {
 			agendaRecordBuilder.setId(eventInfo.evId);
 			agendaRecordBuilder.setCalendarId(eventInfo.calendarId);
 
-			if (!TextUtils.isEmpty(eventInfo.title)) {
-				agendaRecordBuilder.setSubject(eventInfo.title);
-			}
-			if (!TextUtils.isEmpty(eventInfo.place)) {
-				agendaRecordBuilder.setLocation(eventInfo.place);
-			}
+			agendaRecordBuilder.setSubject(normalizeStr(eventInfo.title));
+			agendaRecordBuilder.setLocation(normalizeStr(eventInfo.place));
 			agendaRecordBuilder.setStartTime(eventInfo.startTime);
 			agendaRecordBuilder.setEndTime(eventInfo.endTime);
-			if (!TextUtils.isEmpty(eventInfo.rrule)) {
-				agendaRecordBuilder.setRepeatRule(eventInfo.rrule);
-			}
+			agendaRecordBuilder.setRepeatRule(normalizeStr(eventInfo.rrule));
 			agendaRecordBuilder.setAlertTime(eventInfo.alertTime);
-			if (!TextUtils.isEmpty(eventInfo.note)) {
-				agendaRecordBuilder.setNote(eventInfo.note);
-			}
+			agendaRecordBuilder.setNote(normalizeStr(eventInfo.note));
 
 			responseBuilder.addAgendaRecord(agendaRecordBuilder.build());
 
@@ -550,8 +594,8 @@ public class HandlerFacade {
 
 		AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
 		for (AccountInfo accountInfo : accountInfoList) {
-			accountRecordBuilder.setName(accountInfo.accountName);
-			accountRecordBuilder.setType(accountInfo.accountType);
+			accountRecordBuilder.setName(normalizeStr(accountInfo.accountName));
+			accountRecordBuilder.setType(normalizeStr(accountInfo.accountType));
 
 			responseBuilder.addAccountRecord(accountRecordBuilder.build());
 			accountRecordBuilder.clear();
@@ -581,15 +625,15 @@ public class HandlerFacade {
 			List<GroupInfo> groupInfoList = ContactUtil.queryGroup(mContext,
 					accountInfo);
 
-			accountRecordBuilder.setName(accountInfo.accountName);
-			accountRecordBuilder.setType(accountInfo.accountType);
+			accountRecordBuilder.setName(normalizeStr(accountInfo.accountName));
+			accountRecordBuilder.setType(normalizeStr(accountInfo.accountType));
 
 			for (GroupInfo groupInfo : groupInfoList) {
 				groupRecordBuilder.setId(groupInfo.grId);
 				groupRecordBuilder.setDataId(groupInfo.dataId);
 				groupRecordBuilder.setAccountInfo(accountRecordBuilder.build());
-				groupRecordBuilder.setName(groupInfo.name);
-				groupRecordBuilder.setNote(groupInfo.note);
+				groupRecordBuilder.setName(normalizeStr(groupInfo.name));
+				groupRecordBuilder.setNote(normalizeStr(groupInfo.note));
 				groupRecordBuilder.setModifyTag(ModifyTag.SAME);
 
 				responseBuilder.addGroupRecord(groupRecordBuilder.build());
@@ -719,19 +763,24 @@ public class HandlerFacade {
 
 		for (Contact contact : contactList) {
 			contactRecordBuilder.setId(contact.id);
-			contactRecordBuilder.setName(contact.name);
-			contactRecordBuilder.setNickname(contact.nickname);
-			contactRecordBuilder.setPhoto(ByteString.copyFrom(contact.photo));
+			contactRecordBuilder.setName(normalizeStr(contact.name));
+			contactRecordBuilder.setNickname(normalizeStr(contact.nickname));
+			if (contact.photo != null && contact.photo.length > 0) {
+			    contactRecordBuilder.setPhoto(ByteString.copyFrom(contact.photo));
+			} else {
+			    contactRecordBuilder.clearPhoto();
+			}
 			contactRecordBuilder.setPhotoModifyTag(false);
 
-			accountRecordBuilder.setName(contact.accountInfo.accountName);
-			accountRecordBuilder.setType(contact.accountInfo.accountType);
+			accountRecordBuilder.setName(normalizeStr(contact.accountInfo.accountName));
+			accountRecordBuilder.setType(normalizeStr(contact.accountInfo.accountType));
 
 			contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
 
 			// group
 			for (GroupInfo groupInfo : contact.groupInfos) {
 				groupRecordBuilder.setId(groupInfo.grId); // only id is required
+				groupRecordBuilder.setDataId(groupInfo.dataId);
 
 				contactRecordBuilder.addGroup(groupRecordBuilder.build());
 
@@ -742,12 +791,8 @@ public class HandlerFacade {
 			for (PhoneInfo phoneInfo : contact.phoneInfos) {
 				phoneRecordBuilder.setId(phoneInfo.id);
 				phoneRecordBuilder.setType(toPhoneType(phoneInfo.type));
-				phoneRecordBuilder.setNumber(phoneInfo.number);
-				
-				// the name is optional
-				if (phoneInfo.type == Phone.TYPE_CUSTOM) {
-				    phoneRecordBuilder.setName(phoneInfo.customName);
-				}
+				phoneRecordBuilder.setNumber(normalizeStr(phoneInfo.number));
+				phoneRecordBuilder.setName(normalizeStr(phoneInfo.customName));
 				
 				phoneRecordBuilder.setModifyTag(ModifyTag.SAME);
 				
@@ -760,12 +805,8 @@ public class HandlerFacade {
 			for (EmailInfo emailInfo : contact.emailInfos) {
 			    emailRecordBuilder.setId(emailInfo.id);
 			    emailRecordBuilder.setType(toEmailType(emailInfo.type));
-			    emailRecordBuilder.setEmail(emailInfo.email);
-			    
-			    // the name is optional
-			    if (emailInfo.type == Email.TYPE_CUSTOM) {
-			        emailRecordBuilder.setName(emailInfo.customName);
-			    }
+			    emailRecordBuilder.setEmail(normalizeStr(emailInfo.email));
+		        emailRecordBuilder.setName(normalizeStr(emailInfo.customName));
 			    
 			    emailRecordBuilder.setModifyTag(ModifyTag.SAME);
 			    
@@ -778,11 +819,8 @@ public class HandlerFacade {
 			for (ImInfo imInfo : contact.imInfos) {
 			    imRecordBuilder.setId(imInfo.id);
 			    imRecordBuilder.setType(toImType(imInfo.type));
-			    imRecordBuilder.setAccount(imInfo.account);
-			    
-			    if (imInfo.type == Im.PROTOCOL_CUSTOM) {
-			        imRecordBuilder.setName(imInfo.customName);
-			    }
+			    imRecordBuilder.setAccount(normalizeStr(imInfo.account));
+		        imRecordBuilder.setName(normalizeStr(imInfo.customName));
 			    
 			    imRecordBuilder.setModifyTag(ModifyTag.SAME);
 			    
@@ -795,15 +833,13 @@ public class HandlerFacade {
 			for (AddressInfo addressInfo : contact.addressInfos) {
 			    addressRecordBuilder.setId(addressInfo.id);
 			    addressRecordBuilder.setAddressType(toAddressType(addressInfo.type));
-			    if (addressInfo.type == StructuredPostal.TYPE_CUSTOM) {
-			        addressRecordBuilder.setName(addressInfo.customName);
-			    }
-			    addressRecordBuilder.setAddress(addressInfo.address);
-			    addressRecordBuilder.setCountry(addressInfo.country);
-			    addressRecordBuilder.setProvince(addressInfo.province);
-			    addressRecordBuilder.setCity(addressInfo.city);
-			    addressRecordBuilder.setRoad(addressInfo.street);
-			    addressRecordBuilder.setPostCode(addressInfo.postcode);
+			    addressRecordBuilder.setAddress(normalizeStr(addressInfo.address));
+			    addressRecordBuilder.setName(normalizeStr(addressInfo.customName));
+			    addressRecordBuilder.setCountry(normalizeStr(addressInfo.country));
+			    addressRecordBuilder.setProvince(normalizeStr(addressInfo.province));
+			    addressRecordBuilder.setCity(normalizeStr(addressInfo.city));
+			    addressRecordBuilder.setRoad(normalizeStr(addressInfo.street));
+			    addressRecordBuilder.setPostCode(normalizeStr(addressInfo.postcode));
 			    addressRecordBuilder.setModifyTag(ModifyTag.SAME);
 			    
 			    contactRecordBuilder.addAddress(addressRecordBuilder.build());
@@ -815,10 +851,8 @@ public class HandlerFacade {
 			for (OrgInfo orgInfo : contact.orgInfos) {
 			    orgRecordBuilder.setId(orgInfo.id);
 			    orgRecordBuilder.setType(toOrgType(orgInfo.type));
-			    orgRecordBuilder.setName(orgInfo.org);
-			    if (orgInfo.type == Organization.TYPE_CUSTOM) {
-			        orgRecordBuilder.setName(orgInfo.customName);
-			    }
+			    orgRecordBuilder.setName(normalizeStr(orgInfo.org));
+		        orgRecordBuilder.setName(normalizeStr(orgInfo.customName));
 			    
 			    orgRecordBuilder.setModifyTag(ModifyTag.SAME);
 			    
@@ -852,7 +886,12 @@ public class HandlerFacade {
                 
                 contact.name = contactRecord.getName();
                 contact.nickname = contactRecord.getNickname();
-                contact.photo = contactRecord.getPhoto().toByteArray();
+                
+                if (contactRecord.hasPhoto()) {
+                    contact.photo = contactRecord.getPhoto().toByteArray();
+                } else {
+                    contact.photo = null;
+                }
                 
                 AccountRecord accountRecord = contactRecord.getAccountInfo();
                 
@@ -976,8 +1015,6 @@ public class HandlerFacade {
                 
                 contact.setAccountInfo(accountRecord.getName(), accountRecord.getType());
 
-                // TODO
-                
                 // group
                 for (GroupRecord groupRecord : contactRecord.getGroupList()) {
                     GroupInfo groupInfo = new GroupInfo();
@@ -985,6 +1022,7 @@ public class HandlerFacade {
                     // only group id is required
                     groupInfo.grId = groupRecord.getId();
                     
+                    groupInfo.modifyFlag = toModelModifyTag(groupRecord.getModifyTag());
                     
                     contact.addGroupInfo(groupInfo);
                 }
@@ -997,6 +1035,8 @@ public class HandlerFacade {
                     phoneInfo.number = phoneRecord.getNumber();
                     phoneInfo.customName = phoneRecord.getName();
                     
+                    phoneInfo.modifyFlag = toModelModifyTag(phoneRecord.getModifyTag());
+                    
                     contact.addPhoneInfo(phoneInfo);
                 }
                 
@@ -1008,6 +1048,8 @@ public class HandlerFacade {
                     emailInfo.email = emailRecord.getEmail();
                     emailInfo.customName = emailRecord.getName();
                     
+                    emailInfo.modifyFlag = toModelModifyTag(emailRecord.getModifyTag());
+                    
                     contact.addEmailInfo(emailInfo);
                 }
                 
@@ -1018,6 +1060,8 @@ public class HandlerFacade {
                     imInfo.type = toCommonDataKindsImType(imRecord.getType());
                     imInfo.account = imRecord.getAccount();
                     imInfo.customName = imRecord.getName();
+                    
+                    imInfo.modifyFlag = toModelModifyTag(imRecord.getModifyTag());
                     
                     contact.addImInfo(imInfo);
                 }
@@ -1035,6 +1079,8 @@ public class HandlerFacade {
                     addressInfo.street = addressRecord.getRoad();
                     addressInfo.postcode = addressRecord.getPostCode();
                     
+                    addressInfo.modifyFlag = toModelModifyTag(addressRecord.getModifyTag());
+                    
                     contact.addAddressInfo(addressInfo);
                 }
                 
@@ -1046,8 +1092,19 @@ public class HandlerFacade {
                     orgInfo.org = orgRecord.getOrgName();
                     orgInfo.customName = orgRecord.getName();
                     
+                    orgInfo.modifyFlag = toModelModifyTag(orgRecord.getModifyTag());
+                    
                     contact.addOrgInfo(orgInfo);
                 }
+                
+                if (ContactUtil.updateContact(mContext, contact)) {
+                    setResultOK(responseBuilder);
+                } else {
+                    setResultErrorInternal(responseBuilder, "ContactUtil.updateContact");
+                }
+                
+            } else {
+                setResultErrorInsufficentParams(responseBuilder, "contact");
             }
         } else {
             setResultErrorInsufficentParams(responseBuilder, "contact");
@@ -1077,6 +1134,27 @@ public class HandlerFacade {
         
         Slog.d("deleteContact X");
         return responseBuilder.build();
+	}
+	
+	/**
+	 * Convert protobuf ModifyTag to model ModifyTag
+	 * 
+	 * @param modifyTag
+	 * @return
+	 */
+	private int toModelModifyTag(ModifyTag modifyTag) {
+	    switch (modifyTag) {
+            case SAME:
+                return com.pekall.pctool.model.contact.Contact.ModifyTag.same;
+            case ADD:
+                return com.pekall.pctool.model.contact.Contact.ModifyTag.add;
+            case EDIT:
+                return com.pekall.pctool.model.contact.Contact.ModifyTag.edit;
+            case DEL:
+                return com.pekall.pctool.model.contact.Contact.ModifyTag.del;
+            default:
+                throw new IllegalArgumentException("Unknown modifyTag: " + modifyTag);
+        }
 	}
 
 

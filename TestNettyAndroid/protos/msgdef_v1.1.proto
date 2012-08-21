@@ -93,35 +93,41 @@ message SMSRecord
 	optional bool				read_tag = 6;	//是否已读
 }
 
-//彩信幻灯片
-message Slide
+//彩信附件
+message AttachmentRecord
 {
-	required int32	duration = 1;	// 播放时长
-	optional string	text = 2;
-	optional int32	imageIndex = 3;	// 图片在Attachment数组中的下标，图片的实际bytes = (MMSRecord.Attachments[MMSRecord.Slide.imageIndex]).file_bytes
-	optional int32	audioIndex = 4;	// 音频在Attachment数组中的下标
-	optional int32	videoIndex = 5;	// 视频在Attachment数组中的下标
+	enum AttachmentType
+	{
+		IMAGE = 0;
+		VIDEO = 1;
+		AUDIO = 2;
+		OTHER = 3;
+	}
+	optional AttachmentType type = 1;
+	optional string			name = 2;	 // 文件名，包括后缀名
+	optional int64			size = 3;	 // 文件大小，字节
+	optional bytes			content = 4; // 文件内容
 }
 
-//彩信附件
-message Attachment
-{	
-	required string	name = 1;	// 文件名，包括后缀名
-	required int32	size =2;	 // 文件大小
-	required bytes	file_bytes = 3; // 文件内容
+//彩信幻灯片
+message SlideRecord
+{
+	optional int32				duration = 1;	//播放时长（秒）
+	optional string				text = 2;		//文本
+	repeated AttachmentRecord 	attachment = 3; //附件列表
 }
 
 //彩信消息记录定义
 message MMSRecord
 {
-	required int64 			msg_id = 1;
-	required MsgOriginType	msg_origin = 2; 
-	required string			phone_num = 3;
-	optional string			subject = 4;	 //主题
-	required int64			msg_time = 5; //接收时间或发送时间
-	required bool			read_tag = 6;	 //是否已读
-	repeated Slide			slide = 7;	 // 幻灯片
-	repeated Attachment		attachment = 8; // 附件文件 
+	optional int64 				msg_id = 1;
+	optional MsgOriginType		msg_origin = 2;
+	optional string 			phone_num = 3;
+	optional string				subject = 4;	//主题
+	optional int64				msg_time = 5; 	//接收时间或发送时间
+	optional bool				read_tag = 6;	//是否已读
+	repeated SlideRecord		slide = 7;	 	//幻灯片
+	repeated AttachmentRecord 	attachment = 8; //非幻灯片附件
 }
 
 //编辑动作类型

@@ -83,8 +83,17 @@ public class AppUtil {
         List<PackageInfo> infos = pm.getInstalledPackages(0);
 
         Slog.d("infos size = " + infos.size());
-
+        
+        String selfPackageName = context.getPackageName();
+        
         for (PackageInfo info : infos) {
+            
+            // note: don't include self package into app list
+            if (info.packageName.equals(selfPackageName)) {
+                Slog.d("skip self package name: " + selfPackageName);
+                continue;
+            }
+            
             ApplicationInfo applicationInfo = info.applicationInfo;
             AppInfo appInfo = new AppInfo();
 

@@ -5,10 +5,14 @@ import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.example.tutorial.AddressBookProtos.Person;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoP;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
+import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
+import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
+import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
+import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -56,9 +60,15 @@ public class Main {
         
 //        testQuerySms();
         
-        testQueryCalendar();
+//        testQueryCalendar();
         
-        testQueryAgenda();
+//        testQueryAgenda();
+        
+//        testQueryContact();
+        
+        testQueryAccount();
+        
+        testAddContact();
         
         try {
             Thread.sleep(3000);
@@ -71,6 +81,8 @@ public class Main {
 
     }
     
+    
+
     private static void executeCommand(String cmd) {
         try {
             Process proc = Runtime.getRuntime().exec(cmd);
@@ -137,6 +149,7 @@ public class Main {
         System.out.println("testQueryCalendar X");
     }
     
+    
     private static void testQueryAgenda() {
         System.out.println("testQueryAgenda E");
         
@@ -154,6 +167,59 @@ public class Main {
         System.out.println("testQueryAgenda X");
     }
 
+    //
+    // Contact
+    //
+    private static void testQueryContact() {
+        System.out.println("testQueryContact E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
+        
+        postCmdRequest(builder);
+        
+        System.out.println("testQueryContact X");
+    }
+    
+    private static void testQueryAccount() {
+        System.out.println("testQuerryAccount E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_GET_ALL_ACCOUNTS);
+        
+        postCmdRequest(builder);
+        
+        System.out.println("testQuerryAccount X");
+    }
+    
+    private static void testAddContact() {
+        System.out.println("testAddContact E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_ADD_CONTACT);
+        
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+        AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+        PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
+        
+        accountRecordBuilder.setName("contacts.account.name.local");
+        accountRecordBuilder.setType("contacts.account.type.local");
+        
+        contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
+        contactRecordBuilder.setName("testAddContact");
+        contactRecordBuilder.setNickname("NICK testAddContact");
+        
+        phoneRecordBuilder.setType(PhoneType.MOBILE);
+        phoneRecordBuilder.setNumber("18601219014");
+        
+        contactRecordBuilder.addPhone(phoneRecordBuilder.build());
+        
+        builder.setContactParams(contactRecordBuilder);
+        
+        postCmdRequest(builder);
+        
+        System.out.println("testAddContact X");
+    }
     
     private static void postCmdRequest(CmdRequest.Builder cmdRequestBuilder) {
 

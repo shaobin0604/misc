@@ -93,22 +93,28 @@ message SMSRecord
 	optional bool				read_tag = 6;	//是否已读
 }
 
-//彩信幻灯片
-message SlideRecord
-{
-	optional int32	duration = 1;	//播放时长（秒）
-	optional string	text = 2;		//文本
-	optional bytes	image = 3;		//图片
-	optional bytes	audio = 4;		//音频
-	optional bytes	video = 5;		//视频
-}
-
 //彩信附件
 message AttachmentRecord
 {
-	optional string	name = 1;	// 文件名，包括后缀名
-	optional int32	size = 2;	// 文件大小，字节
-	optional bytes	content = 3; // 文件内容
+	enum AttachmentType
+	{
+		IMAGE = 0;
+		VIDEO = 1;
+		AUDIO = 2;
+		OTHER = 3;
+	}
+	optional AttachmentType type = 1;
+	optional string			name = 2;	 // 文件名，包括后缀名
+	optional int64			size = 3;	 // 文件大小，字节
+	optional bytes			content = 4; // 文件内容
+}
+
+//彩信幻灯片
+message SlideRecord
+{
+	optional int32				duration = 1;	//播放时长（秒）
+	optional string				text = 2;		//文本
+	repeated AttachmentRecord 	attachment = 3; //附件列表
 }
 
 //彩信消息记录定义
@@ -121,7 +127,7 @@ message MMSRecord
 	optional int64				msg_time = 5; 	//接收时间或发送时间
 	optional bool				read_tag = 6;	//是否已读
 	repeated SlideRecord		slide = 7;	 	//幻灯片
-	repeated AttachmentRecord	attachment = 8; //附件文件
+	repeated AttachmentRecord 	attachment = 8; //非幻灯片附件
 }
 
 //编辑动作类型
@@ -183,6 +189,8 @@ message EmailRecord
 	{
 		WORK = 0;			//工作邮箱
 		HOME = 1;			//家庭邮箱
+		OTHER = 2;			//其他
+		
 		USER_DEFINED = 99;	//自定义
 	}
 	optional int64 		id = 1;
@@ -205,6 +213,8 @@ message IMRecord
 		GTALK = 5;
 		ICQ = 6;
 		JABBER = 7;
+		NETMEETING = 8;
+		
 		USER_DEFINED = 99;
 	}
 	optional int64 		id = 1;
@@ -221,6 +231,8 @@ message AddressRecord
 	{
 		WORK = 0;
 		HOME = 1;
+		OTHER = 2;
+		
 		USER_DEFINED = 99;
 	}
 	optional int64 			id = 1;
@@ -242,6 +254,8 @@ message OrgRecord
 	enum OrgType
 	{
 		COMPANY = 0;
+		OTHER = 1;
+		
 		USER_DEFINED = 99;
 	}
 	optional int64 		id = 1;

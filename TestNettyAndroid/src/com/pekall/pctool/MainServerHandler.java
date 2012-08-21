@@ -188,6 +188,19 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
                         cmdResponse = mHandlerFacade.importSms(cmdRequest);
                         break;
                     }
+                    
+                    //
+                    // MMS related methods
+                    //
+                    case CMD_QUERY_MMS: {
+                        cmdResponse = mHandlerFacade.queryMms(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_DELETE_MMS: {
+                        cmdResponse = mHandlerFacade.deleteMms(cmdRequest);
+                        break;
+                    }
 
                     //
                     // Calendar related methods
@@ -245,8 +258,29 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
                         break;
                     }
                     
+                    case CMD_QUERY_CONTACTS: {
+                        cmdResponse = mHandlerFacade.queryContact(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_ADD_CONTACT: {
+                        cmdResponse = mHandlerFacade.addContact(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_EDIT_CONTACT: {
+                        cmdResponse = mHandlerFacade.updateContact(cmdRequest);
+                        break;
+                    }
+                    
+                    case CMD_DELETE_CONTACT: {
+                        cmdResponse = mHandlerFacade.deleteContact(cmdRequest);
+                        break;
+                    }
+                    
                     default: {
-                        cmdResponse = mHandlerFacade.defaultCmdResponse();
+                        // should not goes here
+                        cmdResponse = mHandlerFacade.unknownCmdResponse(cmdRequest);
                         break;
                     }
                 }
