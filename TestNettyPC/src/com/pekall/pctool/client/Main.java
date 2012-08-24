@@ -11,7 +11,10 @@ import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
 import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
+import com.pekall.pctool.protos.MsgDefProtos.IMRecord;
+import com.pekall.pctool.protos.MsgDefProtos.ModifyTag;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
+import com.pekall.pctool.protos.MsgDefProtos.IMRecord.IMType;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 
 import org.apache.http.HttpEntity;
@@ -25,6 +28,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Main {
 	
@@ -56,19 +60,21 @@ public class Main {
         
 //        testGetAppInfoPList();
         
-//        testQueryApp();
+        testQueryApp();
         
 //        testQuerySms();
         
 //        testQueryCalendar();
         
 //        testQueryAgenda();
+
+//      testQueryAccount();
         
 //        testQueryContact();
         
-        testQueryAccount();
+//        testAddContact();
         
-        testAddContact();
+//        testUpdateContact();
         
         try {
             Thread.sleep(3000);
@@ -170,16 +176,6 @@ public class Main {
     //
     // Contact
     //
-    private static void testQueryContact() {
-        System.out.println("testQueryContact E");
-        
-        CmdRequest.Builder builder = CmdRequest.newBuilder();
-        builder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
-        
-        postCmdRequest(builder);
-        
-        System.out.println("testQueryContact X");
-    }
     
     private static void testQueryAccount() {
         System.out.println("testQuerryAccount E");
@@ -190,6 +186,17 @@ public class Main {
         postCmdRequest(builder);
         
         System.out.println("testQuerryAccount X");
+    }
+    
+    private static void testQueryContact() {
+        System.out.println("testQueryContact E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
+        
+        postCmdRequest(builder);
+        
+        System.out.println("testQueryContact X");
     }
     
     private static void testAddContact() {
@@ -221,7 +228,50 @@ public class Main {
         System.out.println("testAddContact X");
     }
     
-    private static void postCmdRequest(CmdRequest.Builder cmdRequestBuilder) {
+    private static void testUpdateContact() {
+        System.out.println("testUpdateContact E");
+        
+        CmdRequest.Builder builder = CmdRequest.newBuilder();
+        builder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
+        
+        CmdResponse cmdResponse = postCmdRequest(builder);
+        
+        List<ContactRecord> contactRecordList = cmdResponse.getContactRecordList();
+        
+        ContactRecord contactRecord = contactRecordList.get(0);
+        
+        System.out.println("original");
+        System.out.println(contactRecord.toString());
+        
+        ContactRecord.Builder contactRecordBuilder = contactRecord.toBuilder();
+        contactRecordBuilder.setNickname("testUpdateContact");
+        
+        IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
+        
+        imRecordBuilder.setAccount("65491117");
+        imRecordBuilder.setType(IMType.QQ);
+        imRecordBuilder.setModifyTag(ModifyTag.ADD);
+        imRecordBuilder.setName("");
+        
+        contactRecordBuilder.addIm(imRecordBuilder);
+        
+        ContactRecord contactRecordParam = contactRecordBuilder.build();
+        
+        System.out.println("modified");
+        System.out.println(contactRecordParam.toString());
+        
+        
+        builder.clear();
+        builder.setCmdType(CmdType.CMD_EDIT_CONTACT);
+        
+        builder.setContactParams(contactRecordParam);
+        
+        cmdResponse = postCmdRequest(builder);
+        
+        System.out.println("testUpdateContact X");
+    }
+    
+    private static CmdResponse postCmdRequest(CmdRequest.Builder cmdRequestBuilder) {
 
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost("http://localhost:12580/rpc");
@@ -235,6 +285,8 @@ public class Main {
             EntityUtils.consume(entity);
             
             System.out.println(cmdResponse.toString());
+            
+            return cmdResponse;
 
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
@@ -246,6 +298,7 @@ public class Main {
             post.releaseConnection();
             client.getConnectionManager().shutdown();
         }
+        return null;
     }
     
     

@@ -21,7 +21,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-public class MainServer {
+public class HttpServer {
     private static final int SERVER_PORT = 12580;
 
     private Context mContext;
@@ -29,7 +29,7 @@ public class MainServer {
     private ChannelFactory mFactory;
     private volatile boolean mIsAlive;
 
-    public MainServer(Context context) {
+    public HttpServer(Context context) {
         super();
         mContext = context;
     }
@@ -48,7 +48,7 @@ public class MainServer {
             pipeline.addLast("decoder", new HttpRequestDecoder());
             pipeline.addLast("encoder", new HttpResponseEncoder());
             // http处理handler
-            pipeline.addLast("handler", new MainServerHandler(new HandlerFacade(mContext)));
+            pipeline.addLast("handler", new HttpServerHandler(new HandlerFacade(mContext)));
             return pipeline;
         }
     }

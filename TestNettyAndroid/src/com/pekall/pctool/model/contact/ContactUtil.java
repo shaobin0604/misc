@@ -181,17 +181,17 @@ public class ContactUtil {
             Cursor cursorOfNickname = resolver
                     .query(Data.CONTENT_URI,
                             new String[] {
-                                Data.DATA1
+                                Nickname.NAME
                             // --------->data1
                             },
                             Data.RAW_CONTACT_ID + " = ? and " + Data.MIMETYPE
                                     + " = ? ",
                             new String[] {
-                                    rawContactId, Nickname.TYPE
+                                    rawContactId, Nickname.CONTENT_ITEM_TYPE
                             }, null);
             if (cursorOfNickname.moveToNext()) {
                 c.nickname = cursorOfNickname.getString(cursorOfNickname
-                        .getColumnIndex(Data.DATA1));
+                        .getColumnIndex(Nickname.NAME));
                 // we only need one name for a contact
             }
             cursorOfNickname.close();
@@ -620,6 +620,8 @@ public class ContactUtil {
      * @return
      */
     public static boolean updateContact(Context context, Contact contact) {
+        Slog.d("updateContact E");
+        
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         // update photo
@@ -906,8 +908,11 @@ public class ContactUtil {
             context.getContentResolver().applyBatch(ContactsContract.AUTHORITY,
                     ops);
         } catch (Exception e) {
+            Slog.e("Error when update contact", e);
+            Slog.d("updateContact X");
             return false;
         }
+        Slog.d("updateContact X");
         return true;
     }
 
@@ -1363,7 +1368,7 @@ public class ContactUtil {
      */
     public static boolean hasField(String filed, Context context, long rawId) {
         Uri dataUri = Data.CONTENT_URI;
-        String where = Data.CONTENT_TYPE + "=? and " + Data.RAW_CONTACT_ID
+        String where = Data.MIMETYPE + "=? and " + Data.RAW_CONTACT_ID
                 + "=?";
         String whereargs[] = null;
         if (filed.equals("name")) {

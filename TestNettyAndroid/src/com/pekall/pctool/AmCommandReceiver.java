@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import org.swiftp.FTPServerService;
-
 public class AmCommandReceiver extends BroadcastReceiver {
 	
 	
@@ -19,34 +17,16 @@ public class AmCommandReceiver extends BroadcastReceiver {
 		String action = intent.getAction();
 		Slog.d("onReceive action = " + action);
 		if (ACTION_FTP_SERVER_START.equals(action)) {
-			startFTPServer(context);
+			ServerController.startFTPServer(context);
 		} else if (ACTION_FTP_SERVER_STOP.equals(action)) {
-			stopFTPServer(context);
+		    ServerController.stopFTPServer(context);
 		} else if (ACTION_MAIN_SERVER_START.equalsIgnoreCase(action)) {
-            startMainServer(context);
+		    ServerController.startHttpServer(context);
         } else if (ACTION_MAIN_SERVER_STOP.equalsIgnoreCase(action)) {
-            stopMainServer(context);
+            ServerController.stopHttpServer(context);
         }
 	}
 	
-	private void startFTPServer(Context context) {
-        Intent serverService = new Intent(context, FTPServerService.class);
-        if (!FTPServerService.isRunning()) {
-            context.startService(serverService);
-        }
-    }
-
-    private void stopFTPServer(Context context) {
-        Intent serverService = new Intent(context, FTPServerService.class);
-        context.stopService(serverService);
-    }
-
-    private void stopMainServer(Context context) {
-        context.stopService(new Intent(context, MainService.class));
-    }
-
-    private void startMainServer(Context context) {
-        context.startService(new Intent(context, MainService.class));
-    }
+	
 
 }

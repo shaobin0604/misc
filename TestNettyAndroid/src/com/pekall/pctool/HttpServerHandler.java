@@ -50,7 +50,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 
-public class MainServerHandler extends SimpleChannelUpstreamHandler {
+public class HttpServerHandler extends SimpleChannelUpstreamHandler {
 
     // server error code
 
@@ -73,7 +73,7 @@ public class MainServerHandler extends SimpleChannelUpstreamHandler {
 
     private HandlerFacade mHandlerFacade;
 
-    public MainServerHandler(HandlerFacade facade) {
+    public HttpServerHandler(HandlerFacade facade) {
         this.mHandlerFacade = facade;
     }
 
