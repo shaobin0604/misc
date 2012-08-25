@@ -102,12 +102,12 @@ public class Contact {
 
     public static class AddressInfo {
         public long id;
+        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.StructuredPostal.html
         public String country;
         public String province;
         public String city;
         public String street;
         public String postcode;
-        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.StructuredPostal.html
         public String address;
         public String customName;
         public int    modifyFlag;
@@ -139,6 +139,36 @@ public class Contact {
         public static int  add = 1;    //增加
         public static int  del = 2;    //删除
         public static int  edit = 3;   //修改
+    }
+
+    public static class RawContact {
+        public long rawId;
+        public AccountInfo accountInfo = new AccountInfo();
+        public boolean modifyFlag;
+    }
+
+    public static class DataModel {
+        public long dataId;
+        public String mimeType;
+        public long rawId;
+        public String data1;
+        public int data2; // usually for the type
+        public String data3; // usually for the user custom name
+        public String data4;
+        public int data5;
+        public String data6;
+        public String data7;
+        public String data8;
+        public String data9;
+        public String data10;
+        public byte[] data15;
+        public GroupInfo gi = new GroupInfo();
+
+    }
+
+    public static class MimeType {
+        public long id;
+        public String mimeType;
     }
 
 }

@@ -60,7 +60,7 @@ public class Main {
         
 //        testGetAppInfoPList();
         
-        testQueryApp();
+//        testQueryApp();
         
 //        testQuerySms();
         
@@ -70,7 +70,7 @@ public class Main {
 
 //      testQueryAccount();
         
-//        testQueryContact();
+        testQueryContact();
         
 //        testAddContact();
         

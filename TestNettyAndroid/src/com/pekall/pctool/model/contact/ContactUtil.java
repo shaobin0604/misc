@@ -45,13 +45,19 @@ import java.util.List;
  */
 public class ContactUtil {
 
+    /****** Account ***********************************/
     public static final String DEFAULT_ACCOUNT_NAME = "contacts.account.name.local";
     public static final String DEFAULT_ACCOUNT_TYPE = "contacts.account.type.local";
     public static final String SIM1_ACCOUNT_NAME = "contacts.account.name.sim1";
     public static final String SIM1_ACCOUNT_TYPE = "contacts.account.type.sim";
     public static final String SIM2_ACCOUNT_NAME = "contacts.account.name.sim2";
     public static final String SIM2_ACCOUNT_TYPE = "contacts.account.type.sim";
+
+    /********* Data *********************************/
     public static final int USER_DEFINED = 99;
+
+	/******* Flag ******************************/
+    private static final int DELETE_FLAG = 1;
     public static final int FAVORITE_CONTACT_FLAG = 1;
 
     /**

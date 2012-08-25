@@ -25,7 +25,7 @@ import com.pekall.pctool.model.contact.Contact.EmailInfo;
 import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
-import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.model.contact.ContactUtilFast;
 import com.pekall.pctool.model.contact.GroupInfo;
 import com.pekall.pctool.model.mms.Mms;
 import com.pekall.pctool.model.mms.Mms.Attachment;
@@ -590,7 +590,7 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_GET_ALL_ACCOUNTS);
 
-        List<AccountInfo> accountInfoList = ContactUtil
+        List<AccountInfo> accountInfoList = ContactUtilFast
                 .getAllAccounts(mContext);
 
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
@@ -616,32 +616,52 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_GET_ALL_GROUPS);
 
-        List<AccountInfo> accountInfoList = ContactUtil
-                .getAllAccounts(mContext);
-
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
         GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
 
-        for (AccountInfo accountInfo : accountInfoList) {
-            List<GroupInfo> groupInfoList = ContactUtil.queryGroup(mContext,
-                    accountInfo);
+        // List<AccountInfo> accountInfoList = ContactUtilSuperFast
+        // .getAllAccounts(mContext);
+        // for (AccountInfo accountInfo : accountInfoList) {
+        // List<GroupInfo> groupInfoList =
+        // ContactUtilSuperFast.queryGroup(mContext,
+        // accountInfo);
+        //
+        // accountRecordBuilder.setName(normalizeStr(accountInfo.accountName));
+        // accountRecordBuilder.setType(normalizeStr(accountInfo.accountType));
+        //
+        // for (GroupInfo groupInfo : groupInfoList) {
+        // groupRecordBuilder.setId(groupInfo.grId);
+        // groupRecordBuilder.setDataId(groupInfo.dataId);
+        // groupRecordBuilder.setAccountInfo(accountRecordBuilder.build());
+        // groupRecordBuilder.setName(normalizeStr(groupInfo.name));
+        // groupRecordBuilder.setNote(normalizeStr(groupInfo.note));
+        // groupRecordBuilder.setModifyTag(ModifyTag.SAME);
+        //
+        // responseBuilder.addGroupRecord(groupRecordBuilder.build());
+        //
+        // groupRecordBuilder.clear();
+        // }
+        //
+        // accountRecordBuilder.clear();
+        // }
 
-            accountRecordBuilder.setName(normalizeStr(accountInfo.accountName));
-            accountRecordBuilder.setType(normalizeStr(accountInfo.accountType));
+        List<GroupInfo> groupInfos = ContactUtilFast.getAllGroups(mContext);
 
-            for (GroupInfo groupInfo : groupInfoList) {
-                groupRecordBuilder.setId(groupInfo.grId);
-                groupRecordBuilder.setDataId(groupInfo.dataId);
-                groupRecordBuilder.setAccountInfo(accountRecordBuilder.build());
-                groupRecordBuilder.setName(normalizeStr(groupInfo.name));
-                groupRecordBuilder.setNote(normalizeStr(groupInfo.note));
-                groupRecordBuilder.setModifyTag(ModifyTag.SAME);
+        for (GroupInfo groupInfo : groupInfos) {
+            groupRecordBuilder.setId(groupInfo.grId);
+            groupRecordBuilder.setDataId(groupInfo.dataId);
+            
+            accountRecordBuilder.setName(normalizeStr(groupInfo.accountInfo.accountName));
+            accountRecordBuilder.setType(normalizeStr(groupInfo.accountInfo.accountType));
+            
+            groupRecordBuilder.setAccountInfo(accountRecordBuilder.build());
+            groupRecordBuilder.setName(normalizeStr(groupInfo.name));
+            groupRecordBuilder.setNote(normalizeStr(groupInfo.note));
+            groupRecordBuilder.setModifyTag(ModifyTag.SAME);
 
-                responseBuilder.addGroupRecord(groupRecordBuilder.build());
+            responseBuilder.addGroupRecord(groupRecordBuilder.build());
 
-                groupRecordBuilder.clear();
-            }
-
+            groupRecordBuilder.clear();
             accountRecordBuilder.clear();
         }
 
@@ -669,10 +689,10 @@ public class HandlerFacade {
             groupInfo.accountInfo.accountType = groupRecord.getAccountInfo()
                     .getType();
 
-            if (ContactUtil.addGroup(mContext, groupInfo)) {
+            if (ContactUtilFast.addGroup(mContext, groupInfo)) {
                 setResultOK(responseBuilder);
             } else {
-                setResultErrorInternal(responseBuilder, "ContactUtil.addGroup");
+                setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.addGroup");
             }
         } else {
             setResultErrorInsufficentParams(responseBuilder, "group");
@@ -697,11 +717,11 @@ public class HandlerFacade {
             groupInfo.name = groupRecord.getName();
             groupInfo.note = groupRecord.getNote();
 
-            if (ContactUtil.updateGroup(mContext, groupInfo)) {
+            if (ContactUtilFast.updateGroup(mContext, groupInfo)) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder,
-                        "ContactUtil.updateGroup");
+                        "ContactUtilSuperFast.updateGroup");
             }
         } else {
             setResultErrorInsufficentParams(responseBuilder, "group");
@@ -721,7 +741,7 @@ public class HandlerFacade {
         boolean result = false;
         if (groupIdList != null && groupIdList.size() > 0) {
             for (long groupId : groupIdList) {
-                result = ContactUtil.deleteGroup(mContext, groupId);
+                result = ContactUtilFast.deleteGroup(mContext, groupId);
 
                 if (!result) {
                     break;
@@ -731,7 +751,7 @@ public class HandlerFacade {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder,
-                        "ContactUtil.deleteGroup");
+                        "ContactUtilSuperFast.deleteGroup");
             }
         } else {
             setResultErrorInsufficentParams(responseBuilder, "recordIdList");
@@ -751,22 +771,11 @@ public class HandlerFacade {
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
 
         List<Contact> contactList = null;
-        if (request.hasContactParams()) {
-            ContactRecord contactRecord = request.getContactParams();
-            
-            Slog.d(">>>>> DUMP ContactRecord >>>>>");
-            Slog.d(contactRecord.toString());
-            Slog.d("<<<<< DUMP ContactRecord <<<<<");
-            
-            contactList = new ArrayList<Contact>();
-            
-            Contact contact = ContactUtil.getContactByRawId(mContext, 1);
-            contactList.add(contact);        
-                    
-        } else {
-            // default query all Contact
-            contactList = ContactUtil.getAllContacts(mContext);
-        }
+       
+        // default query all Contact
+        contactList = ContactUtilFast.getAllContacts(mContext);
+        
+        Slog.d("Contacts number: " + contactList.size());
 
         ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
@@ -778,9 +787,6 @@ public class HandlerFacade {
         OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
 
         for (Contact contact : contactList) {
-            Slog.d(contact.toString());
-            
-            
             contactRecordBuilder.setId(contact.id);
             contactRecordBuilder.setName(normalizeStr(contact.name));
             contactRecordBuilder.setNickname(normalizeStr(contact.nickname));
@@ -985,10 +991,10 @@ public class HandlerFacade {
                     contact.addOrgInfo(orgInfo);
                 }
 
-                if (ContactUtil.addContact(mContext, contact)) {
+                if (ContactUtilFast.addContact(mContext, contact)) {
                     setResultOK(responseBuilder);
                 } else {
-                    setResultErrorInternal(responseBuilder, "ContactUtil.addContact");
+                    setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.addContact");
                 }
             } else {
                 setResultErrorInsufficentParams(responseBuilder, "contact");
@@ -1114,13 +1120,13 @@ public class HandlerFacade {
 
                     contact.addOrgInfo(orgInfo);
                 }
-                
+
                 Slog.d("contact: " + contact);
 
-                if (ContactUtil.updateContact(mContext, contact)) {
+                if (ContactUtilFast.updateContact(mContext, contact)) {
                     setResultOK(responseBuilder);
                 } else {
-                    setResultErrorInternal(responseBuilder, "ContactUtil.updateContact");
+                    setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.updateContact");
                 }
 
             } else {
@@ -1143,10 +1149,10 @@ public class HandlerFacade {
         List<Long> contactIdList = request.getRecordIdList();
 
         if (contactIdList != null && contactIdList.size() > 0) {
-            if (ContactUtil.deleteContact(mContext, contactIdList)) {
+            if (ContactUtilFast.deleteContact(mContext, contactIdList)) {
                 setResultOK(responseBuilder);
             } else {
-                setResultErrorInternal(responseBuilder, "ContactUtil.deleteContact");
+                setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.deleteContact");
             }
         } else {
             setResultErrorInsufficentParams(responseBuilder, "recordIdList");
@@ -1384,7 +1390,9 @@ public class HandlerFacade {
         for (AppInfo appInfo : appInfos) {
             appBuilder.setAppName(appInfo.label);
             appBuilder.setAppType(appInfo.appType == AppInfo.FLAG_APP_TYPE_SYSTEM ? AppType.SYSTEM : AppType.USER);
-            appBuilder.setLocationType(appInfo.installLocation == AppInfo.FLAG_INSTALL_LOCATION_INTERNAL ? AppLocationType.INTERNAL : AppLocationType.EXTERNAL);
+            appBuilder
+                    .setLocationType(appInfo.installLocation == AppInfo.FLAG_INSTALL_LOCATION_INTERNAL ? AppLocationType.INTERNAL
+                            : AppLocationType.EXTERNAL);
             appBuilder.setPackageName(normalizeStr(appInfo.packageName));
             appBuilder.setVersionCode(appInfo.versionCode);
             appBuilder.setVersionName(normalizeStr(appInfo.versionName));
