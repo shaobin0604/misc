@@ -1,6 +1,8 @@
 
 package com.pekall.pctool.model.contact;
 
+import android.provider.BaseColumns;
+
 import com.pekall.pctool.model.account.AccountInfo;
 
 import java.util.ArrayList;
@@ -171,4 +173,57 @@ public class Contact {
         public String mimeType;
     }
 
+    public static class ContactVersion implements BaseColumns {
+        public static final String VERSION = "version";
+
+        public long id;
+        public int version;
+        public int modifyTag;
+
+        public ContactVersion() {
+            super();
+        }
+
+        public ContactVersion(long id, int version, int modifyTag) {
+            super();
+            this.id = id;
+            this.version = version;
+            this.modifyTag = modifyTag;
+        }
+
+        @Override
+        public String toString() {
+            return "ContactVersion [id=" + id + ", version=" + version + ", modifyTag=" + modifyTag + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + (int) (id ^ (id >>> 32));
+            result = prime * result + modifyTag;
+            result = prime * result + version;
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ContactVersion other = (ContactVersion) obj;
+            if (id != other.id)
+                return false;
+            if (modifyTag != other.modifyTag)
+                return false;
+            if (version != other.version)
+                return false;
+            return true;
+        }
+
+        
+    }
 }

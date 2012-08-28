@@ -16,6 +16,8 @@ import android.provider.CalendarContract.Reminders;
 import android.text.TextUtils;
 import android.text.format.Time;
 
+import com.pekall.pctool.R;
+import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 
 import java.util.ArrayList;
@@ -136,14 +138,16 @@ public class CalendarUtil {
      */
     public static boolean addEvent(Context context, EventInfo eventInfo) {
         if (eventInfo.calendarId < 0) {
+            Slog.e("Error calendarId: " + eventInfo.calendarId);
             return false;
         }
         ContentValues event = new ContentValues();
         event.put(Events.TITLE, eventInfo.title);
-        event.put(Events.DTSTART, eventInfo.startTime);
         event.put(Events.DESCRIPTION, eventInfo.note);
+        event.put(Events.EVENT_LOCATION, eventInfo.place);
         event.put(Events.CALENDAR_ID, eventInfo.calendarId);
         event.put(Events.EVENT_TIMEZONE, TIME_ZONE);
+        event.put(Events.DTSTART, eventInfo.startTime);
         event.put(Events.RRULE, eventInfo.rrule);
         if (!TextUtils.isEmpty(eventInfo.rrule)) {
             String duration = "P" + (eventInfo.endTime - eventInfo.startTime) + "S";
@@ -154,15 +158,17 @@ public class CalendarUtil {
         Uri newEvent = context.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
         long id = Long.valueOf(newEvent.getLastPathSegment());
         if (id == 0) {
+            Slog.e("Error cannot insert newEvent");
             return false;
         } else {
             ContentValues values = new ContentValues();
             values.put(Reminders.EVENT_ID, id);
             values.put(Reminders.MINUTES, eventInfo.alertTime);
             values.put(Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
-            context.getContentResolver().insert(CalendarContract.Reminders.CONTENT_URI, values);
+            Uri newReminder = context.getContentResolver().insert(CalendarContract.Reminders.CONTENT_URI, values);
+            Slog.d("newReminder: " + newReminder);
+            return newReminder != null;
         }
-        return true;
     }
 
     /**
@@ -173,6 +179,7 @@ public class CalendarUtil {
         ContentValues values = new ContentValues();
         values.put(Events.TITLE, eventInfo.title);
         values.put(Events.DESCRIPTION, eventInfo.note);
+        values.put(Events.EVENT_LOCATION, eventInfo.place);
         values.put(Events.RRULE, eventInfo.rrule);
         values.put(Events.DTSTART, eventInfo.startTime);
         if (!TextUtils.isEmpty(eventInfo.rrule)) {
@@ -185,6 +192,7 @@ public class CalendarUtil {
         Uri myUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfo.evId);
         int rows = cr.update(myUri, values, null, null);
         if (rows == 0) {
+            Slog.e("Error update Event");
             return false;
         }
         if (eventInfo.alertTime != 0) {
@@ -194,6 +202,7 @@ public class CalendarUtil {
                     String.valueOf(eventInfo.evId)
             });
             if (rows == 0) {
+                Slog.e("Error update reminder");
                 return false;
             }
         }

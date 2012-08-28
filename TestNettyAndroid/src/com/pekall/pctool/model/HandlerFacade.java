@@ -494,6 +494,7 @@ public class HandlerFacade {
             AgendaRecord agendaRecord = request.getAgendaParams();
 
             EventInfo eventInfo = new EventInfo();
+            
             eventInfo.calendarId = agendaRecord.getCalendarId();
             eventInfo.title = agendaRecord.getSubject();
             eventInfo.place = agendaRecord.getLocation();

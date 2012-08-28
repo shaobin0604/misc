@@ -268,18 +268,66 @@ message OrgRecord
 //联系人
 message ContactRecord
 {
-	optional int64			id = 1;
-	optional string 		name = 2;
-	optional string 		nickname = 3;
-	optional bytes			photo = 4;				//头像数据
-	optional bool			photo_modify_tag = 5;	//为true时，需要更新头像数据
-	optional AccountRecord 	account_info = 6;
-	repeated GroupRecord	group = 7;				//所属组列表
-	repeated PhoneRecord	phone = 8;
-	repeated EmailRecord	email = 9;
-	repeated IMRecord		im = 10;
-	repeated AddressRecord  address = 11;
-	repeated OrgRecord		org = 12;
+	optional int64								id = 1;
+	optional string 							name = 2;
+	optional string 							nickname = 3;
+	optional bytes								photo = 4;				//头像数据
+	optional bool								photo_modify_tag = 5;	//为true时，需要更新头像数据
+	optional int32								version = 6;
+	optional SyncResult 						sync_result = 7;
+	optional AccountRecord 						account_info = 8;
+	repeated GroupRecord						group = 9;				//所属组列表
+	repeated PhoneRecord						phone = 10;
+	repeated EmailRecord						email = 11;
+	repeated IMRecord							im = 12;
+	repeated AddressRecord  					address = 13;
+	repeated OrgRecord							org = 14;
+}
+
+//同步类型
+enum SyncType
+{
+	PC_PHONE = 0; //pc和手机同步
+	OUTLOOK_PHONE = 1; //pc和outlook同步
+}
+enum SyncSubType
+{
+	TWO_WAY_SLOW_SYNC = 0;  //双向慢同步,需要两次消息传递,见TWO_WAY_SLOW_SYNC_TO_PHONE_RESUTL
+	TWO_WAY_FAST_SYNC = 1;  //双向快同步
+	PHONE_REFRESH_SYNC = 2; //手机刷新同步
+	PC_REFRESH_SYNC = 3;     //pc刷新同步
+	PHONE_FAST_SYNC = 4;    //手机快同步
+	PC_FAST_SYNC = 5;        //pc快同步
+	TWO_WAY_SLOW_SYNC_SECOND = 6; //双向慢同步由PC计算后给手机的结果，慢同步的第二次消息传递,不作为单独的同步类型
+	TWO_WAY_FAST_SYNC_SECOND = 7; //双向快同步由PC计算后给手机的结果，快同步的第二次消息传递,不作为单独的同步类型
+}
+enum SyncResult
+{
+	NO_CHANGE = 0; //一致的
+	PC_ADD = 1; //pc新添加的
+	PC_DEL = 2; //pc删除的,删除的优先级比修改高
+	PC_MODIFY = 3; //只有pc修改了
+	BOTH_MODIFY = 5; //都修改了
+	PHONE_ADD = 6; //phone 新添加的
+	PHONE_DEL = 7; //phone 删除的,删除的优先级比修改高
+	PHONE_MODIFY = 8; //只有phone修改了
+}
+
+enum SyncConflictPloy
+{
+	SKIP = 0; //跳过
+	PC_SIDE = 1; //PC为准
+	PHONE_SIDE = 2; //手机为准
+	MEGER = 3; //合并
+}
+	
+//和pc联系人同步消息
+message ContactsSync
+{
+	required SyncType 		type = 1;
+	required SyncSubType 	sub_type = 2;
+	optional SyncConflictPloy sync_conflict_ploy = 3;
+	repeated ContactRecord  contact_record = 4;
 }
 
 //日历
@@ -302,6 +350,17 @@ message AgendaRecord
 	optional string repeat_rule = 7; 	//重复规则
 	optional int32	alert_time = 8;		//提醒间隔，单位秒
 	optional string	note = 9;
+	optional int32			version = 10;
+	optional SyncResult 	sync_result = 11;
+}
+
+//和pc日程同步消息
+message AgendaSync
+{
+	required SyncType 		type = 1;
+	required SyncSubType 	sub_type = 2;
+	optional SyncConflictPloy sync_conflict_ploy = 3;
+	repeated AgendaRecord  agenda_record = 4;
 }
 
 //顶层请求消息
@@ -315,6 +374,7 @@ message CmdRequest
 	optional ContactRecord  contact_params = 6;	//针对联系人的查询，新增、编辑操作的参数
 	optional AgendaRecord 	agenda_params = 7;	//针对日历的查询，新增，编辑操作的参数
 	optional AppRecord		app_params = 8;		//应用记录参数
+	optional ContactsSync	contacts_sync = 9; //联系人同步
 }
 
 //顶层响应消息
@@ -331,4 +391,5 @@ message CmdResponse
 	repeated AppRecord		app_record = 9;			//应用列表
 	repeated AccountRecord	account_record = 10;	//账户列表
 	repeated GroupRecord	group_record = 11;		//联系人分组记录列表
+	optional ContactsSync	contacts_sync = 12; 		//联系人同步
 }

@@ -30,7 +30,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <service android:name=".HttpServerService" />
-        <service android:name=".FTPServerService" />
+        <service android:name="org.swiftp.FTPServerService" />
 
         <receiver
             android:name=".AmCommandReceiver"

@@ -26,6 +26,7 @@ import android.provider.ContactsContract.RawContacts;
 
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact.AddressInfo;
+import com.pekall.pctool.model.contact.Contact.ContactVersion;
 import com.pekall.pctool.model.contact.Contact.DataModel;
 import com.pekall.pctool.model.contact.Contact.EmailInfo;
 import com.pekall.pctool.model.contact.Contact.ImInfo;
@@ -87,6 +88,38 @@ public class ContactUtilFast {
         }
         cursor.close();
         return lr;
+    }
+    
+    /**
+     * get all version of contacts
+     *  
+     * @param context
+     * @return
+     */
+    public static List<ContactVersion> getAllContactVersion(Context context) {
+        List<ContactVersion> contactVersions = new ArrayList<ContactVersion>();
+        
+        Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
+                RawContacts._ID, RawContacts.VERSION
+        }, RawContacts.DELETED + "!=" + DELETE_FLAG, null, null);
+        
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                final int IndexOfId = cursor.getColumnIndex(RawContacts._ID);
+                final int indexOfVersion = cursor.getColumnIndex(RawContacts.VERSION);
+
+                do {
+                    ContactVersion contactVersion = new ContactVersion();
+
+                    contactVersion.id = cursor.getLong(IndexOfId);
+                    contactVersion.version = cursor.getInt(indexOfVersion);
+
+                    contactVersions.add(contactVersion);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        return contactVersions;
     }
 
     /**

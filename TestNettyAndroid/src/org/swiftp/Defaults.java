@@ -31,8 +31,10 @@ public class Defaults {
 	protected static int uiLogLevel = Defaults.release ? Log.INFO : Log.DEBUG;
 	protected static int consoleLogLevel = Defaults.release ? Log.INFO : Log.DEBUG;
 	protected static String settingsName = "SwiFTP";
-	//protected static String username = "user";
-	//protected static String password = "";
+	
+	protected static String username = "pekall";
+	protected static String password = "pekall";
+	
 	public static int portNumber = 2121; 
 
 	public static int portNumberPassive = 2120;

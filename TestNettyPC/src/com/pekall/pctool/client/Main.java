@@ -37,20 +37,20 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-//            System.out.println("adb install -r TestNettyAndroid.apk");
-//            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb install -r TestProtobufAndroidServer.apk");
-//            Thread.sleep(3000);
-            System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
-            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+//            installAPK();
+            Thread.sleep(3000);
+            
+            
+            stopMainServer();
             Thread.sleep(3000);
 
-            System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
-            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
+            startMainServer();
             Thread.sleep(3000);
 
-            System.out.println("adb forward tcp:12580 tcp:12580");
-            executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb forward tcp:12580 tcp:12580");
+            forwardMainServerPort();
             Thread.sleep(3000);
+            
+            
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -82,11 +82,54 @@ public class Main {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
-        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+        stopMainServer();
 
     }
+
+
+
+    private static void forwardMainServerPort() {
+        System.out.println("adb forward tcp:12580 tcp:12580");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb forward tcp:12580 tcp:12580");
+    }
+
+
+
+    private static void startMainServer() {
+        System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
+    }
+
+
+
+    private static void stopMainServer() {
+        System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+    }
+
+
+
+    private static void installAPK() {
+        System.out.println("adb install -r TestNettyAndroid.apk");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb install -r TestProtobufAndroidServer.apk");
+    }
     
+    private static void forwardFtpServerPort() {
+        System.out.println("adb forward tcp:2121 tcp:2121");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb forward tcp:2121 tcp:2121");
+        System.out.println("adb forward tcp:2120 tcp:2120");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb forward tcp:2120 tcp:2120");
+    }
+    
+    private static void startFtpServer() {
+        System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_START -n com.pekall.pctool/.AmCommandReceiver");
+    }
+    
+    private static void stopFtpServer() {
+        System.out.println("adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+        executeCommand(HOME_DIR + "/opt/android-sdk/platform-tools/adb shell am broadcast -a com.pekall.pctool.AmCommandReceiver.ACTION_FTP_SERVER_STOP -n com.pekall.pctool/.AmCommandReceiver");
+    }
     
 
     private static void executeCommand(String cmd) {

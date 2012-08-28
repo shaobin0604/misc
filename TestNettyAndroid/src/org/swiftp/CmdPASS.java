@@ -39,44 +39,40 @@ public class CmdPASS extends FtpCmd implements Runnable {
 		// populate the Account object's username
 		myLog.l(Log.DEBUG, "Executing PASS");
 	
-        sessionThread.writeString("230 Access granted\r\n");
-        sessionThread.authAttempt(true);
-//
-//		String attemptPassword = getParameter(input, true); // silent
-//		String attemptUsername = sessionThread.account.getUsername();
-//		if(attemptUsername == null) {
-//			sessionThread.writeString("503 Must send USER first\r\n");
-//			return;
-//		}
-//		Context ctx = Globals.getContext();
-//		if(ctx == null) {
-//			// This will probably never happen, since the global 
-//			// context is configured by the Service
-//			myLog.l(Log.ERROR, "No global context in PASS\r\n");
-//		}
-//		String password;
-//		String username;
-//		SharedPreferences settings = ctx.getSharedPreferences(
-//				Defaults.getSettingsName(), Defaults.getSettingsMode());
-//		username = settings.getString("username", null);
-//		password = settings.getString("password", null);
-//		if(username == null || password == null) {
-//			myLog.l(Log.ERROR, "Username or password misconfigured");
-//			sessionThread.writeString("500 Internal error during authentication");
-//		} else if(username.equals(attemptUsername) && 
-//				password.equals(attemptPassword)) {
-//			sessionThread.writeString("230 Access granted\r\n");
-//			myLog.l(Log.INFO, "User " + username + " password verified");
-//			sessionThread.authAttempt(true);
-//		} else {
-//			try {
-//				// If the login failed, sleep for one second to foil
-//				// brute force attacks
-//				Thread.sleep(1000);
-//			} catch(InterruptedException e) {}
-//			myLog.l(Log.INFO, "Failed authentication");
-//			sessionThread.writeString("530 Login incorrect.\r\n");
-//			sessionThread.authAttempt(false);
-//		}
+//        sessionThread.writeString("230 Access granted\r\n");
+//        sessionThread.authAttempt(true);
+
+		String attemptPassword = getParameter(input, true); // silent
+		String attemptUsername = sessionThread.account.getUsername();
+		if(attemptUsername == null) {
+			sessionThread.writeString("503 Must send USER first\r\n");
+			return;
+		}
+		Context ctx = Globals.getContext();
+		if(ctx == null) {
+			// This will probably never happen, since the global 
+			// context is configured by the Service
+			myLog.l(Log.ERROR, "No global context in PASS\r\n");
+		}
+		String password = Defaults.username;
+		String username = Defaults.password;
+		if(username == null || password == null) {
+			myLog.l(Log.ERROR, "Username or password misconfigured");
+			sessionThread.writeString("500 Internal error during authentication");
+		} else if(username.equals(attemptUsername) && 
+				password.equals(attemptPassword)) {
+			sessionThread.writeString("230 Access granted\r\n");
+			myLog.l(Log.INFO, "User " + username + " password verified");
+			sessionThread.authAttempt(true);
+		} else {
+			try {
+				// If the login failed, sleep for one second to foil
+				// brute force attacks
+				Thread.sleep(1000);
+			} catch(InterruptedException e) {}
+			myLog.l(Log.INFO, "Failed authentication");
+			sessionThread.writeString("530 Login incorrect.\r\n");
+			sessionThread.authAttempt(false);
+		}
 	}
 }

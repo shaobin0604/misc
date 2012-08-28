@@ -317,6 +317,324 @@ public final class MsgDefProtos {
     // @@protoc_insertion_point(enum_scope:pekall.pcsuite.ModifyTag)
   }
   
+  public enum SyncType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    PC_PHONE(0, 0),
+    OUTLOOK_PHONE(1, 1),
+    ;
+    
+    public static final int PC_PHONE_VALUE = 0;
+    public static final int OUTLOOK_PHONE_VALUE = 1;
+    
+    
+    public final int getNumber() { return value; }
+    
+    public static SyncType valueOf(int value) {
+      switch (value) {
+        case 0: return PC_PHONE;
+        case 1: return OUTLOOK_PHONE;
+        default: return null;
+      }
+    }
+    
+    public static com.google.protobuf.Internal.EnumLiteMap<SyncType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<SyncType>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<SyncType>() {
+            public SyncType findValueByNumber(int number) {
+              return SyncType.valueOf(number);
+            }
+          };
+    
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.pekall.pctool.protos.MsgDefProtos.getDescriptor().getEnumTypes().get(3);
+    }
+    
+    private static final SyncType[] VALUES = {
+      PC_PHONE, OUTLOOK_PHONE, 
+    };
+    
+    public static SyncType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+    
+    private final int index;
+    private final int value;
+    
+    private SyncType(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+    
+    // @@protoc_insertion_point(enum_scope:pekall.pcsuite.SyncType)
+  }
+  
+  public enum SyncSubType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    TWO_WAY_SLOW_SYNC(0, 0),
+    TWO_WAY_FAST_SYNC(1, 1),
+    PHONE_REFRESH_SYNC(2, 2),
+    PC_REFRESH_SYNC(3, 3),
+    PHONE_FAST_SYNC(4, 4),
+    PC_FAST_SYNC(5, 5),
+    TWO_WAY_SLOW_SYNC_SECOND(6, 6),
+    TWO_WAY_FAST_SYNC_SECOND(7, 7),
+    ;
+    
+    public static final int TWO_WAY_SLOW_SYNC_VALUE = 0;
+    public static final int TWO_WAY_FAST_SYNC_VALUE = 1;
+    public static final int PHONE_REFRESH_SYNC_VALUE = 2;
+    public static final int PC_REFRESH_SYNC_VALUE = 3;
+    public static final int PHONE_FAST_SYNC_VALUE = 4;
+    public static final int PC_FAST_SYNC_VALUE = 5;
+    public static final int TWO_WAY_SLOW_SYNC_SECOND_VALUE = 6;
+    public static final int TWO_WAY_FAST_SYNC_SECOND_VALUE = 7;
+    
+    
+    public final int getNumber() { return value; }
+    
+    public static SyncSubType valueOf(int value) {
+      switch (value) {
+        case 0: return TWO_WAY_SLOW_SYNC;
+        case 1: return TWO_WAY_FAST_SYNC;
+        case 2: return PHONE_REFRESH_SYNC;
+        case 3: return PC_REFRESH_SYNC;
+        case 4: return PHONE_FAST_SYNC;
+        case 5: return PC_FAST_SYNC;
+        case 6: return TWO_WAY_SLOW_SYNC_SECOND;
+        case 7: return TWO_WAY_FAST_SYNC_SECOND;
+        default: return null;
+      }
+    }
+    
+    public static com.google.protobuf.Internal.EnumLiteMap<SyncSubType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<SyncSubType>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<SyncSubType>() {
+            public SyncSubType findValueByNumber(int number) {
+              return SyncSubType.valueOf(number);
+            }
+          };
+    
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.pekall.pctool.protos.MsgDefProtos.getDescriptor().getEnumTypes().get(4);
+    }
+    
+    private static final SyncSubType[] VALUES = {
+      TWO_WAY_SLOW_SYNC, TWO_WAY_FAST_SYNC, PHONE_REFRESH_SYNC, PC_REFRESH_SYNC, PHONE_FAST_SYNC, PC_FAST_SYNC, TWO_WAY_SLOW_SYNC_SECOND, TWO_WAY_FAST_SYNC_SECOND, 
+    };
+    
+    public static SyncSubType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+    
+    private final int index;
+    private final int value;
+    
+    private SyncSubType(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+    
+    // @@protoc_insertion_point(enum_scope:pekall.pcsuite.SyncSubType)
+  }
+  
+  public enum SyncResult
+      implements com.google.protobuf.ProtocolMessageEnum {
+    NO_CHANGE(0, 0),
+    PC_ADD(1, 1),
+    PC_DEL(2, 2),
+    PC_MODIFY(3, 3),
+    BOTH_MODIFY(4, 5),
+    PHONE_ADD(5, 6),
+    PHONE_DEL(6, 7),
+    PHONE_MODIFY(7, 8),
+    ;
+    
+    public static final int NO_CHANGE_VALUE = 0;
+    public static final int PC_ADD_VALUE = 1;
+    public static final int PC_DEL_VALUE = 2;
+    public static final int PC_MODIFY_VALUE = 3;
+    public static final int BOTH_MODIFY_VALUE = 5;
+    public static final int PHONE_ADD_VALUE = 6;
+    public static final int PHONE_DEL_VALUE = 7;
+    public static final int PHONE_MODIFY_VALUE = 8;
+    
+    
+    public final int getNumber() { return value; }
+    
+    public static SyncResult valueOf(int value) {
+      switch (value) {
+        case 0: return NO_CHANGE;
+        case 1: return PC_ADD;
+        case 2: return PC_DEL;
+        case 3: return PC_MODIFY;
+        case 5: return BOTH_MODIFY;
+        case 6: return PHONE_ADD;
+        case 7: return PHONE_DEL;
+        case 8: return PHONE_MODIFY;
+        default: return null;
+      }
+    }
+    
+    public static com.google.protobuf.Internal.EnumLiteMap<SyncResult>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<SyncResult>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<SyncResult>() {
+            public SyncResult findValueByNumber(int number) {
+              return SyncResult.valueOf(number);
+            }
+          };
+    
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.pekall.pctool.protos.MsgDefProtos.getDescriptor().getEnumTypes().get(5);
+    }
+    
+    private static final SyncResult[] VALUES = {
+      NO_CHANGE, PC_ADD, PC_DEL, PC_MODIFY, BOTH_MODIFY, PHONE_ADD, PHONE_DEL, PHONE_MODIFY, 
+    };
+    
+    public static SyncResult valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+    
+    private final int index;
+    private final int value;
+    
+    private SyncResult(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+    
+    // @@protoc_insertion_point(enum_scope:pekall.pcsuite.SyncResult)
+  }
+  
+  public enum SyncConflictPloy
+      implements com.google.protobuf.ProtocolMessageEnum {
+    SKIP(0, 0),
+    PC_SIDE(1, 1),
+    PHONE_SIDE(2, 2),
+    MEGER(3, 3),
+    ;
+    
+    public static final int SKIP_VALUE = 0;
+    public static final int PC_SIDE_VALUE = 1;
+    public static final int PHONE_SIDE_VALUE = 2;
+    public static final int MEGER_VALUE = 3;
+    
+    
+    public final int getNumber() { return value; }
+    
+    public static SyncConflictPloy valueOf(int value) {
+      switch (value) {
+        case 0: return SKIP;
+        case 1: return PC_SIDE;
+        case 2: return PHONE_SIDE;
+        case 3: return MEGER;
+        default: return null;
+      }
+    }
+    
+    public static com.google.protobuf.Internal.EnumLiteMap<SyncConflictPloy>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<SyncConflictPloy>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<SyncConflictPloy>() {
+            public SyncConflictPloy findValueByNumber(int number) {
+              return SyncConflictPloy.valueOf(number);
+            }
+          };
+    
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.pekall.pctool.protos.MsgDefProtos.getDescriptor().getEnumTypes().get(6);
+    }
+    
+    private static final SyncConflictPloy[] VALUES = {
+      SKIP, PC_SIDE, PHONE_SIDE, MEGER, 
+    };
+    
+    public static SyncConflictPloy valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+    
+    private final int index;
+    private final int value;
+    
+    private SyncConflictPloy(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+    
+    // @@protoc_insertion_point(enum_scope:pekall.pcsuite.SyncConflictPloy)
+  }
+  
   public interface AppRecordOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
     
@@ -10163,12 +10481,20 @@ public final class MsgDefProtos {
     boolean hasPhotoModifyTag();
     boolean getPhotoModifyTag();
     
-    // optional .pekall.pcsuite.AccountRecord account_info = 6;
+    // optional int32 version = 6;
+    boolean hasVersion();
+    int getVersion();
+    
+    // optional .pekall.pcsuite.SyncResult sync_result = 7;
+    boolean hasSyncResult();
+    com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult();
+    
+    // optional .pekall.pcsuite.AccountRecord account_info = 8;
     boolean hasAccountInfo();
     com.pekall.pctool.protos.MsgDefProtos.AccountRecord getAccountInfo();
     com.pekall.pctool.protos.MsgDefProtos.AccountRecordOrBuilder getAccountInfoOrBuilder();
     
-    // repeated .pekall.pcsuite.GroupRecord group = 7;
+    // repeated .pekall.pcsuite.GroupRecord group = 9;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> 
         getGroupList();
     com.pekall.pctool.protos.MsgDefProtos.GroupRecord getGroup(int index);
@@ -10178,7 +10504,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.GroupRecordOrBuilder getGroupOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.PhoneRecord phone = 8;
+    // repeated .pekall.pcsuite.PhoneRecord phone = 10;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> 
         getPhoneList();
     com.pekall.pctool.protos.MsgDefProtos.PhoneRecord getPhone(int index);
@@ -10188,7 +10514,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.PhoneRecordOrBuilder getPhoneOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.EmailRecord email = 9;
+    // repeated .pekall.pcsuite.EmailRecord email = 11;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> 
         getEmailList();
     com.pekall.pctool.protos.MsgDefProtos.EmailRecord getEmail(int index);
@@ -10198,7 +10524,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.EmailRecordOrBuilder getEmailOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.IMRecord im = 10;
+    // repeated .pekall.pcsuite.IMRecord im = 12;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> 
         getImList();
     com.pekall.pctool.protos.MsgDefProtos.IMRecord getIm(int index);
@@ -10208,7 +10534,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.IMRecordOrBuilder getImOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.AddressRecord address = 11;
+    // repeated .pekall.pcsuite.AddressRecord address = 13;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> 
         getAddressList();
     com.pekall.pctool.protos.MsgDefProtos.AddressRecord getAddress(int index);
@@ -10218,7 +10544,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.AddressRecordOrBuilder getAddressOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.OrgRecord org = 12;
+    // repeated .pekall.pcsuite.OrgRecord org = 14;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> 
         getOrgList();
     com.pekall.pctool.protos.MsgDefProtos.OrgRecord getOrg(int index);
@@ -10351,11 +10677,31 @@ public final class MsgDefProtos {
       return photoModifyTag_;
     }
     
-    // optional .pekall.pcsuite.AccountRecord account_info = 6;
-    public static final int ACCOUNT_INFO_FIELD_NUMBER = 6;
+    // optional int32 version = 6;
+    public static final int VERSION_FIELD_NUMBER = 6;
+    private int version_;
+    public boolean hasVersion() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    public int getVersion() {
+      return version_;
+    }
+    
+    // optional .pekall.pcsuite.SyncResult sync_result = 7;
+    public static final int SYNC_RESULT_FIELD_NUMBER = 7;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncResult syncResult_;
+    public boolean hasSyncResult() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult() {
+      return syncResult_;
+    }
+    
+    // optional .pekall.pcsuite.AccountRecord account_info = 8;
+    public static final int ACCOUNT_INFO_FIELD_NUMBER = 8;
     private com.pekall.pctool.protos.MsgDefProtos.AccountRecord accountInfo_;
     public boolean hasAccountInfo() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     public com.pekall.pctool.protos.MsgDefProtos.AccountRecord getAccountInfo() {
       return accountInfo_;
@@ -10364,8 +10710,8 @@ public final class MsgDefProtos {
       return accountInfo_;
     }
     
-    // repeated .pekall.pcsuite.GroupRecord group = 7;
-    public static final int GROUP_FIELD_NUMBER = 7;
+    // repeated .pekall.pcsuite.GroupRecord group = 9;
+    public static final int GROUP_FIELD_NUMBER = 9;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> group_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> getGroupList() {
       return group_;
@@ -10385,8 +10731,8 @@ public final class MsgDefProtos {
       return group_.get(index);
     }
     
-    // repeated .pekall.pcsuite.PhoneRecord phone = 8;
-    public static final int PHONE_FIELD_NUMBER = 8;
+    // repeated .pekall.pcsuite.PhoneRecord phone = 10;
+    public static final int PHONE_FIELD_NUMBER = 10;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> phone_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> getPhoneList() {
       return phone_;
@@ -10406,8 +10752,8 @@ public final class MsgDefProtos {
       return phone_.get(index);
     }
     
-    // repeated .pekall.pcsuite.EmailRecord email = 9;
-    public static final int EMAIL_FIELD_NUMBER = 9;
+    // repeated .pekall.pcsuite.EmailRecord email = 11;
+    public static final int EMAIL_FIELD_NUMBER = 11;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> email_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> getEmailList() {
       return email_;
@@ -10427,8 +10773,8 @@ public final class MsgDefProtos {
       return email_.get(index);
     }
     
-    // repeated .pekall.pcsuite.IMRecord im = 10;
-    public static final int IM_FIELD_NUMBER = 10;
+    // repeated .pekall.pcsuite.IMRecord im = 12;
+    public static final int IM_FIELD_NUMBER = 12;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> im_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> getImList() {
       return im_;
@@ -10448,8 +10794,8 @@ public final class MsgDefProtos {
       return im_.get(index);
     }
     
-    // repeated .pekall.pcsuite.AddressRecord address = 11;
-    public static final int ADDRESS_FIELD_NUMBER = 11;
+    // repeated .pekall.pcsuite.AddressRecord address = 13;
+    public static final int ADDRESS_FIELD_NUMBER = 13;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> address_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> getAddressList() {
       return address_;
@@ -10469,8 +10815,8 @@ public final class MsgDefProtos {
       return address_.get(index);
     }
     
-    // repeated .pekall.pcsuite.OrgRecord org = 12;
-    public static final int ORG_FIELD_NUMBER = 12;
+    // repeated .pekall.pcsuite.OrgRecord org = 14;
+    public static final int ORG_FIELD_NUMBER = 14;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> org_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> getOrgList() {
       return org_;
@@ -10496,6 +10842,8 @@ public final class MsgDefProtos {
       nickname_ = "";
       photo_ = com.google.protobuf.ByteString.EMPTY;
       photoModifyTag_ = false;
+      version_ = 0;
+      syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
       accountInfo_ = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance();
       group_ = java.util.Collections.emptyList();
       phone_ = java.util.Collections.emptyList();
@@ -10532,25 +10880,31 @@ public final class MsgDefProtos {
         output.writeBool(5, photoModifyTag_);
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeMessage(6, accountInfo_);
+        output.writeInt32(6, version_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeEnum(7, syncResult_.getNumber());
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeMessage(8, accountInfo_);
       }
       for (int i = 0; i < group_.size(); i++) {
-        output.writeMessage(7, group_.get(i));
+        output.writeMessage(9, group_.get(i));
       }
       for (int i = 0; i < phone_.size(); i++) {
-        output.writeMessage(8, phone_.get(i));
+        output.writeMessage(10, phone_.get(i));
       }
       for (int i = 0; i < email_.size(); i++) {
-        output.writeMessage(9, email_.get(i));
+        output.writeMessage(11, email_.get(i));
       }
       for (int i = 0; i < im_.size(); i++) {
-        output.writeMessage(10, im_.get(i));
+        output.writeMessage(12, im_.get(i));
       }
       for (int i = 0; i < address_.size(); i++) {
-        output.writeMessage(11, address_.get(i));
+        output.writeMessage(13, address_.get(i));
       }
       for (int i = 0; i < org_.size(); i++) {
-        output.writeMessage(12, org_.get(i));
+        output.writeMessage(14, org_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -10583,31 +10937,39 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, accountInfo_);
+          .computeInt32Size(6, version_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(7, syncResult_.getNumber());
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(8, accountInfo_);
       }
       for (int i = 0; i < group_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(7, group_.get(i));
+          .computeMessageSize(9, group_.get(i));
       }
       for (int i = 0; i < phone_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, phone_.get(i));
+          .computeMessageSize(10, phone_.get(i));
       }
       for (int i = 0; i < email_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(9, email_.get(i));
+          .computeMessageSize(11, email_.get(i));
       }
       for (int i = 0; i < im_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(10, im_.get(i));
+          .computeMessageSize(12, im_.get(i));
       }
       for (int i = 0; i < address_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(11, address_.get(i));
+          .computeMessageSize(13, address_.get(i));
       }
       for (int i = 0; i < org_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(12, org_.get(i));
+          .computeMessageSize(14, org_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -10750,45 +11112,49 @@ public final class MsgDefProtos {
         bitField0_ = (bitField0_ & ~0x00000008);
         photoModifyTag_ = false;
         bitField0_ = (bitField0_ & ~0x00000010);
+        version_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
+        bitField0_ = (bitField0_ & ~0x00000040);
         if (accountInfoBuilder_ == null) {
           accountInfo_ = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance();
         } else {
           accountInfoBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000080);
         if (groupBuilder_ == null) {
           group_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000040);
+          bitField0_ = (bitField0_ & ~0x00000100);
         } else {
           groupBuilder_.clear();
         }
         if (phoneBuilder_ == null) {
           phone_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ = (bitField0_ & ~0x00000200);
         } else {
           phoneBuilder_.clear();
         }
         if (emailBuilder_ == null) {
           email_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000100);
+          bitField0_ = (bitField0_ & ~0x00000400);
         } else {
           emailBuilder_.clear();
         }
         if (imBuilder_ == null) {
           im_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000200);
+          bitField0_ = (bitField0_ & ~0x00000800);
         } else {
           imBuilder_.clear();
         }
         if (addressBuilder_ == null) {
           address_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00001000);
         } else {
           addressBuilder_.clear();
         }
         if (orgBuilder_ == null) {
           org_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000800);
+          bitField0_ = (bitField0_ & ~0x00002000);
         } else {
           orgBuilder_.clear();
         }
@@ -10853,60 +11219,68 @@ public final class MsgDefProtos {
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
+        result.version_ = version_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.syncResult_ = syncResult_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
         if (accountInfoBuilder_ == null) {
           result.accountInfo_ = accountInfo_;
         } else {
           result.accountInfo_ = accountInfoBuilder_.build();
         }
         if (groupBuilder_ == null) {
-          if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          if (((bitField0_ & 0x00000100) == 0x00000100)) {
             group_ = java.util.Collections.unmodifiableList(group_);
-            bitField0_ = (bitField0_ & ~0x00000040);
+            bitField0_ = (bitField0_ & ~0x00000100);
           }
           result.group_ = group_;
         } else {
           result.group_ = groupBuilder_.build();
         }
         if (phoneBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          if (((bitField0_ & 0x00000200) == 0x00000200)) {
             phone_ = java.util.Collections.unmodifiableList(phone_);
-            bitField0_ = (bitField0_ & ~0x00000080);
+            bitField0_ = (bitField0_ & ~0x00000200);
           }
           result.phone_ = phone_;
         } else {
           result.phone_ = phoneBuilder_.build();
         }
         if (emailBuilder_ == null) {
-          if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          if (((bitField0_ & 0x00000400) == 0x00000400)) {
             email_ = java.util.Collections.unmodifiableList(email_);
-            bitField0_ = (bitField0_ & ~0x00000100);
+            bitField0_ = (bitField0_ & ~0x00000400);
           }
           result.email_ = email_;
         } else {
           result.email_ = emailBuilder_.build();
         }
         if (imBuilder_ == null) {
-          if (((bitField0_ & 0x00000200) == 0x00000200)) {
+          if (((bitField0_ & 0x00000800) == 0x00000800)) {
             im_ = java.util.Collections.unmodifiableList(im_);
-            bitField0_ = (bitField0_ & ~0x00000200);
+            bitField0_ = (bitField0_ & ~0x00000800);
           }
           result.im_ = im_;
         } else {
           result.im_ = imBuilder_.build();
         }
         if (addressBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+          if (((bitField0_ & 0x00001000) == 0x00001000)) {
             address_ = java.util.Collections.unmodifiableList(address_);
-            bitField0_ = (bitField0_ & ~0x00000400);
+            bitField0_ = (bitField0_ & ~0x00001000);
           }
           result.address_ = address_;
         } else {
           result.address_ = addressBuilder_.build();
         }
         if (orgBuilder_ == null) {
-          if (((bitField0_ & 0x00000800) == 0x00000800)) {
+          if (((bitField0_ & 0x00002000) == 0x00002000)) {
             org_ = java.util.Collections.unmodifiableList(org_);
-            bitField0_ = (bitField0_ & ~0x00000800);
+            bitField0_ = (bitField0_ & ~0x00002000);
           }
           result.org_ = org_;
         } else {
@@ -10943,6 +11317,12 @@ public final class MsgDefProtos {
         if (other.hasPhotoModifyTag()) {
           setPhotoModifyTag(other.getPhotoModifyTag());
         }
+        if (other.hasVersion()) {
+          setVersion(other.getVersion());
+        }
+        if (other.hasSyncResult()) {
+          setSyncResult(other.getSyncResult());
+        }
         if (other.hasAccountInfo()) {
           mergeAccountInfo(other.getAccountInfo());
         }
@@ -10950,7 +11330,7 @@ public final class MsgDefProtos {
           if (!other.group_.isEmpty()) {
             if (group_.isEmpty()) {
               group_ = other.group_;
-              bitField0_ = (bitField0_ & ~0x00000040);
+              bitField0_ = (bitField0_ & ~0x00000100);
             } else {
               ensureGroupIsMutable();
               group_.addAll(other.group_);
@@ -10963,7 +11343,7 @@ public final class MsgDefProtos {
               groupBuilder_.dispose();
               groupBuilder_ = null;
               group_ = other.group_;
-              bitField0_ = (bitField0_ & ~0x00000040);
+              bitField0_ = (bitField0_ & ~0x00000100);
               groupBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getGroupFieldBuilder() : null;
@@ -10976,7 +11356,7 @@ public final class MsgDefProtos {
           if (!other.phone_.isEmpty()) {
             if (phone_.isEmpty()) {
               phone_ = other.phone_;
-              bitField0_ = (bitField0_ & ~0x00000080);
+              bitField0_ = (bitField0_ & ~0x00000200);
             } else {
               ensurePhoneIsMutable();
               phone_.addAll(other.phone_);
@@ -10989,7 +11369,7 @@ public final class MsgDefProtos {
               phoneBuilder_.dispose();
               phoneBuilder_ = null;
               phone_ = other.phone_;
-              bitField0_ = (bitField0_ & ~0x00000080);
+              bitField0_ = (bitField0_ & ~0x00000200);
               phoneBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getPhoneFieldBuilder() : null;
@@ -11002,7 +11382,7 @@ public final class MsgDefProtos {
           if (!other.email_.isEmpty()) {
             if (email_.isEmpty()) {
               email_ = other.email_;
-              bitField0_ = (bitField0_ & ~0x00000100);
+              bitField0_ = (bitField0_ & ~0x00000400);
             } else {
               ensureEmailIsMutable();
               email_.addAll(other.email_);
@@ -11015,7 +11395,7 @@ public final class MsgDefProtos {
               emailBuilder_.dispose();
               emailBuilder_ = null;
               email_ = other.email_;
-              bitField0_ = (bitField0_ & ~0x00000100);
+              bitField0_ = (bitField0_ & ~0x00000400);
               emailBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getEmailFieldBuilder() : null;
@@ -11028,7 +11408,7 @@ public final class MsgDefProtos {
           if (!other.im_.isEmpty()) {
             if (im_.isEmpty()) {
               im_ = other.im_;
-              bitField0_ = (bitField0_ & ~0x00000200);
+              bitField0_ = (bitField0_ & ~0x00000800);
             } else {
               ensureImIsMutable();
               im_.addAll(other.im_);
@@ -11041,7 +11421,7 @@ public final class MsgDefProtos {
               imBuilder_.dispose();
               imBuilder_ = null;
               im_ = other.im_;
-              bitField0_ = (bitField0_ & ~0x00000200);
+              bitField0_ = (bitField0_ & ~0x00000800);
               imBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getImFieldBuilder() : null;
@@ -11054,7 +11434,7 @@ public final class MsgDefProtos {
           if (!other.address_.isEmpty()) {
             if (address_.isEmpty()) {
               address_ = other.address_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00001000);
             } else {
               ensureAddressIsMutable();
               address_.addAll(other.address_);
@@ -11067,7 +11447,7 @@ public final class MsgDefProtos {
               addressBuilder_.dispose();
               addressBuilder_ = null;
               address_ = other.address_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00001000);
               addressBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getAddressFieldBuilder() : null;
@@ -11080,7 +11460,7 @@ public final class MsgDefProtos {
           if (!other.org_.isEmpty()) {
             if (org_.isEmpty()) {
               org_ = other.org_;
-              bitField0_ = (bitField0_ & ~0x00000800);
+              bitField0_ = (bitField0_ & ~0x00002000);
             } else {
               ensureOrgIsMutable();
               org_.addAll(other.org_);
@@ -11093,7 +11473,7 @@ public final class MsgDefProtos {
               orgBuilder_.dispose();
               orgBuilder_ = null;
               org_ = other.org_;
-              bitField0_ = (bitField0_ & ~0x00000800);
+              bitField0_ = (bitField0_ & ~0x00002000);
               orgBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getOrgFieldBuilder() : null;
@@ -11158,7 +11538,23 @@ public final class MsgDefProtos {
               photoModifyTag_ = input.readBool();
               break;
             }
-            case 50: {
+            case 48: {
+              bitField0_ |= 0x00000020;
+              version_ = input.readInt32();
+              break;
+            }
+            case 56: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncResult value = com.pekall.pctool.protos.MsgDefProtos.SyncResult.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(7, rawValue);
+              } else {
+                bitField0_ |= 0x00000040;
+                syncResult_ = value;
+              }
+              break;
+            }
+            case 66: {
               com.pekall.pctool.protos.MsgDefProtos.AccountRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.newBuilder();
               if (hasAccountInfo()) {
                 subBuilder.mergeFrom(getAccountInfo());
@@ -11167,37 +11563,37 @@ public final class MsgDefProtos {
               setAccountInfo(subBuilder.buildPartial());
               break;
             }
-            case 58: {
+            case 74: {
               com.pekall.pctool.protos.MsgDefProtos.GroupRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.GroupRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addGroup(subBuilder.buildPartial());
               break;
             }
-            case 66: {
+            case 82: {
               com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addPhone(subBuilder.buildPartial());
               break;
             }
-            case 74: {
+            case 90: {
               com.pekall.pctool.protos.MsgDefProtos.EmailRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.EmailRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addEmail(subBuilder.buildPartial());
               break;
             }
-            case 82: {
+            case 98: {
               com.pekall.pctool.protos.MsgDefProtos.IMRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.IMRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addIm(subBuilder.buildPartial());
               break;
             }
-            case 90: {
+            case 106: {
               com.pekall.pctool.protos.MsgDefProtos.AddressRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.AddressRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addAddress(subBuilder.buildPartial());
               break;
             }
-            case 98: {
+            case 114: {
               com.pekall.pctool.protos.MsgDefProtos.OrgRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.OrgRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addOrg(subBuilder.buildPartial());
@@ -11347,12 +11743,57 @@ public final class MsgDefProtos {
         return this;
       }
       
-      // optional .pekall.pcsuite.AccountRecord account_info = 6;
+      // optional int32 version = 6;
+      private int version_ ;
+      public boolean hasVersion() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      public int getVersion() {
+        return version_;
+      }
+      public Builder setVersion(int value) {
+        bitField0_ |= 0x00000020;
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearVersion() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        version_ = 0;
+        onChanged();
+        return this;
+      }
+      
+      // optional .pekall.pcsuite.SyncResult sync_result = 7;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncResult syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
+      public boolean hasSyncResult() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult() {
+        return syncResult_;
+      }
+      public Builder setSyncResult(com.pekall.pctool.protos.MsgDefProtos.SyncResult value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000040;
+        syncResult_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSyncResult() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
+        onChanged();
+        return this;
+      }
+      
+      // optional .pekall.pcsuite.AccountRecord account_info = 8;
       private com.pekall.pctool.protos.MsgDefProtos.AccountRecord accountInfo_ = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           com.pekall.pctool.protos.MsgDefProtos.AccountRecord, com.pekall.pctool.protos.MsgDefProtos.AccountRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AccountRecordOrBuilder> accountInfoBuilder_;
       public boolean hasAccountInfo() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       public com.pekall.pctool.protos.MsgDefProtos.AccountRecord getAccountInfo() {
         if (accountInfoBuilder_ == null) {
@@ -11371,7 +11812,7 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         return this;
       }
       public Builder setAccountInfo(
@@ -11382,12 +11823,12 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         return this;
       }
       public Builder mergeAccountInfo(com.pekall.pctool.protos.MsgDefProtos.AccountRecord value) {
         if (accountInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+          if (((bitField0_ & 0x00000080) == 0x00000080) &&
               accountInfo_ != com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance()) {
             accountInfo_ =
               com.pekall.pctool.protos.MsgDefProtos.AccountRecord.newBuilder(accountInfo_).mergeFrom(value).buildPartial();
@@ -11398,7 +11839,7 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         return this;
       }
       public Builder clearAccountInfo() {
@@ -11408,11 +11849,11 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
       public com.pekall.pctool.protos.MsgDefProtos.AccountRecord.Builder getAccountInfoBuilder() {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         onChanged();
         return getAccountInfoFieldBuilder().getBuilder();
       }
@@ -11437,13 +11878,13 @@ public final class MsgDefProtos {
         return accountInfoBuilder_;
       }
       
-      // repeated .pekall.pcsuite.GroupRecord group = 7;
+      // repeated .pekall.pcsuite.GroupRecord group = 9;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> group_ =
         java.util.Collections.emptyList();
       private void ensureGroupIsMutable() {
-        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
           group_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.GroupRecord>(group_);
-          bitField0_ |= 0x00000040;
+          bitField0_ |= 0x00000100;
          }
       }
       
@@ -11559,7 +12000,7 @@ public final class MsgDefProtos {
       public Builder clearGroup() {
         if (groupBuilder_ == null) {
           group_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000040);
+          bitField0_ = (bitField0_ & ~0x00000100);
           onChanged();
         } else {
           groupBuilder_.clear();
@@ -11615,7 +12056,7 @@ public final class MsgDefProtos {
           groupBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.GroupRecord, com.pekall.pctool.protos.MsgDefProtos.GroupRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.GroupRecordOrBuilder>(
                   group_,
-                  ((bitField0_ & 0x00000040) == 0x00000040),
+                  ((bitField0_ & 0x00000100) == 0x00000100),
                   getParentForChildren(),
                   isClean());
           group_ = null;
@@ -11623,13 +12064,13 @@ public final class MsgDefProtos {
         return groupBuilder_;
       }
       
-      // repeated .pekall.pcsuite.PhoneRecord phone = 8;
+      // repeated .pekall.pcsuite.PhoneRecord phone = 10;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> phone_ =
         java.util.Collections.emptyList();
       private void ensurePhoneIsMutable() {
-        if (!((bitField0_ & 0x00000080) == 0x00000080)) {
+        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
           phone_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord>(phone_);
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000200;
          }
       }
       
@@ -11745,7 +12186,7 @@ public final class MsgDefProtos {
       public Builder clearPhone() {
         if (phoneBuilder_ == null) {
           phone_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ = (bitField0_ & ~0x00000200);
           onChanged();
         } else {
           phoneBuilder_.clear();
@@ -11801,7 +12242,7 @@ public final class MsgDefProtos {
           phoneBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.PhoneRecord, com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.PhoneRecordOrBuilder>(
                   phone_,
-                  ((bitField0_ & 0x00000080) == 0x00000080),
+                  ((bitField0_ & 0x00000200) == 0x00000200),
                   getParentForChildren(),
                   isClean());
           phone_ = null;
@@ -11809,13 +12250,13 @@ public final class MsgDefProtos {
         return phoneBuilder_;
       }
       
-      // repeated .pekall.pcsuite.EmailRecord email = 9;
+      // repeated .pekall.pcsuite.EmailRecord email = 11;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> email_ =
         java.util.Collections.emptyList();
       private void ensureEmailIsMutable() {
-        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
+        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
           email_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.EmailRecord>(email_);
-          bitField0_ |= 0x00000100;
+          bitField0_ |= 0x00000400;
          }
       }
       
@@ -11931,7 +12372,7 @@ public final class MsgDefProtos {
       public Builder clearEmail() {
         if (emailBuilder_ == null) {
           email_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000100);
+          bitField0_ = (bitField0_ & ~0x00000400);
           onChanged();
         } else {
           emailBuilder_.clear();
@@ -11987,7 +12428,7 @@ public final class MsgDefProtos {
           emailBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.EmailRecord, com.pekall.pctool.protos.MsgDefProtos.EmailRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.EmailRecordOrBuilder>(
                   email_,
-                  ((bitField0_ & 0x00000100) == 0x00000100),
+                  ((bitField0_ & 0x00000400) == 0x00000400),
                   getParentForChildren(),
                   isClean());
           email_ = null;
@@ -11995,13 +12436,13 @@ public final class MsgDefProtos {
         return emailBuilder_;
       }
       
-      // repeated .pekall.pcsuite.IMRecord im = 10;
+      // repeated .pekall.pcsuite.IMRecord im = 12;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> im_ =
         java.util.Collections.emptyList();
       private void ensureImIsMutable() {
-        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
           im_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.IMRecord>(im_);
-          bitField0_ |= 0x00000200;
+          bitField0_ |= 0x00000800;
          }
       }
       
@@ -12117,7 +12558,7 @@ public final class MsgDefProtos {
       public Builder clearIm() {
         if (imBuilder_ == null) {
           im_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000200);
+          bitField0_ = (bitField0_ & ~0x00000800);
           onChanged();
         } else {
           imBuilder_.clear();
@@ -12173,7 +12614,7 @@ public final class MsgDefProtos {
           imBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.IMRecord, com.pekall.pctool.protos.MsgDefProtos.IMRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.IMRecordOrBuilder>(
                   im_,
-                  ((bitField0_ & 0x00000200) == 0x00000200),
+                  ((bitField0_ & 0x00000800) == 0x00000800),
                   getParentForChildren(),
                   isClean());
           im_ = null;
@@ -12181,13 +12622,13 @@ public final class MsgDefProtos {
         return imBuilder_;
       }
       
-      // repeated .pekall.pcsuite.AddressRecord address = 11;
+      // repeated .pekall.pcsuite.AddressRecord address = 13;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> address_ =
         java.util.Collections.emptyList();
       private void ensureAddressIsMutable() {
-        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
+        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
           address_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.AddressRecord>(address_);
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00001000;
          }
       }
       
@@ -12303,7 +12744,7 @@ public final class MsgDefProtos {
       public Builder clearAddress() {
         if (addressBuilder_ == null) {
           address_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00001000);
           onChanged();
         } else {
           addressBuilder_.clear();
@@ -12359,7 +12800,7 @@ public final class MsgDefProtos {
           addressBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.AddressRecord, com.pekall.pctool.protos.MsgDefProtos.AddressRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AddressRecordOrBuilder>(
                   address_,
-                  ((bitField0_ & 0x00000400) == 0x00000400),
+                  ((bitField0_ & 0x00001000) == 0x00001000),
                   getParentForChildren(),
                   isClean());
           address_ = null;
@@ -12367,13 +12808,13 @@ public final class MsgDefProtos {
         return addressBuilder_;
       }
       
-      // repeated .pekall.pcsuite.OrgRecord org = 12;
+      // repeated .pekall.pcsuite.OrgRecord org = 14;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> org_ =
         java.util.Collections.emptyList();
       private void ensureOrgIsMutable() {
-        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
+        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
           org_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.OrgRecord>(org_);
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00002000;
          }
       }
       
@@ -12489,7 +12930,7 @@ public final class MsgDefProtos {
       public Builder clearOrg() {
         if (orgBuilder_ == null) {
           org_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000800);
+          bitField0_ = (bitField0_ & ~0x00002000);
           onChanged();
         } else {
           orgBuilder_.clear();
@@ -12545,7 +12986,7 @@ public final class MsgDefProtos {
           orgBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.OrgRecord, com.pekall.pctool.protos.MsgDefProtos.OrgRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.OrgRecordOrBuilder>(
                   org_,
-                  ((bitField0_ & 0x00000800) == 0x00000800),
+                  ((bitField0_ & 0x00002000) == 0x00002000),
                   getParentForChildren(),
                   isClean());
           org_ = null;
@@ -12562,6 +13003,774 @@ public final class MsgDefProtos {
     }
     
     // @@protoc_insertion_point(class_scope:pekall.pcsuite.ContactRecord)
+  }
+  
+  public interface ContactsSyncOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+    
+    // required .pekall.pcsuite.SyncType type = 1;
+    boolean hasType();
+    com.pekall.pctool.protos.MsgDefProtos.SyncType getType();
+    
+    // required .pekall.pcsuite.SyncSubType sub_type = 2;
+    boolean hasSubType();
+    com.pekall.pctool.protos.MsgDefProtos.SyncSubType getSubType();
+    
+    // optional .pekall.pcsuite.SyncConflictPloy sync_conflict_ploy = 3;
+    boolean hasSyncConflictPloy();
+    com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy getSyncConflictPloy();
+    
+    // repeated .pekall.pcsuite.ContactRecord contact_record = 4;
+    java.util.List<com.pekall.pctool.protos.MsgDefProtos.ContactRecord> 
+        getContactRecordList();
+    com.pekall.pctool.protos.MsgDefProtos.ContactRecord getContactRecord(int index);
+    int getContactRecordCount();
+    java.util.List<? extends com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder> 
+        getContactRecordOrBuilderList();
+    com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder getContactRecordOrBuilder(
+        int index);
+  }
+  public static final class ContactsSync extends
+      com.google.protobuf.GeneratedMessage
+      implements ContactsSyncOrBuilder {
+    // Use ContactsSync.newBuilder() to construct.
+    private ContactsSync(Builder builder) {
+      super(builder);
+    }
+    private ContactsSync(boolean noInit) {}
+    
+    private static final ContactsSync defaultInstance;
+    public static ContactsSync getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public ContactsSync getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_ContactsSync_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_ContactsSync_fieldAccessorTable;
+    }
+    
+    private int bitField0_;
+    // required .pekall.pcsuite.SyncType type = 1;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncType type_;
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncType getType() {
+      return type_;
+    }
+    
+    // required .pekall.pcsuite.SyncSubType sub_type = 2;
+    public static final int SUB_TYPE_FIELD_NUMBER = 2;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncSubType subType_;
+    public boolean hasSubType() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncSubType getSubType() {
+      return subType_;
+    }
+    
+    // optional .pekall.pcsuite.SyncConflictPloy sync_conflict_ploy = 3;
+    public static final int SYNC_CONFLICT_PLOY_FIELD_NUMBER = 3;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy syncConflictPloy_;
+    public boolean hasSyncConflictPloy() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy getSyncConflictPloy() {
+      return syncConflictPloy_;
+    }
+    
+    // repeated .pekall.pcsuite.ContactRecord contact_record = 4;
+    public static final int CONTACT_RECORD_FIELD_NUMBER = 4;
+    private java.util.List<com.pekall.pctool.protos.MsgDefProtos.ContactRecord> contactRecord_;
+    public java.util.List<com.pekall.pctool.protos.MsgDefProtos.ContactRecord> getContactRecordList() {
+      return contactRecord_;
+    }
+    public java.util.List<? extends com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder> 
+        getContactRecordOrBuilderList() {
+      return contactRecord_;
+    }
+    public int getContactRecordCount() {
+      return contactRecord_.size();
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.ContactRecord getContactRecord(int index) {
+      return contactRecord_.get(index);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder getContactRecordOrBuilder(
+        int index) {
+      return contactRecord_.get(index);
+    }
+    
+    private void initFields() {
+      type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+      subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+      syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+      contactRecord_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      if (!hasType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSubType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeEnum(2, subType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeEnum(3, syncConflictPloy_.getNumber());
+      }
+      for (int i = 0; i < contactRecord_.size(); i++) {
+        output.writeMessage(4, contactRecord_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(2, subType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(3, syncConflictPloy_.getNumber());
+      }
+      for (int i = 0; i < contactRecord_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, contactRecord_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.ContactsSync parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.pekall.pctool.protos.MsgDefProtos.ContactsSync prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_ContactsSync_descriptor;
+      }
+      
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_ContactsSync_fieldAccessorTable;
+      }
+      
+      // Construct using com.pekall.pctool.protos.MsgDefProtos.ContactsSync.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private Builder(BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getContactRecordFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        if (contactRecordBuilder_ == null) {
+          contactRecord_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+        } else {
+          contactRecordBuilder_.clear();
+        }
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDescriptor();
+      }
+      
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSync getDefaultInstanceForType() {
+        return com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
+      }
+      
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSync build() {
+        com.pekall.pctool.protos.MsgDefProtos.ContactsSync result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private com.pekall.pctool.protos.MsgDefProtos.ContactsSync buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        com.pekall.pctool.protos.MsgDefProtos.ContactsSync result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSync buildPartial() {
+        com.pekall.pctool.protos.MsgDefProtos.ContactsSync result = new com.pekall.pctool.protos.MsgDefProtos.ContactsSync(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.subType_ = subType_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.syncConflictPloy_ = syncConflictPloy_;
+        if (contactRecordBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+            contactRecord_ = java.util.Collections.unmodifiableList(contactRecord_);
+            bitField0_ = (bitField0_ & ~0x00000008);
+          }
+          result.contactRecord_ = contactRecord_;
+        } else {
+          result.contactRecord_ = contactRecordBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.pekall.pctool.protos.MsgDefProtos.ContactsSync) {
+          return mergeFrom((com.pekall.pctool.protos.MsgDefProtos.ContactsSync)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(com.pekall.pctool.protos.MsgDefProtos.ContactsSync other) {
+        if (other == com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasSubType()) {
+          setSubType(other.getSubType());
+        }
+        if (other.hasSyncConflictPloy()) {
+          setSyncConflictPloy(other.getSyncConflictPloy());
+        }
+        if (contactRecordBuilder_ == null) {
+          if (!other.contactRecord_.isEmpty()) {
+            if (contactRecord_.isEmpty()) {
+              contactRecord_ = other.contactRecord_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+            } else {
+              ensureContactRecordIsMutable();
+              contactRecord_.addAll(other.contactRecord_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.contactRecord_.isEmpty()) {
+            if (contactRecordBuilder_.isEmpty()) {
+              contactRecordBuilder_.dispose();
+              contactRecordBuilder_ = null;
+              contactRecord_ = other.contactRecord_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+              contactRecordBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getContactRecordFieldBuilder() : null;
+            } else {
+              contactRecordBuilder_.addAllMessages(other.contactRecord_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        if (!hasType()) {
+          
+          return false;
+        }
+        if (!hasSubType()) {
+          
+          return false;
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              onChanged();
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                onChanged();
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncType value = com.pekall.pctool.protos.MsgDefProtos.SyncType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = value;
+              }
+              break;
+            }
+            case 16: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncSubType value = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(2, rawValue);
+              } else {
+                bitField0_ |= 0x00000002;
+                subType_ = value;
+              }
+              break;
+            }
+            case 24: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy value = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(3, rawValue);
+              } else {
+                bitField0_ |= 0x00000004;
+                syncConflictPloy_ = value;
+              }
+              break;
+            }
+            case 34: {
+              com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.ContactRecord.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addContactRecord(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // required .pekall.pcsuite.SyncType type = 1;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncType type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncType getType() {
+        return type_;
+      }
+      public Builder setType(com.pekall.pctool.protos.MsgDefProtos.SyncType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+        onChanged();
+        return this;
+      }
+      
+      // required .pekall.pcsuite.SyncSubType sub_type = 2;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncSubType subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+      public boolean hasSubType() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncSubType getSubType() {
+        return subType_;
+      }
+      public Builder setSubType(com.pekall.pctool.protos.MsgDefProtos.SyncSubType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
+        subType_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSubType() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+        onChanged();
+        return this;
+      }
+      
+      // optional .pekall.pcsuite.SyncConflictPloy sync_conflict_ploy = 3;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+      public boolean hasSyncConflictPloy() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy getSyncConflictPloy() {
+        return syncConflictPloy_;
+      }
+      public Builder setSyncConflictPloy(com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000004;
+        syncConflictPloy_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSyncConflictPloy() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+        onChanged();
+        return this;
+      }
+      
+      // repeated .pekall.pcsuite.ContactRecord contact_record = 4;
+      private java.util.List<com.pekall.pctool.protos.MsgDefProtos.ContactRecord> contactRecord_ =
+        java.util.Collections.emptyList();
+      private void ensureContactRecordIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          contactRecord_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.ContactRecord>(contactRecord_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+      
+      private com.google.protobuf.RepeatedFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.ContactRecord, com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder> contactRecordBuilder_;
+      
+      public java.util.List<com.pekall.pctool.protos.MsgDefProtos.ContactRecord> getContactRecordList() {
+        if (contactRecordBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(contactRecord_);
+        } else {
+          return contactRecordBuilder_.getMessageList();
+        }
+      }
+      public int getContactRecordCount() {
+        if (contactRecordBuilder_ == null) {
+          return contactRecord_.size();
+        } else {
+          return contactRecordBuilder_.getCount();
+        }
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactRecord getContactRecord(int index) {
+        if (contactRecordBuilder_ == null) {
+          return contactRecord_.get(index);
+        } else {
+          return contactRecordBuilder_.getMessage(index);
+        }
+      }
+      public Builder setContactRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.ContactRecord value) {
+        if (contactRecordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContactRecordIsMutable();
+          contactRecord_.set(index, value);
+          onChanged();
+        } else {
+          contactRecordBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      public Builder setContactRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder builderForValue) {
+        if (contactRecordBuilder_ == null) {
+          ensureContactRecordIsMutable();
+          contactRecord_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          contactRecordBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addContactRecord(com.pekall.pctool.protos.MsgDefProtos.ContactRecord value) {
+        if (contactRecordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContactRecordIsMutable();
+          contactRecord_.add(value);
+          onChanged();
+        } else {
+          contactRecordBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      public Builder addContactRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.ContactRecord value) {
+        if (contactRecordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContactRecordIsMutable();
+          contactRecord_.add(index, value);
+          onChanged();
+        } else {
+          contactRecordBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      public Builder addContactRecord(
+          com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder builderForValue) {
+        if (contactRecordBuilder_ == null) {
+          ensureContactRecordIsMutable();
+          contactRecord_.add(builderForValue.build());
+          onChanged();
+        } else {
+          contactRecordBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addContactRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder builderForValue) {
+        if (contactRecordBuilder_ == null) {
+          ensureContactRecordIsMutable();
+          contactRecord_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          contactRecordBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addAllContactRecord(
+          java.lang.Iterable<? extends com.pekall.pctool.protos.MsgDefProtos.ContactRecord> values) {
+        if (contactRecordBuilder_ == null) {
+          ensureContactRecordIsMutable();
+          super.addAll(values, contactRecord_);
+          onChanged();
+        } else {
+          contactRecordBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      public Builder clearContactRecord() {
+        if (contactRecordBuilder_ == null) {
+          contactRecord_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
+        } else {
+          contactRecordBuilder_.clear();
+        }
+        return this;
+      }
+      public Builder removeContactRecord(int index) {
+        if (contactRecordBuilder_ == null) {
+          ensureContactRecordIsMutable();
+          contactRecord_.remove(index);
+          onChanged();
+        } else {
+          contactRecordBuilder_.remove(index);
+        }
+        return this;
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder getContactRecordBuilder(
+          int index) {
+        return getContactRecordFieldBuilder().getBuilder(index);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder getContactRecordOrBuilder(
+          int index) {
+        if (contactRecordBuilder_ == null) {
+          return contactRecord_.get(index);  } else {
+          return contactRecordBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      public java.util.List<? extends com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder> 
+           getContactRecordOrBuilderList() {
+        if (contactRecordBuilder_ != null) {
+          return contactRecordBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(contactRecord_);
+        }
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder addContactRecordBuilder() {
+        return getContactRecordFieldBuilder().addBuilder(
+            com.pekall.pctool.protos.MsgDefProtos.ContactRecord.getDefaultInstance());
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder addContactRecordBuilder(
+          int index) {
+        return getContactRecordFieldBuilder().addBuilder(
+            index, com.pekall.pctool.protos.MsgDefProtos.ContactRecord.getDefaultInstance());
+      }
+      public java.util.List<com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder> 
+           getContactRecordBuilderList() {
+        return getContactRecordFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.ContactRecord, com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder> 
+          getContactRecordFieldBuilder() {
+        if (contactRecordBuilder_ == null) {
+          contactRecordBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              com.pekall.pctool.protos.MsgDefProtos.ContactRecord, com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactRecordOrBuilder>(
+                  contactRecord_,
+                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  getParentForChildren(),
+                  isClean());
+          contactRecord_ = null;
+        }
+        return contactRecordBuilder_;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:pekall.pcsuite.ContactsSync)
+    }
+    
+    static {
+      defaultInstance = new ContactsSync(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:pekall.pcsuite.ContactsSync)
   }
   
   public interface CalendarRecordOrBuilder
@@ -13177,6 +14386,14 @@ public final class MsgDefProtos {
     // optional string note = 9;
     boolean hasNote();
     String getNote();
+    
+    // optional int32 version = 10;
+    boolean hasVersion();
+    int getVersion();
+    
+    // optional .pekall.pcsuite.SyncResult sync_result = 11;
+    boolean hasSyncResult();
+    com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult();
   }
   public static final class AgendaRecord extends
       com.google.protobuf.GeneratedMessage
@@ -13385,6 +14602,26 @@ public final class MsgDefProtos {
       }
     }
     
+    // optional int32 version = 10;
+    public static final int VERSION_FIELD_NUMBER = 10;
+    private int version_;
+    public boolean hasVersion() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    public int getVersion() {
+      return version_;
+    }
+    
+    // optional .pekall.pcsuite.SyncResult sync_result = 11;
+    public static final int SYNC_RESULT_FIELD_NUMBER = 11;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncResult syncResult_;
+    public boolean hasSyncResult() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult() {
+      return syncResult_;
+    }
+    
     private void initFields() {
       id_ = 0L;
       calendarId_ = 0L;
@@ -13395,6 +14632,8 @@ public final class MsgDefProtos {
       repeatRule_ = "";
       alertTime_ = 0;
       note_ = "";
+      version_ = 0;
+      syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -13434,6 +14673,12 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeBytes(9, getNoteBytes());
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeInt32(10, version_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeEnum(11, syncResult_.getNumber());
       }
       getUnknownFields().writeTo(output);
     }
@@ -13479,6 +14724,14 @@ public final class MsgDefProtos {
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(9, getNoteBytes());
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(10, version_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(11, syncResult_.getNumber());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -13622,6 +14875,10 @@ public final class MsgDefProtos {
         bitField0_ = (bitField0_ & ~0x00000080);
         note_ = "";
         bitField0_ = (bitField0_ & ~0x00000100);
+        version_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
       
@@ -13696,6 +14953,14 @@ public final class MsgDefProtos {
           to_bitField0_ |= 0x00000100;
         }
         result.note_ = note_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        result.version_ = version_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.syncResult_ = syncResult_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -13738,6 +15003,12 @@ public final class MsgDefProtos {
         }
         if (other.hasNote()) {
           setNote(other.getNote());
+        }
+        if (other.hasVersion()) {
+          setVersion(other.getVersion());
+        }
+        if (other.hasSyncResult()) {
+          setSyncResult(other.getSyncResult());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -13813,6 +15084,22 @@ public final class MsgDefProtos {
             case 74: {
               bitField0_ |= 0x00000100;
               note_ = input.readBytes();
+              break;
+            }
+            case 80: {
+              bitField0_ |= 0x00000200;
+              version_ = input.readInt32();
+              break;
+            }
+            case 88: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncResult value = com.pekall.pctool.protos.MsgDefProtos.SyncResult.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(11, rawValue);
+              } else {
+                bitField0_ |= 0x00000400;
+                syncResult_ = value;
+              }
               break;
             }
           }
@@ -14070,6 +15357,51 @@ public final class MsgDefProtos {
         onChanged();
       }
       
+      // optional int32 version = 10;
+      private int version_ ;
+      public boolean hasVersion() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      public int getVersion() {
+        return version_;
+      }
+      public Builder setVersion(int value) {
+        bitField0_ |= 0x00000200;
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearVersion() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        version_ = 0;
+        onChanged();
+        return this;
+      }
+      
+      // optional .pekall.pcsuite.SyncResult sync_result = 11;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncResult syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
+      public boolean hasSyncResult() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult() {
+        return syncResult_;
+      }
+      public Builder setSyncResult(com.pekall.pctool.protos.MsgDefProtos.SyncResult value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000400;
+        syncResult_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSyncResult() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
+        onChanged();
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:pekall.pcsuite.AgendaRecord)
     }
     
@@ -14079,6 +15411,774 @@ public final class MsgDefProtos {
     }
     
     // @@protoc_insertion_point(class_scope:pekall.pcsuite.AgendaRecord)
+  }
+  
+  public interface AgendaSyncOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+    
+    // required .pekall.pcsuite.SyncType type = 1;
+    boolean hasType();
+    com.pekall.pctool.protos.MsgDefProtos.SyncType getType();
+    
+    // required .pekall.pcsuite.SyncSubType sub_type = 2;
+    boolean hasSubType();
+    com.pekall.pctool.protos.MsgDefProtos.SyncSubType getSubType();
+    
+    // optional .pekall.pcsuite.SyncConflictPloy sync_conflict_ploy = 3;
+    boolean hasSyncConflictPloy();
+    com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy getSyncConflictPloy();
+    
+    // repeated .pekall.pcsuite.AgendaRecord agenda_record = 4;
+    java.util.List<com.pekall.pctool.protos.MsgDefProtos.AgendaRecord> 
+        getAgendaRecordList();
+    com.pekall.pctool.protos.MsgDefProtos.AgendaRecord getAgendaRecord(int index);
+    int getAgendaRecordCount();
+    java.util.List<? extends com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder> 
+        getAgendaRecordOrBuilderList();
+    com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder getAgendaRecordOrBuilder(
+        int index);
+  }
+  public static final class AgendaSync extends
+      com.google.protobuf.GeneratedMessage
+      implements AgendaSyncOrBuilder {
+    // Use AgendaSync.newBuilder() to construct.
+    private AgendaSync(Builder builder) {
+      super(builder);
+    }
+    private AgendaSync(boolean noInit) {}
+    
+    private static final AgendaSync defaultInstance;
+    public static AgendaSync getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public AgendaSync getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_AgendaSync_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_AgendaSync_fieldAccessorTable;
+    }
+    
+    private int bitField0_;
+    // required .pekall.pcsuite.SyncType type = 1;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncType type_;
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncType getType() {
+      return type_;
+    }
+    
+    // required .pekall.pcsuite.SyncSubType sub_type = 2;
+    public static final int SUB_TYPE_FIELD_NUMBER = 2;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncSubType subType_;
+    public boolean hasSubType() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncSubType getSubType() {
+      return subType_;
+    }
+    
+    // optional .pekall.pcsuite.SyncConflictPloy sync_conflict_ploy = 3;
+    public static final int SYNC_CONFLICT_PLOY_FIELD_NUMBER = 3;
+    private com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy syncConflictPloy_;
+    public boolean hasSyncConflictPloy() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy getSyncConflictPloy() {
+      return syncConflictPloy_;
+    }
+    
+    // repeated .pekall.pcsuite.AgendaRecord agenda_record = 4;
+    public static final int AGENDA_RECORD_FIELD_NUMBER = 4;
+    private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AgendaRecord> agendaRecord_;
+    public java.util.List<com.pekall.pctool.protos.MsgDefProtos.AgendaRecord> getAgendaRecordList() {
+      return agendaRecord_;
+    }
+    public java.util.List<? extends com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder> 
+        getAgendaRecordOrBuilderList() {
+      return agendaRecord_;
+    }
+    public int getAgendaRecordCount() {
+      return agendaRecord_.size();
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.AgendaRecord getAgendaRecord(int index) {
+      return agendaRecord_.get(index);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder getAgendaRecordOrBuilder(
+        int index) {
+      return agendaRecord_.get(index);
+    }
+    
+    private void initFields() {
+      type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+      subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+      syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+      agendaRecord_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      if (!hasType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSubType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeEnum(2, subType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeEnum(3, syncConflictPloy_.getNumber());
+      }
+      for (int i = 0; i < agendaRecord_.size(); i++) {
+        output.writeMessage(4, agendaRecord_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(2, subType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(3, syncConflictPloy_.getNumber());
+      }
+      for (int i = 0; i < agendaRecord_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, agendaRecord_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.pekall.pctool.protos.MsgDefProtos.AgendaSync parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.pekall.pctool.protos.MsgDefProtos.AgendaSync prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements com.pekall.pctool.protos.MsgDefProtos.AgendaSyncOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_AgendaSync_descriptor;
+      }
+      
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.pekall.pctool.protos.MsgDefProtos.internal_static_pekall_pcsuite_AgendaSync_fieldAccessorTable;
+      }
+      
+      // Construct using com.pekall.pctool.protos.MsgDefProtos.AgendaSync.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private Builder(BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getAgendaRecordFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        if (agendaRecordBuilder_ == null) {
+          agendaRecord_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+        } else {
+          agendaRecordBuilder_.clear();
+        }
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.pekall.pctool.protos.MsgDefProtos.AgendaSync.getDescriptor();
+      }
+      
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaSync getDefaultInstanceForType() {
+        return com.pekall.pctool.protos.MsgDefProtos.AgendaSync.getDefaultInstance();
+      }
+      
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaSync build() {
+        com.pekall.pctool.protos.MsgDefProtos.AgendaSync result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private com.pekall.pctool.protos.MsgDefProtos.AgendaSync buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        com.pekall.pctool.protos.MsgDefProtos.AgendaSync result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaSync buildPartial() {
+        com.pekall.pctool.protos.MsgDefProtos.AgendaSync result = new com.pekall.pctool.protos.MsgDefProtos.AgendaSync(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.subType_ = subType_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.syncConflictPloy_ = syncConflictPloy_;
+        if (agendaRecordBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+            agendaRecord_ = java.util.Collections.unmodifiableList(agendaRecord_);
+            bitField0_ = (bitField0_ & ~0x00000008);
+          }
+          result.agendaRecord_ = agendaRecord_;
+        } else {
+          result.agendaRecord_ = agendaRecordBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.pekall.pctool.protos.MsgDefProtos.AgendaSync) {
+          return mergeFrom((com.pekall.pctool.protos.MsgDefProtos.AgendaSync)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(com.pekall.pctool.protos.MsgDefProtos.AgendaSync other) {
+        if (other == com.pekall.pctool.protos.MsgDefProtos.AgendaSync.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasSubType()) {
+          setSubType(other.getSubType());
+        }
+        if (other.hasSyncConflictPloy()) {
+          setSyncConflictPloy(other.getSyncConflictPloy());
+        }
+        if (agendaRecordBuilder_ == null) {
+          if (!other.agendaRecord_.isEmpty()) {
+            if (agendaRecord_.isEmpty()) {
+              agendaRecord_ = other.agendaRecord_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+            } else {
+              ensureAgendaRecordIsMutable();
+              agendaRecord_.addAll(other.agendaRecord_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.agendaRecord_.isEmpty()) {
+            if (agendaRecordBuilder_.isEmpty()) {
+              agendaRecordBuilder_.dispose();
+              agendaRecordBuilder_ = null;
+              agendaRecord_ = other.agendaRecord_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+              agendaRecordBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getAgendaRecordFieldBuilder() : null;
+            } else {
+              agendaRecordBuilder_.addAllMessages(other.agendaRecord_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        if (!hasType()) {
+          
+          return false;
+        }
+        if (!hasSubType()) {
+          
+          return false;
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              onChanged();
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                onChanged();
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncType value = com.pekall.pctool.protos.MsgDefProtos.SyncType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = value;
+              }
+              break;
+            }
+            case 16: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncSubType value = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(2, rawValue);
+              } else {
+                bitField0_ |= 0x00000002;
+                subType_ = value;
+              }
+              break;
+            }
+            case 24: {
+              int rawValue = input.readEnum();
+              com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy value = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(3, rawValue);
+              } else {
+                bitField0_ |= 0x00000004;
+                syncConflictPloy_ = value;
+              }
+              break;
+            }
+            case 34: {
+              com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addAgendaRecord(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // required .pekall.pcsuite.SyncType type = 1;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncType type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncType getType() {
+        return type_;
+      }
+      public Builder setType(com.pekall.pctool.protos.MsgDefProtos.SyncType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = com.pekall.pctool.protos.MsgDefProtos.SyncType.PC_PHONE;
+        onChanged();
+        return this;
+      }
+      
+      // required .pekall.pcsuite.SyncSubType sub_type = 2;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncSubType subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+      public boolean hasSubType() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncSubType getSubType() {
+        return subType_;
+      }
+      public Builder setSubType(com.pekall.pctool.protos.MsgDefProtos.SyncSubType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
+        subType_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSubType() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        subType_ = com.pekall.pctool.protos.MsgDefProtos.SyncSubType.TWO_WAY_SLOW_SYNC;
+        onChanged();
+        return this;
+      }
+      
+      // optional .pekall.pcsuite.SyncConflictPloy sync_conflict_ploy = 3;
+      private com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+      public boolean hasSyncConflictPloy() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy getSyncConflictPloy() {
+        return syncConflictPloy_;
+      }
+      public Builder setSyncConflictPloy(com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000004;
+        syncConflictPloy_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSyncConflictPloy() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        syncConflictPloy_ = com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy.SKIP;
+        onChanged();
+        return this;
+      }
+      
+      // repeated .pekall.pcsuite.AgendaRecord agenda_record = 4;
+      private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AgendaRecord> agendaRecord_ =
+        java.util.Collections.emptyList();
+      private void ensureAgendaRecordIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          agendaRecord_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.AgendaRecord>(agendaRecord_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+      
+      private com.google.protobuf.RepeatedFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.AgendaRecord, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder> agendaRecordBuilder_;
+      
+      public java.util.List<com.pekall.pctool.protos.MsgDefProtos.AgendaRecord> getAgendaRecordList() {
+        if (agendaRecordBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(agendaRecord_);
+        } else {
+          return agendaRecordBuilder_.getMessageList();
+        }
+      }
+      public int getAgendaRecordCount() {
+        if (agendaRecordBuilder_ == null) {
+          return agendaRecord_.size();
+        } else {
+          return agendaRecordBuilder_.getCount();
+        }
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaRecord getAgendaRecord(int index) {
+        if (agendaRecordBuilder_ == null) {
+          return agendaRecord_.get(index);
+        } else {
+          return agendaRecordBuilder_.getMessage(index);
+        }
+      }
+      public Builder setAgendaRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord value) {
+        if (agendaRecordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAgendaRecordIsMutable();
+          agendaRecord_.set(index, value);
+          onChanged();
+        } else {
+          agendaRecordBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      public Builder setAgendaRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder builderForValue) {
+        if (agendaRecordBuilder_ == null) {
+          ensureAgendaRecordIsMutable();
+          agendaRecord_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          agendaRecordBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addAgendaRecord(com.pekall.pctool.protos.MsgDefProtos.AgendaRecord value) {
+        if (agendaRecordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAgendaRecordIsMutable();
+          agendaRecord_.add(value);
+          onChanged();
+        } else {
+          agendaRecordBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      public Builder addAgendaRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord value) {
+        if (agendaRecordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAgendaRecordIsMutable();
+          agendaRecord_.add(index, value);
+          onChanged();
+        } else {
+          agendaRecordBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      public Builder addAgendaRecord(
+          com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder builderForValue) {
+        if (agendaRecordBuilder_ == null) {
+          ensureAgendaRecordIsMutable();
+          agendaRecord_.add(builderForValue.build());
+          onChanged();
+        } else {
+          agendaRecordBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addAgendaRecord(
+          int index, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder builderForValue) {
+        if (agendaRecordBuilder_ == null) {
+          ensureAgendaRecordIsMutable();
+          agendaRecord_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          agendaRecordBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addAllAgendaRecord(
+          java.lang.Iterable<? extends com.pekall.pctool.protos.MsgDefProtos.AgendaRecord> values) {
+        if (agendaRecordBuilder_ == null) {
+          ensureAgendaRecordIsMutable();
+          super.addAll(values, agendaRecord_);
+          onChanged();
+        } else {
+          agendaRecordBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      public Builder clearAgendaRecord() {
+        if (agendaRecordBuilder_ == null) {
+          agendaRecord_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
+        } else {
+          agendaRecordBuilder_.clear();
+        }
+        return this;
+      }
+      public Builder removeAgendaRecord(int index) {
+        if (agendaRecordBuilder_ == null) {
+          ensureAgendaRecordIsMutable();
+          agendaRecord_.remove(index);
+          onChanged();
+        } else {
+          agendaRecordBuilder_.remove(index);
+        }
+        return this;
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder getAgendaRecordBuilder(
+          int index) {
+        return getAgendaRecordFieldBuilder().getBuilder(index);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder getAgendaRecordOrBuilder(
+          int index) {
+        if (agendaRecordBuilder_ == null) {
+          return agendaRecord_.get(index);  } else {
+          return agendaRecordBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      public java.util.List<? extends com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder> 
+           getAgendaRecordOrBuilderList() {
+        if (agendaRecordBuilder_ != null) {
+          return agendaRecordBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(agendaRecord_);
+        }
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder addAgendaRecordBuilder() {
+        return getAgendaRecordFieldBuilder().addBuilder(
+            com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.getDefaultInstance());
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder addAgendaRecordBuilder(
+          int index) {
+        return getAgendaRecordFieldBuilder().addBuilder(
+            index, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.getDefaultInstance());
+      }
+      public java.util.List<com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder> 
+           getAgendaRecordBuilderList() {
+        return getAgendaRecordFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.AgendaRecord, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder> 
+          getAgendaRecordFieldBuilder() {
+        if (agendaRecordBuilder_ == null) {
+          agendaRecordBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              com.pekall.pctool.protos.MsgDefProtos.AgendaRecord, com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AgendaRecordOrBuilder>(
+                  agendaRecord_,
+                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  getParentForChildren(),
+                  isClean());
+          agendaRecord_ = null;
+        }
+        return agendaRecordBuilder_;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:pekall.pcsuite.AgendaSync)
+    }
+    
+    static {
+      defaultInstance = new AgendaSync(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:pekall.pcsuite.AgendaSync)
   }
   
   public interface CmdRequestOrBuilder
@@ -14122,6 +16222,11 @@ public final class MsgDefProtos {
     boolean hasAppParams();
     com.pekall.pctool.protos.MsgDefProtos.AppRecord getAppParams();
     com.pekall.pctool.protos.MsgDefProtos.AppRecordOrBuilder getAppParamsOrBuilder();
+    
+    // optional .pekall.pcsuite.ContactsSync contacts_sync = 9;
+    boolean hasContactsSync();
+    com.pekall.pctool.protos.MsgDefProtos.ContactsSync getContactsSync();
+    com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder getContactsSyncOrBuilder();
   }
   public static final class CmdRequest extends
       com.google.protobuf.GeneratedMessage
@@ -14254,6 +16359,19 @@ public final class MsgDefProtos {
       return appParams_;
     }
     
+    // optional .pekall.pcsuite.ContactsSync contacts_sync = 9;
+    public static final int CONTACTS_SYNC_FIELD_NUMBER = 9;
+    private com.pekall.pctool.protos.MsgDefProtos.ContactsSync contactsSync_;
+    public boolean hasContactsSync() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.ContactsSync getContactsSync() {
+      return contactsSync_;
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder getContactsSyncOrBuilder() {
+      return contactsSync_;
+    }
+    
     private void initFields() {
       cmdType_ = com.pekall.pctool.protos.MsgDefProtos.CmdType.CMD_HEART_BEAT;
       recordId_ = java.util.Collections.emptyList();;
@@ -14263,6 +16381,7 @@ public final class MsgDefProtos {
       contactParams_ = com.pekall.pctool.protos.MsgDefProtos.ContactRecord.getDefaultInstance();
       agendaParams_ = com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.getDefaultInstance();
       appParams_ = com.pekall.pctool.protos.MsgDefProtos.AppRecord.getDefaultInstance();
+      contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -14272,6 +16391,12 @@ public final class MsgDefProtos {
       if (!hasCmdType()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      if (hasContactsSync()) {
+        if (!getContactsSync().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -14303,6 +16428,9 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeMessage(8, appParams_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeMessage(9, contactsSync_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -14349,6 +16477,10 @@ public final class MsgDefProtos {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, appParams_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, contactsSync_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -14472,6 +16604,7 @@ public final class MsgDefProtos {
           getContactParamsFieldBuilder();
           getAgendaParamsFieldBuilder();
           getAppParamsFieldBuilder();
+          getContactsSyncFieldBuilder();
         }
       }
       private static Builder create() {
@@ -14520,6 +16653,12 @@ public final class MsgDefProtos {
           appParamsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
+        if (contactsSyncBuilder_ == null) {
+          contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
+        } else {
+          contactsSyncBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
       
@@ -14615,6 +16754,14 @@ public final class MsgDefProtos {
         } else {
           result.appParams_ = appParamsBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        if (contactsSyncBuilder_ == null) {
+          result.contactsSync_ = contactsSync_;
+        } else {
+          result.contactsSync_ = contactsSyncBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -14662,6 +16809,9 @@ public final class MsgDefProtos {
         if (other.hasAppParams()) {
           mergeAppParams(other.getAppParams());
         }
+        if (other.hasContactsSync()) {
+          mergeContactsSync(other.getContactsSync());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -14670,6 +16820,12 @@ public final class MsgDefProtos {
         if (!hasCmdType()) {
           
           return false;
+        }
+        if (hasContactsSync()) {
+          if (!getContactsSync().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -14774,6 +16930,15 @@ public final class MsgDefProtos {
               }
               input.readMessage(subBuilder, extensionRegistry);
               setAppParams(subBuilder.buildPartial());
+              break;
+            }
+            case 74: {
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.newBuilder();
+              if (hasContactsSync()) {
+                subBuilder.mergeFrom(getContactsSync());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setContactsSync(subBuilder.buildPartial());
               break;
             }
           }
@@ -15391,6 +17556,96 @@ public final class MsgDefProtos {
         return appParamsBuilder_;
       }
       
+      // optional .pekall.pcsuite.ContactsSync contacts_sync = 9;
+      private com.pekall.pctool.protos.MsgDefProtos.ContactsSync contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.ContactsSync, com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder> contactsSyncBuilder_;
+      public boolean hasContactsSync() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSync getContactsSync() {
+        if (contactsSyncBuilder_ == null) {
+          return contactsSync_;
+        } else {
+          return contactsSyncBuilder_.getMessage();
+        }
+      }
+      public Builder setContactsSync(com.pekall.pctool.protos.MsgDefProtos.ContactsSync value) {
+        if (contactsSyncBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          contactsSync_ = value;
+          onChanged();
+        } else {
+          contactsSyncBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      public Builder setContactsSync(
+          com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder builderForValue) {
+        if (contactsSyncBuilder_ == null) {
+          contactsSync_ = builderForValue.build();
+          onChanged();
+        } else {
+          contactsSyncBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      public Builder mergeContactsSync(com.pekall.pctool.protos.MsgDefProtos.ContactsSync value) {
+        if (contactsSyncBuilder_ == null) {
+          if (((bitField0_ & 0x00000100) == 0x00000100) &&
+              contactsSync_ != com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance()) {
+            contactsSync_ =
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync.newBuilder(contactsSync_).mergeFrom(value).buildPartial();
+          } else {
+            contactsSync_ = value;
+          }
+          onChanged();
+        } else {
+          contactsSyncBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      public Builder clearContactsSync() {
+        if (contactsSyncBuilder_ == null) {
+          contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
+          onChanged();
+        } else {
+          contactsSyncBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
+        return this;
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder getContactsSyncBuilder() {
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return getContactsSyncFieldBuilder().getBuilder();
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder getContactsSyncOrBuilder() {
+        if (contactsSyncBuilder_ != null) {
+          return contactsSyncBuilder_.getMessageOrBuilder();
+        } else {
+          return contactsSync_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.ContactsSync, com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder> 
+          getContactsSyncFieldBuilder() {
+        if (contactsSyncBuilder_ == null) {
+          contactsSyncBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync, com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder>(
+                  contactsSync_,
+                  getParentForChildren(),
+                  isClean());
+          contactsSync_ = null;
+        }
+        return contactsSyncBuilder_;
+      }
+      
       // @@protoc_insertion_point(builder_scope:pekall.pcsuite.CmdRequest)
     }
     
@@ -15496,6 +17751,11 @@ public final class MsgDefProtos {
         getGroupRecordOrBuilderList();
     com.pekall.pctool.protos.MsgDefProtos.GroupRecordOrBuilder getGroupRecordOrBuilder(
         int index);
+    
+    // optional .pekall.pcsuite.ContactsSync contacts_sync = 12;
+    boolean hasContactsSync();
+    com.pekall.pctool.protos.MsgDefProtos.ContactsSync getContactsSync();
+    com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder getContactsSyncOrBuilder();
   }
   public static final class CmdResponse extends
       com.google.protobuf.GeneratedMessage
@@ -15746,6 +18006,19 @@ public final class MsgDefProtos {
       return groupRecord_.get(index);
     }
     
+    // optional .pekall.pcsuite.ContactsSync contacts_sync = 12;
+    public static final int CONTACTS_SYNC_FIELD_NUMBER = 12;
+    private com.pekall.pctool.protos.MsgDefProtos.ContactsSync contactsSync_;
+    public boolean hasContactsSync() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.ContactsSync getContactsSync() {
+      return contactsSync_;
+    }
+    public com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder getContactsSyncOrBuilder() {
+      return contactsSync_;
+    }
+    
     private void initFields() {
       cmdType_ = com.pekall.pctool.protos.MsgDefProtos.CmdType.CMD_HEART_BEAT;
       resultCode_ = 0;
@@ -15758,6 +18031,7 @@ public final class MsgDefProtos {
       appRecord_ = java.util.Collections.emptyList();
       accountRecord_ = java.util.Collections.emptyList();
       groupRecord_ = java.util.Collections.emptyList();
+      contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -15775,6 +18049,12 @@ public final class MsgDefProtos {
       if (!hasResultMsg()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      if (hasContactsSync()) {
+        if (!getContactsSync().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -15815,6 +18095,9 @@ public final class MsgDefProtos {
       }
       for (int i = 0; i < groupRecord_.size(); i++) {
         output.writeMessage(11, groupRecord_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeMessage(12, contactsSync_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -15868,6 +18151,10 @@ public final class MsgDefProtos {
       for (int i = 0; i < groupRecord_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, groupRecord_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, contactsSync_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -15993,6 +18280,7 @@ public final class MsgDefProtos {
           getAppRecordFieldBuilder();
           getAccountRecordFieldBuilder();
           getGroupRecordFieldBuilder();
+          getContactsSyncFieldBuilder();
         }
       }
       private static Builder create() {
@@ -16055,6 +18343,12 @@ public final class MsgDefProtos {
         } else {
           groupRecordBuilder_.clear();
         }
+        if (contactsSyncBuilder_ == null) {
+          contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
+        } else {
+          contactsSyncBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000800);
         return this;
       }
       
@@ -16176,6 +18470,14 @@ public final class MsgDefProtos {
           result.groupRecord_ = groupRecord_;
         } else {
           result.groupRecord_ = groupRecordBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        if (contactsSyncBuilder_ == null) {
+          result.contactsSync_ = contactsSync_;
+        } else {
+          result.contactsSync_ = contactsSyncBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -16410,6 +18712,9 @@ public final class MsgDefProtos {
             }
           }
         }
+        if (other.hasContactsSync()) {
+          mergeContactsSync(other.getContactsSync());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -16426,6 +18731,12 @@ public final class MsgDefProtos {
         if (!hasResultMsg()) {
           
           return false;
+        }
+        if (hasContactsSync()) {
+          if (!getContactsSync().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -16520,6 +18831,15 @@ public final class MsgDefProtos {
               com.pekall.pctool.protos.MsgDefProtos.GroupRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.GroupRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addGroupRecord(subBuilder.buildPartial());
+              break;
+            }
+            case 98: {
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.newBuilder();
+              if (hasContactsSync()) {
+                subBuilder.mergeFrom(getContactsSync());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setContactsSync(subBuilder.buildPartial());
               break;
             }
           }
@@ -18097,6 +20417,96 @@ public final class MsgDefProtos {
         return groupRecordBuilder_;
       }
       
+      // optional .pekall.pcsuite.ContactsSync contacts_sync = 12;
+      private com.pekall.pctool.protos.MsgDefProtos.ContactsSync contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.ContactsSync, com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder> contactsSyncBuilder_;
+      public boolean hasContactsSync() {
+        return ((bitField0_ & 0x00000800) == 0x00000800);
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSync getContactsSync() {
+        if (contactsSyncBuilder_ == null) {
+          return contactsSync_;
+        } else {
+          return contactsSyncBuilder_.getMessage();
+        }
+      }
+      public Builder setContactsSync(com.pekall.pctool.protos.MsgDefProtos.ContactsSync value) {
+        if (contactsSyncBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          contactsSync_ = value;
+          onChanged();
+        } else {
+          contactsSyncBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      public Builder setContactsSync(
+          com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder builderForValue) {
+        if (contactsSyncBuilder_ == null) {
+          contactsSync_ = builderForValue.build();
+          onChanged();
+        } else {
+          contactsSyncBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      public Builder mergeContactsSync(com.pekall.pctool.protos.MsgDefProtos.ContactsSync value) {
+        if (contactsSyncBuilder_ == null) {
+          if (((bitField0_ & 0x00000800) == 0x00000800) &&
+              contactsSync_ != com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance()) {
+            contactsSync_ =
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync.newBuilder(contactsSync_).mergeFrom(value).buildPartial();
+          } else {
+            contactsSync_ = value;
+          }
+          onChanged();
+        } else {
+          contactsSyncBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      public Builder clearContactsSync() {
+        if (contactsSyncBuilder_ == null) {
+          contactsSync_ = com.pekall.pctool.protos.MsgDefProtos.ContactsSync.getDefaultInstance();
+          onChanged();
+        } else {
+          contactsSyncBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000800);
+        return this;
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder getContactsSyncBuilder() {
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return getContactsSyncFieldBuilder().getBuilder();
+      }
+      public com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder getContactsSyncOrBuilder() {
+        if (contactsSyncBuilder_ != null) {
+          return contactsSyncBuilder_.getMessageOrBuilder();
+        } else {
+          return contactsSync_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          com.pekall.pctool.protos.MsgDefProtos.ContactsSync, com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder> 
+          getContactsSyncFieldBuilder() {
+        if (contactsSyncBuilder_ == null) {
+          contactsSyncBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync, com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder, com.pekall.pctool.protos.MsgDefProtos.ContactsSyncOrBuilder>(
+                  contactsSync_,
+                  getParentForChildren(),
+                  isClean());
+          contactsSync_ = null;
+        }
+        return contactsSyncBuilder_;
+      }
+      
       // @@protoc_insertion_point(builder_scope:pekall.pcsuite.CmdResponse)
     }
     
@@ -18174,6 +20584,11 @@ public final class MsgDefProtos {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_pekall_pcsuite_ContactRecord_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_pekall_pcsuite_ContactsSync_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_pekall_pcsuite_ContactsSync_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_pekall_pcsuite_CalendarRecord_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -18183,6 +20598,11 @@ public final class MsgDefProtos {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_pekall_pcsuite_AgendaRecord_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_pekall_pcsuite_AgendaSync_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_pekall_pcsuite_AgendaSync_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_pekall_pcsuite_CmdRequest_descriptor;
   private static
@@ -18266,68 +20686,96 @@ public final class MsgDefProtos {
       "pe\030\003 \001(\0162!.pekall.pcsuite.OrgRecord.OrgT" +
       "ype\022\014\n\004name\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162\031." +
       "pekall.pcsuite.ModifyTag\"3\n\007OrgType\022\013\n\007C" +
-      "OMPANY\020\000\022\t\n\005OTHER\020\001\022\020\n\014USER_DEFINED\020c\"\233\003" +
+      "OMPANY\020\000\022\t\n\005OTHER\020\001\022\020\n\014USER_DEFINED\020c\"\335\003" +
       "\n\rContactRecord\022\n\n\002id\030\001 \001(\003\022\014\n\004name\030\002 \001(" +
       "\t\022\020\n\010nickname\030\003 \001(\t\022\r\n\005photo\030\004 \001(\014\022\030\n\020ph" +
-      "oto_modify_tag\030\005 \001(\010\0223\n\014account_info\030\006 \001" +
-      "(\0132\035.pekall.pcsuite.AccountRecord\022*\n\005gro" +
-      "up\030\007 \003(\0132\033.pekall.pcsuite.GroupRecord\022*\n",
-      "\005phone\030\010 \003(\0132\033.pekall.pcsuite.PhoneRecor" +
-      "d\022*\n\005email\030\t \003(\0132\033.pekall.pcsuite.EmailR" +
-      "ecord\022$\n\002im\030\n \003(\0132\030.pekall.pcsuite.IMRec" +
-      "ord\022.\n\007address\030\013 \003(\0132\035.pekall.pcsuite.Ad" +
-      "dressRecord\022&\n\003org\030\014 \003(\0132\031.pekall.pcsuit" +
-      "e.OrgRecord\"_\n\016CalendarRecord\022\n\n\002id\030\001 \001(" +
-      "\003\0223\n\014account_info\030\002 \001(\0132\035.pekall.pcsuite" +
-      ".AccountRecord\022\014\n\004name\030\003 \001(\t\"\257\001\n\014AgendaR" +
-      "ecord\022\n\n\002id\030\001 \001(\003\022\023\n\013calendar_id\030\002 \001(\003\022\017" +
-      "\n\007subject\030\003 \001(\t\022\020\n\010location\030\004 \001(\t\022\022\n\nsta",
-      "rt_time\030\005 \001(\003\022\020\n\010end_time\030\006 \001(\003\022\023\n\013repea" +
-      "t_rule\030\007 \001(\t\022\022\n\nalert_time\030\010 \001(\005\022\014\n\004note" +
-      "\030\t \001(\t\"\366\002\n\nCmdRequest\022)\n\010cmd_type\030\001 \002(\0162" +
-      "\027.pekall.pcsuite.CmdType\022\021\n\trecord_id\030\002 " +
-      "\003(\003\022-\n\nsms_params\030\003 \001(\0132\031.pekall.pcsuite" +
-      ".SMSRecord\022-\n\nmms_params\030\004 \001(\0132\031.pekall." +
-      "pcsuite.MMSRecord\0221\n\014group_params\030\005 \001(\0132" +
-      "\033.pekall.pcsuite.GroupRecord\0225\n\016contact_" +
-      "params\030\006 \001(\0132\035.pekall.pcsuite.ContactRec" +
-      "ord\0223\n\ragenda_params\030\007 \001(\0132\034.pekall.pcsu",
-      "ite.AgendaRecord\022-\n\napp_params\030\010 \001(\0132\031.p" +
-      "ekall.pcsuite.AppRecord\"\375\003\n\013CmdResponse\022" +
-      ")\n\010cmd_type\030\001 \002(\0162\027.pekall.pcsuite.CmdTy" +
-      "pe\022\023\n\013result_code\030\002 \002(\005\022\022\n\nresult_msg\030\003 " +
-      "\002(\t\022-\n\nsms_record\030\004 \003(\0132\031.pekall.pcsuite" +
-      ".SMSRecord\022-\n\nmms_record\030\005 \003(\0132\031.pekall." +
-      "pcsuite.MMSRecord\0225\n\016contact_record\030\006 \003(" +
-      "\0132\035.pekall.pcsuite.ContactRecord\0227\n\017cale" +
-      "ndar_record\030\007 \003(\0132\036.pekall.pcsuite.Calen" +
-      "darRecord\0223\n\ragenda_record\030\010 \003(\0132\034.pekal",
-      "l.pcsuite.AgendaRecord\022-\n\napp_record\030\t \003" +
-      "(\0132\031.pekall.pcsuite.AppRecord\0225\n\016account" +
-      "_record\030\n \003(\0132\035.pekall.pcsuite.AccountRe" +
-      "cord\0221\n\014group_record\030\013 \003(\0132\033.pekall.pcsu" +
-      "ite.GroupRecord*\365\004\n\007CmdType\022\022\n\016CMD_HEART" +
-      "_BEAT\020\000\022\021\n\rCMD_QUERY_SMS\020\001\022\022\n\016CMD_DELETE" +
-      "_SMS\020\002\022\020\n\014CMD_SEND_SMS\020\003\022\022\n\016CMD_IMPORT_S" +
-      "MS\020\004\022\021\n\rCMD_QUERY_MMS\020\005\022\022\n\016CMD_DELETE_MM" +
-      "S\020\006\022\020\n\014CMD_SEND_MMS\020\007\022\022\n\016CMD_IMPORT_MMS\020" +
-      "\010\022\031\n\025CMD_REICEIVED_NEW_MSG\020\t\022\026\n\022CMD_GET_",
-      "ALL_GROUPS\020\n\022\021\n\rCMD_ADD_GROUP\020\013\022\024\n\020CMD_D" +
-      "ELETE_GROUP\020\014\022\022\n\016CMD_EDIT_GROUP\020\r\022\030\n\024CMD" +
-      "_GET_ALL_ACCOUNTS\020\016\022\026\n\022CMD_QUERY_CONTACT" +
-      "S\020\017\022\023\n\017CMD_ADD_CONTACT\020\020\022\026\n\022CMD_DELETE_C" +
-      "ONTACT\020\021\022\024\n\020CMD_EDIT_CONTACT\020\022\022\025\n\021CMD_SY" +
-      "NC_CONTACTS\020\023\022\026\n\022CMD_QUERY_CALENDAR\020\024\022\025\n" +
-      "\021CMD_QUERY_AGENDAS\020\025\022\022\n\016CMD_ADD_AGENDA\020\026" +
-      "\022\025\n\021CMD_DELETE_AGENDA\020\027\022\023\n\017CMD_EDIT_AGEN" +
-      "DA\020\030\022\024\n\020CMD_SYNC_AGENDAS\020\031\022\021\n\rCMD_QUERY_" +
-      "APP\020\032\022\022\n\016CMD_UPLOAD_APK\020\033\022\024\n\020CMD_DOWNLOA",
-      "D_APK\020\034*b\n\rMsgOriginType\022\007\n\003ANY\020\000\022\t\n\005INB" +
-      "OX\020\001\022\013\n\007SENTBOX\020\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006OUTBO" +
-      "X\020\004\022\n\n\006FAILED\020\005\022\n\n\006QUEUED\020\006*1\n\tModifyTag" +
-      "\022\010\n\004SAME\020\000\022\007\n\003ADD\020\001\022\007\n\003DEL\020\002\022\010\n\004EDIT\020\003B*" +
-      "\n\030com.pekall.pctool.protosB\014MsgDefProtos" +
-      "H\001"
+      "oto_modify_tag\030\005 \001(\010\022\017\n\007version\030\006 \001(\005\022/\n" +
+      "\013sync_result\030\007 \001(\0162\032.pekall.pcsuite.Sync" +
+      "Result\0223\n\014account_info\030\010 \001(\0132\035.pekall.pc",
+      "suite.AccountRecord\022*\n\005group\030\t \003(\0132\033.pek" +
+      "all.pcsuite.GroupRecord\022*\n\005phone\030\n \003(\0132\033" +
+      ".pekall.pcsuite.PhoneRecord\022*\n\005email\030\013 \003" +
+      "(\0132\033.pekall.pcsuite.EmailRecord\022$\n\002im\030\014 " +
+      "\003(\0132\030.pekall.pcsuite.IMRecord\022.\n\007address" +
+      "\030\r \003(\0132\035.pekall.pcsuite.AddressRecord\022&\n" +
+      "\003org\030\016 \003(\0132\031.pekall.pcsuite.OrgRecord\"\332\001" +
+      "\n\014ContactsSync\022&\n\004type\030\001 \002(\0162\030.pekall.pc" +
+      "suite.SyncType\022-\n\010sub_type\030\002 \002(\0162\033.pekal" +
+      "l.pcsuite.SyncSubType\022<\n\022sync_conflict_p",
+      "loy\030\003 \001(\0162 .pekall.pcsuite.SyncConflictP" +
+      "loy\0225\n\016contact_record\030\004 \003(\0132\035.pekall.pcs" +
+      "uite.ContactRecord\"_\n\016CalendarRecord\022\n\n\002" +
+      "id\030\001 \001(\003\0223\n\014account_info\030\002 \001(\0132\035.pekall." +
+      "pcsuite.AccountRecord\022\014\n\004name\030\003 \001(\t\"\361\001\n\014" +
+      "AgendaRecord\022\n\n\002id\030\001 \001(\003\022\023\n\013calendar_id\030" +
+      "\002 \001(\003\022\017\n\007subject\030\003 \001(\t\022\020\n\010location\030\004 \001(\t" +
+      "\022\022\n\nstart_time\030\005 \001(\003\022\020\n\010end_time\030\006 \001(\003\022\023" +
+      "\n\013repeat_rule\030\007 \001(\t\022\022\n\nalert_time\030\010 \001(\005\022" +
+      "\014\n\004note\030\t \001(\t\022\017\n\007version\030\n \001(\005\022/\n\013sync_r",
+      "esult\030\013 \001(\0162\032.pekall.pcsuite.SyncResult\"" +
+      "\326\001\n\nAgendaSync\022&\n\004type\030\001 \002(\0162\030.pekall.pc" +
+      "suite.SyncType\022-\n\010sub_type\030\002 \002(\0162\033.pekal" +
+      "l.pcsuite.SyncSubType\022<\n\022sync_conflict_p" +
+      "loy\030\003 \001(\0162 .pekall.pcsuite.SyncConflictP" +
+      "loy\0223\n\ragenda_record\030\004 \003(\0132\034.pekall.pcsu" +
+      "ite.AgendaRecord\"\253\003\n\nCmdRequest\022)\n\010cmd_t" +
+      "ype\030\001 \002(\0162\027.pekall.pcsuite.CmdType\022\021\n\tre" +
+      "cord_id\030\002 \003(\003\022-\n\nsms_params\030\003 \001(\0132\031.peka" +
+      "ll.pcsuite.SMSRecord\022-\n\nmms_params\030\004 \001(\013",
+      "2\031.pekall.pcsuite.MMSRecord\0221\n\014group_par" +
+      "ams\030\005 \001(\0132\033.pekall.pcsuite.GroupRecord\0225" +
+      "\n\016contact_params\030\006 \001(\0132\035.pekall.pcsuite." +
+      "ContactRecord\0223\n\ragenda_params\030\007 \001(\0132\034.p" +
+      "ekall.pcsuite.AgendaRecord\022-\n\napp_params" +
+      "\030\010 \001(\0132\031.pekall.pcsuite.AppRecord\0223\n\rcon" +
+      "tacts_sync\030\t \001(\0132\034.pekall.pcsuite.Contac" +
+      "tsSync\"\262\004\n\013CmdResponse\022)\n\010cmd_type\030\001 \002(\016" +
+      "2\027.pekall.pcsuite.CmdType\022\023\n\013result_code" +
+      "\030\002 \002(\005\022\022\n\nresult_msg\030\003 \002(\t\022-\n\nsms_record",
+      "\030\004 \003(\0132\031.pekall.pcsuite.SMSRecord\022-\n\nmms" +
+      "_record\030\005 \003(\0132\031.pekall.pcsuite.MMSRecord" +
+      "\0225\n\016contact_record\030\006 \003(\0132\035.pekall.pcsuit" +
+      "e.ContactRecord\0227\n\017calendar_record\030\007 \003(\013" +
+      "2\036.pekall.pcsuite.CalendarRecord\0223\n\ragen" +
+      "da_record\030\010 \003(\0132\034.pekall.pcsuite.AgendaR" +
+      "ecord\022-\n\napp_record\030\t \003(\0132\031.pekall.pcsui" +
+      "te.AppRecord\0225\n\016account_record\030\n \003(\0132\035.p" +
+      "ekall.pcsuite.AccountRecord\0221\n\014group_rec" +
+      "ord\030\013 \003(\0132\033.pekall.pcsuite.GroupRecord\0223",
+      "\n\rcontacts_sync\030\014 \001(\0132\034.pekall.pcsuite.C" +
+      "ontactsSync*\365\004\n\007CmdType\022\022\n\016CMD_HEART_BEA" +
+      "T\020\000\022\021\n\rCMD_QUERY_SMS\020\001\022\022\n\016CMD_DELETE_SMS" +
+      "\020\002\022\020\n\014CMD_SEND_SMS\020\003\022\022\n\016CMD_IMPORT_SMS\020\004" +
+      "\022\021\n\rCMD_QUERY_MMS\020\005\022\022\n\016CMD_DELETE_MMS\020\006\022" +
+      "\020\n\014CMD_SEND_MMS\020\007\022\022\n\016CMD_IMPORT_MMS\020\010\022\031\n" +
+      "\025CMD_REICEIVED_NEW_MSG\020\t\022\026\n\022CMD_GET_ALL_" +
+      "GROUPS\020\n\022\021\n\rCMD_ADD_GROUP\020\013\022\024\n\020CMD_DELET" +
+      "E_GROUP\020\014\022\022\n\016CMD_EDIT_GROUP\020\r\022\030\n\024CMD_GET" +
+      "_ALL_ACCOUNTS\020\016\022\026\n\022CMD_QUERY_CONTACTS\020\017\022",
+      "\023\n\017CMD_ADD_CONTACT\020\020\022\026\n\022CMD_DELETE_CONTA" +
+      "CT\020\021\022\024\n\020CMD_EDIT_CONTACT\020\022\022\025\n\021CMD_SYNC_C" +
+      "ONTACTS\020\023\022\026\n\022CMD_QUERY_CALENDAR\020\024\022\025\n\021CMD" +
+      "_QUERY_AGENDAS\020\025\022\022\n\016CMD_ADD_AGENDA\020\026\022\025\n\021" +
+      "CMD_DELETE_AGENDA\020\027\022\023\n\017CMD_EDIT_AGENDA\020\030" +
+      "\022\024\n\020CMD_SYNC_AGENDAS\020\031\022\021\n\rCMD_QUERY_APP\020" +
+      "\032\022\022\n\016CMD_UPLOAD_APK\020\033\022\024\n\020CMD_DOWNLOAD_AP" +
+      "K\020\034*b\n\rMsgOriginType\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001" +
+      "\022\013\n\007SENTBOX\020\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006OUTBOX\020\004\022" +
+      "\n\n\006FAILED\020\005\022\n\n\006QUEUED\020\006*1\n\tModifyTag\022\010\n\004",
+      "SAME\020\000\022\007\n\003ADD\020\001\022\007\n\003DEL\020\002\022\010\n\004EDIT\020\003*+\n\010Sy" +
+      "ncType\022\014\n\010PC_PHONE\020\000\022\021\n\rOUTLOOK_PHONE\020\001*" +
+      "\313\001\n\013SyncSubType\022\025\n\021TWO_WAY_SLOW_SYNC\020\000\022\025" +
+      "\n\021TWO_WAY_FAST_SYNC\020\001\022\026\n\022PHONE_REFRESH_S" +
+      "YNC\020\002\022\023\n\017PC_REFRESH_SYNC\020\003\022\023\n\017PHONE_FAST" +
+      "_SYNC\020\004\022\020\n\014PC_FAST_SYNC\020\005\022\034\n\030TWO_WAY_SLO" +
+      "W_SYNC_SECOND\020\006\022\034\n\030TWO_WAY_FAST_SYNC_SEC" +
+      "OND\020\007*\203\001\n\nSyncResult\022\r\n\tNO_CHANGE\020\000\022\n\n\006P" +
+      "C_ADD\020\001\022\n\n\006PC_DEL\020\002\022\r\n\tPC_MODIFY\020\003\022\017\n\013BO" +
+      "TH_MODIFY\020\005\022\r\n\tPHONE_ADD\020\006\022\r\n\tPHONE_DEL\020",
+      "\007\022\020\n\014PHONE_MODIFY\020\010*D\n\020SyncConflictPloy\022" +
+      "\010\n\004SKIP\020\000\022\013\n\007PC_SIDE\020\001\022\016\n\nPHONE_SIDE\020\002\022\t" +
+      "\n\005MEGER\020\003B*\n\030com.pekall.pctool.protosB\014M" +
+      "sgDefProtosH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -18435,11 +20883,19 @@ public final class MsgDefProtos {
           internal_static_pekall_pcsuite_ContactRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_ContactRecord_descriptor,
-              new java.lang.String[] { "Id", "Name", "Nickname", "Photo", "PhotoModifyTag", "AccountInfo", "Group", "Phone", "Email", "Im", "Address", "Org", },
+              new java.lang.String[] { "Id", "Name", "Nickname", "Photo", "PhotoModifyTag", "Version", "SyncResult", "AccountInfo", "Group", "Phone", "Email", "Im", "Address", "Org", },
               com.pekall.pctool.protos.MsgDefProtos.ContactRecord.class,
               com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder.class);
-          internal_static_pekall_pcsuite_CalendarRecord_descriptor =
+          internal_static_pekall_pcsuite_ContactsSync_descriptor =
             getDescriptor().getMessageTypes().get(13);
+          internal_static_pekall_pcsuite_ContactsSync_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_pekall_pcsuite_ContactsSync_descriptor,
+              new java.lang.String[] { "Type", "SubType", "SyncConflictPloy", "ContactRecord", },
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync.class,
+              com.pekall.pctool.protos.MsgDefProtos.ContactsSync.Builder.class);
+          internal_static_pekall_pcsuite_CalendarRecord_descriptor =
+            getDescriptor().getMessageTypes().get(14);
           internal_static_pekall_pcsuite_CalendarRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_CalendarRecord_descriptor,
@@ -18447,27 +20903,35 @@ public final class MsgDefProtos {
               com.pekall.pctool.protos.MsgDefProtos.CalendarRecord.class,
               com.pekall.pctool.protos.MsgDefProtos.CalendarRecord.Builder.class);
           internal_static_pekall_pcsuite_AgendaRecord_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_pekall_pcsuite_AgendaRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_AgendaRecord_descriptor,
-              new java.lang.String[] { "Id", "CalendarId", "Subject", "Location", "StartTime", "EndTime", "RepeatRule", "AlertTime", "Note", },
+              new java.lang.String[] { "Id", "CalendarId", "Subject", "Location", "StartTime", "EndTime", "RepeatRule", "AlertTime", "Note", "Version", "SyncResult", },
               com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.class,
               com.pekall.pctool.protos.MsgDefProtos.AgendaRecord.Builder.class);
+          internal_static_pekall_pcsuite_AgendaSync_descriptor =
+            getDescriptor().getMessageTypes().get(16);
+          internal_static_pekall_pcsuite_AgendaSync_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_pekall_pcsuite_AgendaSync_descriptor,
+              new java.lang.String[] { "Type", "SubType", "SyncConflictPloy", "AgendaRecord", },
+              com.pekall.pctool.protos.MsgDefProtos.AgendaSync.class,
+              com.pekall.pctool.protos.MsgDefProtos.AgendaSync.Builder.class);
           internal_static_pekall_pcsuite_CmdRequest_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_pekall_pcsuite_CmdRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_CmdRequest_descriptor,
-              new java.lang.String[] { "CmdType", "RecordId", "SmsParams", "MmsParams", "GroupParams", "ContactParams", "AgendaParams", "AppParams", },
+              new java.lang.String[] { "CmdType", "RecordId", "SmsParams", "MmsParams", "GroupParams", "ContactParams", "AgendaParams", "AppParams", "ContactsSync", },
               com.pekall.pctool.protos.MsgDefProtos.CmdRequest.class,
               com.pekall.pctool.protos.MsgDefProtos.CmdRequest.Builder.class);
           internal_static_pekall_pcsuite_CmdResponse_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_pekall_pcsuite_CmdResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_CmdResponse_descriptor,
-              new java.lang.String[] { "CmdType", "ResultCode", "ResultMsg", "SmsRecord", "MmsRecord", "ContactRecord", "CalendarRecord", "AgendaRecord", "AppRecord", "AccountRecord", "GroupRecord", },
+              new java.lang.String[] { "CmdType", "ResultCode", "ResultMsg", "SmsRecord", "MmsRecord", "ContactRecord", "CalendarRecord", "AgendaRecord", "AppRecord", "AccountRecord", "GroupRecord", "ContactsSync", },
               com.pekall.pctool.protos.MsgDefProtos.CmdResponse.class,
               com.pekall.pctool.protos.MsgDefProtos.CmdResponse.Builder.class);
           return null;
