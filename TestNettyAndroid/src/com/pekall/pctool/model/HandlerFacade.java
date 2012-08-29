@@ -41,8 +41,8 @@ import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppLocationType;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppType;
-import com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord.AttachmentType;
 import com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord;
+import com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord.AttachmentType;
 import com.pekall.pctool.protos.MsgDefProtos.CalendarRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
@@ -261,8 +261,14 @@ public class HandlerFacade {
         AttachmentRecord.Builder attachmentRecordBuilder = AttachmentRecord.newBuilder();
 
         List<Mms> mmsList = MmsUtil.query(mContext);
+        
 
         for (Mms mms : mmsList) {
+            
+//            Slog.d(">>>>> dump mms >>>>>");
+//            Slog.d(mms.toString());
+//            Slog.d("<<<<< dump mms <<<<<");
+            
             mmsRecordBuilder.setMsgId(mms.rowId);
             mmsRecordBuilder.setMsgOrigin(mmsTypeToMsgOriginType(mms.msgBoxIndex));
             mmsRecordBuilder.setPhoneNum(normalizeStr(mms.phoneNum));
@@ -272,13 +278,17 @@ public class HandlerFacade {
 
             ArrayList<Slide> slides = mms.slides;
             ArrayList<Attachment> attachments = mms.attachments;
+            
+            List<Integer> slideAttachmentIndex = new ArrayList<Integer>();
 
             for (Slide slide : slides) {
                 slideRecordBuilder.setDuration(slide.duration);
                 slideRecordBuilder.setText(normalizeStr(slide.text));
 
                 if (slide.imageIndex != -1) {
-                    Attachment attachment = attachments.remove(slide.imageIndex);
+                    slideAttachmentIndex.add(slide.imageIndex);
+                    
+                    Attachment attachment = attachments.get(slide.imageIndex);
 
                     attachmentRecordBuilder.setType(AttachmentType.IMAGE);
                     attachmentRecordBuilder.setName(normalizeStr(attachment.name));
@@ -291,7 +301,9 @@ public class HandlerFacade {
                 }
 
                 if (slide.audioIndex != -1) {
-                    Attachment attachment = attachments.remove(slide.audioIndex);
+                    slideAttachmentIndex.add(slide.audioIndex);
+                    
+                    Attachment attachment = attachments.get(slide.audioIndex);
 
                     attachmentRecordBuilder.setType(AttachmentType.AUDIO);
                     attachmentRecordBuilder.setName(normalizeStr(attachment.name));
@@ -304,7 +316,9 @@ public class HandlerFacade {
                 }
 
                 if (slide.videoIndex != -1) {
-                    Attachment attachment = attachments.remove(slide.videoIndex);
+                    slideAttachmentIndex.add(slide.videoIndex);
+                    
+                    Attachment attachment = attachments.get(slide.videoIndex);
 
                     attachmentRecordBuilder.setType(AttachmentType.VIDEO);
                     attachmentRecordBuilder.setName(normalizeStr(attachment.name));
@@ -320,9 +334,18 @@ public class HandlerFacade {
 
                 slideRecordBuilder.clear();
             }
+            
+            // mark slide attachment as null
+            for (int index : slideAttachmentIndex) {
+                attachments.set(index, null);
+            }
 
             // the type of the rest attachments is OTHER
             for (Attachment attachment : attachments) {
+                if (attachment == null) {
+                    continue;
+                }
+                
                 attachmentRecordBuilder.setType(AttachmentType.OTHER);
                 attachmentRecordBuilder.setName(attachment.name);
                 attachmentRecordBuilder.setSize(attachment.fileBytes.length);
@@ -492,6 +515,9 @@ public class HandlerFacade {
 
         if (request.hasAgendaParams()) {
             AgendaRecord agendaRecord = request.getAgendaParams();
+            
+            Slog.d("===== dump request =====");
+            Slog.d(agendaRecord.toString());
 
             EventInfo eventInfo = new EventInfo();
             

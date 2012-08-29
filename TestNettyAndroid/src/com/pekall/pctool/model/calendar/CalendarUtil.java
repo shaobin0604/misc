@@ -14,9 +14,9 @@ import android.provider.CalendarContract.Calendars;
 import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Reminders;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.text.format.Time;
 
-import com.pekall.pctool.R;
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 
@@ -26,7 +26,7 @@ import java.util.TimeZone;
 
 public class CalendarUtil {
 
-    private static final String TIME_ZONE = "Asia/Shanghai";
+    private static final String DEFAULT_TIME_ZONE = TimeZone.getDefault().getID();
 
     public static final int INVALID_CALENDAR_ID = -1;
 
@@ -35,7 +35,6 @@ public class CalendarUtil {
      */
     private static final int PROJECTION_ACCOUNT_NAME_INDEX = 2;
     private static final int PROJECTION_ACCOUNT_TYPE_INDEX = 3;
-    private static final String CALENDAR_ACCOUNT_NAME = "LocalAccount";
     private static final String CALENDAR_ACCOUNT_TYPE = "com.android.calendar.AccountType";
     private static final String CALENDAR_DEFAULT_NAME = "local calendar";
 
@@ -49,6 +48,7 @@ public class CalendarUtil {
     private static final int PROJECTION_EVENTS_DTEND_INDEX = 4;
     private static final int PROJECTION_EVENTS_RRULE_INDEX = 5;
     private static final int PROJECTION_EVENTS_LOCATION_INDEX = 6;
+    private static final int PROJECTION_EVENTS_CALENDAR_ID_INDEX = 7;
     /**
      * Calendar
      */
@@ -60,8 +60,6 @@ public class CalendarUtil {
     private static final int PROJECTION_REMINDER_ID_INDEX = 0;
     private static final int PROJECTION_REMINDER_MINUTES_INDEX = 1;
 
-    private static final String CALENDAR_NAME = "mycalendar";
-    private static final String sync_account = "fanqinglintiantian@gmail.com";
 
     /**
      * 查询所有日历(所有账户的日历)
@@ -137,6 +135,11 @@ public class CalendarUtil {
      * @param EventInfo
      */
     public static boolean addEvent(Context context, EventInfo eventInfo) {
+        Slog.d("addEvent E");
+        
+//        Slog.d("===== dump EventInfo =====");
+//        Slog.d(eventInfo.toString());
+        
         if (eventInfo.calendarId < 0) {
             Slog.e("Error calendarId: " + eventInfo.calendarId);
             return false;
@@ -146,19 +149,32 @@ public class CalendarUtil {
         event.put(Events.DESCRIPTION, eventInfo.note);
         event.put(Events.EVENT_LOCATION, eventInfo.place);
         event.put(Events.CALENDAR_ID, eventInfo.calendarId);
-        event.put(Events.EVENT_TIMEZONE, TIME_ZONE);
+        event.put(Events.EVENT_TIMEZONE, DEFAULT_TIME_ZONE);
         event.put(Events.DTSTART, eventInfo.startTime);
         event.put(Events.RRULE, eventInfo.rrule);
+        
+        // we caculate the duration should according to allday
+        // if allday==1 use((er.endTime - er.startTime + DateUtils.DAY_IN_MILLIS
+        // - 1) / DateUtils.DAY_IN_MILLIS)
+        // if allday==1 timezone must use TIMEZONE_UTC
+        
         if (!TextUtils.isEmpty(eventInfo.rrule)) {
-            String duration = "P" + (eventInfo.endTime - eventInfo.startTime) + "S";
-            event.put(Events.DURATION, duration);
+            Slog.d("rrule is not empty");
+            if (eventInfo.endTime - eventInfo.startTime > 0) {
+                String duration = "P" + ((eventInfo.endTime - eventInfo.startTime) / DateUtils.SECOND_IN_MILLIS) + "S";
+                event.put(Events.DURATION, duration);
+            } else {
+                Slog.e("Error endTime must gt startTime");
+            }
         } else {
+            Slog.d("rrule is empty");
             event.put(Events.DTEND, eventInfo.endTime);
         }
         Uri newEvent = context.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
         long id = Long.valueOf(newEvent.getLastPathSegment());
         if (id == 0) {
             Slog.e("Error cannot insert newEvent");
+            Slog.d("addEvent X");
             return false;
         } else {
             ContentValues values = new ContentValues();
@@ -167,6 +183,7 @@ public class CalendarUtil {
             values.put(Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
             Uri newReminder = context.getContentResolver().insert(CalendarContract.Reminders.CONTENT_URI, values);
             Slog.d("newReminder: " + newReminder);
+            Slog.d("addEvent X");
             return newReminder != null;
         }
     }
@@ -253,10 +270,10 @@ public class CalendarUtil {
     }
 
     /**
-     * 查询事件 针对某个日历，若日历为空，则返回所有的事件 注意：当只有设置某账户同步的时候，才能查询到该账户下面的事件
-     * 
-     * @param context
+     * Query events for a calendar, if the calendar is empty, return all events Note: 
+     * synchronization when only set an account can query the account the following event
      * @param cr
+     * @param context
      * @return
      */
     public static List<EventInfo> getEvents(Context context, long calendarId) {
@@ -265,7 +282,7 @@ public class CalendarUtil {
         Uri uri = Events.CONTENT_URI;
         String projection[] = new String[] {
                 Events._ID, Events.TITLE, Events.DESCRIPTION, Events.DTSTART, Events.DTEND, Events.RRULE,
-                Events.EVENT_LOCATION
+                Events.EVENT_LOCATION, Events.CALENDAR_ID,
         };
         if (calendarId <= 0) {
             cur = context.getContentResolver().query(uri, projection, null, null, null);
@@ -286,12 +303,11 @@ public class CalendarUtil {
             evr.endTime = cur.getLong(PROJECTION_EVENTS_DTEND_INDEX);
             evr.rrule = cur.getString(PROJECTION_EVENTS_RRULE_INDEX);
             evr.place = cur.getString(PROJECTION_EVENTS_LOCATION_INDEX);
+            evr.calendarId = cur.getLong(PROJECTION_EVENTS_CALENDAR_ID_INDEX);
             int[] reminds = getReminderTime(context, evr);
             if (reminds.length > 0) {
                 evr.alertTime = reminds[0];
             }
-            evr.calendarId = calendarId;
-
             er.add(evr);
         }
         return er;
@@ -346,7 +362,7 @@ public class CalendarUtil {
      * must include CALLER_IS_SYNCADAPTER
      * 
      * @param context
-     * @param calendarRecord
+     * @param calendarInfo
      * @return
      */
     public static Uri addCalendar(Context context, CalendarInfo calendarInfo) {
@@ -373,7 +389,7 @@ public class CalendarUtil {
         values.put(Calendars.CALENDAR_COLOR, -14069085);
         values.put(Calendars.CALENDAR_ACCESS_LEVEL, 700);
         values.put(Calendars.CALENDAR_LOCATION, "location");
-        values.put(Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().getID());
+        values.put(Calendars.CALENDAR_TIME_ZONE, DEFAULT_TIME_ZONE);
         values.put(Calendars.OWNER_ACCOUNT, calendarInfo.name);
         final Uri calendarUri = Calendars.CONTENT_URI.buildUpon()
                 .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")

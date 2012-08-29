@@ -12,6 +12,7 @@ import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.util.Xml;
 
@@ -67,7 +68,8 @@ public class MmsUtil {
             mms.subject = str;
             Log.e("", "msgBox = " + mms.msgBoxIndex + "--- sub = " + mms.subject);
 
-            mms.date = cursor.getLong(cursor.getColumnIndex("date"));
+            // the unit of date is second
+            mms.date = cursor.getLong(cursor.getColumnIndex("date")) * DateUtils.SECOND_IN_MILLIS;
             mms.isReaded = cursor.getInt(cursor.getColumnIndex("read"));
 
             /** get smil.xml **/

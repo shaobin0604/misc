@@ -1,6 +1,9 @@
 package com.pekall.pctool.model.mms;
 
+import android.text.format.DateFormat;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Mms {
     public static final int MESSAGE_BOX_ALL    = 0;
@@ -31,10 +34,36 @@ public class Mms {
         public Slide(int duration) {
             this.duration = duration;
         }
+
+        @Override
+        public String toString() {
+            return "Slide [duration=" + duration + ", text=" + "omit" + ", imageIndex=" + imageIndex + ", audioIndex="
+                    + audioIndex + ", videoIndex=" + videoIndex + "]";
+        }
+        
+        
     }
 
     public static class Attachment {
         public String name;
         public byte[] fileBytes; // fileSize = fileBytes.length
+        
+        @Override
+        public String toString() {
+            return "Attachment [name=" + name + ", fileBytes.length=" + fileBytes.length + "]";
+        }
+        
+        
+    }
+
+    @Override
+    public String toString() {
+        return "Mms [rowId=" + rowId + ", msgBoxIndex=" + msgBoxIndex + ", phoneNum=" + phoneNum + ", subject="
+                + subject + ", date=" + toDateStr(date) + ", isReaded=" + isReaded + ", slides=" + slides + ", attachments="
+                + attachments + "]";
+    }
+    
+    private static String toDateStr(long timeInMillis) {
+        return DateFormat.format("MM/dd/yy h:mmaa", timeInMillis).toString();
     }
 }
