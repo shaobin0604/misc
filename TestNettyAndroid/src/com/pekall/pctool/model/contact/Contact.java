@@ -14,6 +14,7 @@ public class Contact {
     public String nickname;
     public byte[] photo;
     public boolean shouldUpdatePhoto;
+    public int version;
     public AccountInfo accountInfo = new AccountInfo();
     public List<GroupInfo> groupInfos = new ArrayList<GroupInfo>();
     public List<PhoneInfo> phoneInfos = new ArrayList<PhoneInfo>();
@@ -145,6 +146,7 @@ public class Contact {
 
     public static class RawContact {
         public long rawId;
+        public int version;
         public AccountInfo accountInfo = new AccountInfo();
         public boolean modifyFlag;
     }

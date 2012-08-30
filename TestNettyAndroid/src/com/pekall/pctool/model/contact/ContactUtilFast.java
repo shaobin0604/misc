@@ -80,9 +80,13 @@ public class ContactUtilFast {
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, null, where, whereargs, null);
         if (cursor.moveToFirst()) {
             final int RAWCONTACTS_ID = cursor.getColumnIndex(RawContacts._ID);
+            final int RAWCONTACTS_VERSION = cursor.getColumnIndex(RawContacts.VERSION);
             do {
                 RawContact rw = new RawContact();
                 rw.rawId = cursor.getLong(RAWCONTACTS_ID);
+                rw.version = cursor.getInt(RAWCONTACTS_VERSION);
+                rw.accountInfo.accountName = account.accountName;
+				rw.accountInfo.accountType = account.accountType;
                 lr.add(rw);
             } while (cursor.moveToNext());
         }
@@ -733,6 +737,8 @@ public class ContactUtilFast {
         while (cursor.moveToNext()) {
             RawContact rw = new RawContact();
             rw.rawId = cursor.getLong(cursor.getColumnIndex(Data.RAW_CONTACT_ID));
+			rw.accountInfo.accountName = gi.accountInfo.accountName;
+			rw.accountInfo.accountType = gi.accountInfo.accountType;
             lr.add(rw);
         }
         cursor.close();
@@ -756,11 +762,14 @@ public class ContactUtilFast {
                 String.valueOf(CONTACTS_COLLECT_FLAG)
         };
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
-                RawContacts._ID
+                RawContacts._ID, RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
         }, where, whereargs, null);
         while (cursor.moveToNext()) {
             RawContact rw = new RawContact();
             rw.rawId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
+            rw.accountInfo.accountName = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_NAME));
+            rw.accountInfo.accountType = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_TYPE));
+            rw.version = cursor.getInt(cursor.getColumnIndex(RawContacts.VERSION));
             lr.add(rw);
         }
         cursor.close();
@@ -800,7 +809,7 @@ public class ContactUtilFast {
         if (obj == null) {
             return "";
         }
-        return "";
+        return obj.toString();
     }
 
     /**
@@ -947,6 +956,9 @@ public class ContactUtilFast {
             RawContact rc = lr.get(i);
             Contact c = new Contact();
             c.id = rc.rawId;
+			c.version = rc.version;
+			c.accountInfo.accountName = rc.accountInfo.accountName;
+			c.accountInfo.accountType = rc.accountInfo.accountType;
             for (int j = 0; j < ld.size(); j++) {
                 DataModel d = ld.get(j);
                 if (d.rawId == rc.rawId) { // one contact
@@ -1209,13 +1221,14 @@ public class ContactUtilFast {
     public static List<RawContact> getAllRawContacts(Context context) {
         List<RawContact> lr = new ArrayList<RawContact>();
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
-                RawContacts._ID, RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE
+                RawContacts._ID, RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
         }, RawContacts.DELETED + "!=" + DELETE_FLAG, null, null);
         while (cursor.moveToNext()) {
             RawContact rw = new RawContact();
             rw.rawId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
             rw.accountInfo.accountName = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_NAME));
             rw.accountInfo.accountType = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_TYPE));
+            rw.version = cursor.getInt(cursor.getColumnIndex(RawContacts.VERSION));
             lr.add(rw);
         }
         cursor.close();
@@ -1237,11 +1250,26 @@ public class ContactUtilFast {
 
     /**
      * only for test get a contact by rawId
+     * 
+     * @param context
+     * @param rawId
+     * @return
      */
     public static Contact getContactById(Context context, long rawId) {
         List<RawContact> lr = new ArrayList<Contact.RawContact>();
+        Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
+                RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
+        }, RawContacts.DELETED + "!=" + DELETE_FLAG + " and " + RawContacts._ID + "=?", new String[] {
+            String.valueOf(rawId)
+        }, null);
         RawContact rw = new RawContact();
-        rw.rawId = rawId;
+        if (cursor.moveToFirst()) {
+            rw.rawId = rawId;
+            rw.accountInfo.accountName = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_NAME));
+            rw.accountInfo.accountType = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_TYPE));
+            rw.version = cursor.getInt(cursor.getColumnIndex(RawContacts.VERSION));
+        }
+        cursor.close();
         lr.add(rw);
         List<GroupInfo> li = getAllGroups(context);
         List<DataModel> ld = convertToDataModels(context, li, rawId);

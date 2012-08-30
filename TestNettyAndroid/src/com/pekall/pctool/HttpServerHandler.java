@@ -278,6 +278,11 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                         break;
                     }
                     
+                    case CMD_SYNC_CONTACTS: {
+                        cmdResponse = mHandlerFacade.syncContactWithOutlook(cmdRequest);
+                        break;
+                    }
+                    
                     default: {
                         // should not goes here
                         cmdResponse = mHandlerFacade.unknownCmdResponse(cmdRequest);

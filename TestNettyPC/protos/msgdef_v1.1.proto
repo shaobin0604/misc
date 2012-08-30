@@ -275,13 +275,14 @@ message ContactRecord
 	optional bool								photo_modify_tag = 5;	//为true时，需要更新头像数据
 	optional int32								version = 6;
 	optional SyncResult 						sync_result = 7;
-	optional AccountRecord 						account_info = 8;
-	repeated GroupRecord						group = 9;				//所属组列表
-	repeated PhoneRecord						phone = 10;
-	repeated EmailRecord						email = 11;
-	repeated IMRecord							im = 12;
-	repeated AddressRecord  					address = 13;
-	repeated OrgRecord							org = 14;
+	optional string								pc_id = 8; //pc方的唯一标识		
+	optional AccountRecord 						account_info = 9;
+	repeated GroupRecord						group = 10;				//所属组列表
+	repeated PhoneRecord						phone = 11;
+	repeated EmailRecord						email = 12;
+	repeated IMRecord							im = 13;
+	repeated AddressRecord  					address = 14;
+	repeated OrgRecord							org = 15;
 }
 
 //同步类型
@@ -311,6 +312,7 @@ enum SyncResult
 	PHONE_ADD = 6; //phone 新添加的
 	PHONE_DEL = 7; //phone 删除的,删除的优先级比修改高
 	PHONE_MODIFY = 8; //只有phone修改了
+	BOTH_DEL = 9; //都删除了
 }
 
 enum SyncConflictPloy
@@ -352,6 +354,7 @@ message AgendaRecord
 	optional string	note = 9;
 	optional int32			version = 10;
 	optional SyncResult 	sync_result = 11;
+	optional string			pc_id = 12; //pc方的唯一标识
 }
 
 //和pc日程同步消息
@@ -374,7 +377,8 @@ message CmdRequest
 	optional ContactRecord  contact_params = 6;	//针对联系人的查询，新增、编辑操作的参数
 	optional AgendaRecord 	agenda_params = 7;	//针对日历的查询，新增，编辑操作的参数
 	optional AppRecord		app_params = 8;		//应用记录参数
-	optional ContactsSync	contacts_sync = 9; //联系人同步
+	optional ContactsSync	contacts_sync = 9; 	//联系人同步
+	optional AgendaSync		agenda_sync = 10;  	//日程同步
 }
 
 //顶层响应消息
@@ -391,5 +395,6 @@ message CmdResponse
 	repeated AppRecord		app_record = 9;			//应用列表
 	repeated AccountRecord	account_record = 10;	//账户列表
 	repeated GroupRecord	group_record = 11;		//联系人分组记录列表
-	optional ContactsSync	contacts_sync = 12; 		//联系人同步
+	optional ContactsSync	contacts_sync = 12; 	//联系人同步
+	optional AgendaSync		agenda_sync = 13;  		//日程同步
 }
