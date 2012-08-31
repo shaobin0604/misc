@@ -4,11 +4,14 @@ package com.pekall.pctool.model.contact;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
@@ -24,6 +27,7 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.RawContacts;
 
+import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact.AddressInfo;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
@@ -537,29 +541,29 @@ public class ContactUtilFast {
      * add a contact
      * 
      * @param context
-     * @param c
+     * @param contact
      * @param AccountInfo
-     * @return
+     * @return the id of the new created contact, or -1 if failed
      */
-    public static boolean addContact(Context context, Contact c) {
+    public static long addContact(Context context, Contact contact) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        if (c.accountInfo.accountName == null || "".equals(c.accountInfo.accountName)) {
-            c.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
-            c.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
+        if (contact.accountInfo.accountName == null || "".equals(contact.accountInfo.accountName)) {
+            contact.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
+            contact.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
         }
         // rawcontacts'account
-        // don't give c._Id value because it is automaticly increased
+        // don't give c._Id value because it is automatically increased
         ops.add(ContentProviderOperation
                 .newInsert(ContactsContract.RawContacts.CONTENT_URI)
-                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, c.accountInfo.accountType)
-                .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, c.accountInfo.accountName)
+                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, contact.accountInfo.accountType)
+                .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, contact.accountInfo.accountName)
                 .withValue(ContactsContract.RawContacts.AGGREGATION_MODE,
                         ContactsContract.RawContacts.AGGREGATION_MODE_DISABLED).build());
 
         // add group
-        if (c.groupInfos != null) {
-            for (int i = 0; i < c.groupInfos.size(); i++) {
-                GroupInfo gr = c.groupInfos.get(i);
+        if (contact.groupInfos != null) {
+            for (int i = 0; i < contact.groupInfos.size(); i++) {
+                GroupInfo gr = contact.groupInfos.get(i);
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                         .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
@@ -567,25 +571,25 @@ public class ContactUtilFast {
             }
         }
 
-        if (c.photo != null) {
+        if (contact.photo != null) {
             ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
-                    .withValue(ContactsContract.Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE).withValue(Photo.PHOTO, c.photo)
+                    .withValue(ContactsContract.Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE).withValue(Photo.PHOTO, contact.photo)
                     .build());
         }
         // name
-        if (!c.name.equals("")) {
+        if (!contact.name.equals("")) {
             ops.add(ContentProviderOperation
                     .newInsert(ContactsContract.Data.CONTENT_URI)
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE,
                             ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, c.name).build());
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name).build());
         }
         // Organization
-        if (c.orgInfos.size() > 0) {
-            for (Iterator<OrgInfo> iter = c.orgInfos.iterator(); iter.hasNext();) {
+        if (contact.orgInfos.size() > 0) {
+            for (Iterator<OrgInfo> iter = contact.orgInfos.iterator(); iter.hasNext();) {
                 OrgInfo or = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
@@ -598,8 +602,8 @@ public class ContactUtilFast {
             }
         }
         // phone number
-        if (c.phoneInfos.size() > 0) {
-            for (Iterator<PhoneInfo> iter = c.phoneInfos.iterator(); iter.hasNext();) {
+        if (contact.phoneInfos.size() > 0) {
+            for (Iterator<PhoneInfo> iter = contact.phoneInfos.iterator(); iter.hasNext();) {
                 PhoneInfo pr = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
@@ -612,8 +616,8 @@ public class ContactUtilFast {
             }
         }
         // email
-        if (c.emailInfos.size() > 0) {
-            for (Iterator<EmailInfo> iter = c.emailInfos.iterator(); iter.hasNext();) {
+        if (contact.emailInfos.size() > 0) {
+            for (Iterator<EmailInfo> iter = contact.emailInfos.iterator(); iter.hasNext();) {
                 EmailInfo er = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
@@ -626,8 +630,8 @@ public class ContactUtilFast {
             }
         }
         // address
-        if (c.addressInfos.size() > 0) {
-            for (Iterator<AddressInfo> iter = c.addressInfos.iterator(); iter.hasNext();) {
+        if (contact.addressInfos.size() > 0) {
+            for (Iterator<AddressInfo> iter = contact.addressInfos.iterator(); iter.hasNext();) {
                 AddressInfo ar = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
@@ -645,8 +649,8 @@ public class ContactUtilFast {
             }
         }
         // IM
-        if (c.imInfos.size() > 0) {
-            for (Iterator<ImInfo> iter = c.imInfos.iterator(); iter.hasNext();) {
+        if (contact.imInfos.size() > 0) {
+            for (Iterator<ImInfo> iter = contact.imInfos.iterator(); iter.hasNext();) {
                 ImInfo ir = iter.next();
                 ops.add(ContentProviderOperation
                         .newInsert(ContactsContract.Data.CONTENT_URI)
@@ -660,19 +664,28 @@ public class ContactUtilFast {
         }
 
         // nick name
-        if (c.nickname != null && !"".equals(c.nickname)) {
+        if (contact.nickname != null && !"".equals(contact.nickname)) {
             ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, c.nickname).build());
+                    .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, contact.nickname).build());
         }
+
+        ContentProviderResult[] results;
         try {
-            context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            results = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+            // insert RawContact result
+            ContentProviderResult result = results[0];
+            Slog.d("count = " + result.count + ", uri = " + result.uri);
+
+            return ContentUris.parseId(result.uri);
+        } catch (RemoteException e) {
+            Slog.e("Error when addContact", e);
+            return -1;
+        } catch (OperationApplicationException e) {
+            Slog.e("Error when addContact", e);
+            return -1;
         }
-        return true;
     }
 
     /**

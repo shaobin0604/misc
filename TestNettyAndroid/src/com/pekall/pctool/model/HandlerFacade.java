@@ -51,6 +51,8 @@ import com.pekall.pctool.protos.MsgDefProtos.CmdType;
 import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
 import com.pekall.pctool.protos.MsgDefProtos.ContactsSync;
 import com.pekall.pctool.protos.MsgDefProtos.EmailRecord;
+import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
+import com.pekall.pctool.protos.MsgDefProtos.SyncType;
 import com.pekall.pctool.protos.MsgDefProtos.EmailRecord.EmailType;
 import com.pekall.pctool.protos.MsgDefProtos.GroupRecord;
 import com.pekall.pctool.protos.MsgDefProtos.IMRecord;
@@ -65,6 +67,7 @@ import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 import com.pekall.pctool.protos.MsgDefProtos.SMSRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy;
+import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -822,110 +825,119 @@ public class HandlerFacade {
         OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
 
         for (Contact contact : contactList) {
-            contactRecordBuilder.setId(contact.id);
-            contactRecordBuilder.setVersion(contact.version);
-            contactRecordBuilder.setName(normalizeStr(contact.name));
-            contactRecordBuilder.setNickname(normalizeStr(contact.nickname));
-            if (contact.photo != null && contact.photo.length > 0) {
-                contactRecordBuilder.setPhoto(ByteString.copyFrom(contact.photo));
-            } else {
-                contactRecordBuilder.clearPhoto();
-            }
-            contactRecordBuilder.setPhotoModifyTag(false);
-
-            accountRecordBuilder.setName(normalizeStr(contact.accountInfo.accountName));
-            accountRecordBuilder.setType(normalizeStr(contact.accountInfo.accountType));
-
-            contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
-
-            // group
-            for (GroupInfo groupInfo : contact.groupInfos) {
-                groupRecordBuilder.setId(groupInfo.grId); // only id is required
-                groupRecordBuilder.setDataId(groupInfo.dataId);
-
-                contactRecordBuilder.addGroup(groupRecordBuilder.build());
-
-                groupRecordBuilder.clear();
-            }
-
-            // phone
-            for (PhoneInfo phoneInfo : contact.phoneInfos) {
-                phoneRecordBuilder.setId(phoneInfo.id);
-                phoneRecordBuilder.setType(toPhoneType(phoneInfo.type));
-                phoneRecordBuilder.setNumber(normalizeStr(phoneInfo.number));
-                phoneRecordBuilder.setName(normalizeStr(phoneInfo.customName));
-
-                phoneRecordBuilder.setModifyTag(ModifyTag.SAME);
-
-                contactRecordBuilder.addPhone(phoneRecordBuilder.build());
-
-                phoneRecordBuilder.clear();
-            }
-
-            // email
-            for (EmailInfo emailInfo : contact.emailInfos) {
-                emailRecordBuilder.setId(emailInfo.id);
-                emailRecordBuilder.setType(toEmailType(emailInfo.type));
-                emailRecordBuilder.setEmail(normalizeStr(emailInfo.email));
-                emailRecordBuilder.setName(normalizeStr(emailInfo.customName));
-
-                emailRecordBuilder.setModifyTag(ModifyTag.SAME);
-
-                contactRecordBuilder.addEmail(emailRecordBuilder.build());
-
-                emailRecordBuilder.clear();
-            }
-
-            // im
-            for (ImInfo imInfo : contact.imInfos) {
-                imRecordBuilder.setId(imInfo.id);
-                imRecordBuilder.setType(toImType(imInfo.type));
-                imRecordBuilder.setAccount(normalizeStr(imInfo.account));
-                imRecordBuilder.setName(normalizeStr(imInfo.customName));
-
-                imRecordBuilder.setModifyTag(ModifyTag.SAME);
-
-                contactRecordBuilder.addIm(imRecordBuilder.build());
-
-                imRecordBuilder.clear();
-            }
-
-            // address
-            for (AddressInfo addressInfo : contact.addressInfos) {
-                addressRecordBuilder.setId(addressInfo.id);
-                addressRecordBuilder.setAddressType(toAddressType(addressInfo.type));
-                addressRecordBuilder.setAddress(normalizeStr(addressInfo.address));
-                addressRecordBuilder.setName(normalizeStr(addressInfo.customName));
-                addressRecordBuilder.setCountry(normalizeStr(addressInfo.country));
-                addressRecordBuilder.setProvince(normalizeStr(addressInfo.province));
-                addressRecordBuilder.setCity(normalizeStr(addressInfo.city));
-                addressRecordBuilder.setRoad(normalizeStr(addressInfo.street));
-                addressRecordBuilder.setPostCode(normalizeStr(addressInfo.postcode));
-                addressRecordBuilder.setModifyTag(ModifyTag.SAME);
-
-                contactRecordBuilder.addAddress(addressRecordBuilder.build());
-
-                addressRecordBuilder.clear();
-            }
-
-            // organization
-            for (OrgInfo orgInfo : contact.orgInfos) {
-                orgRecordBuilder.setId(orgInfo.id);
-                orgRecordBuilder.setType(toOrgType(orgInfo.type));
-                orgRecordBuilder.setName(normalizeStr(orgInfo.org));
-                orgRecordBuilder.setName(normalizeStr(orgInfo.customName));
-
-                orgRecordBuilder.setModifyTag(ModifyTag.SAME);
-
-                contactRecordBuilder.addOrg(orgRecordBuilder.build());
-
-                orgRecordBuilder.clear();
-            }
+            contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
+                    emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
 
             responseBuilder.addContactRecord(contactRecordBuilder.build());
 
             accountRecordBuilder.clear();
             contactRecordBuilder.clear();
+        }
+    }
+
+    private void contactToContactRecord(ContactRecord.Builder contactRecordBuilder,
+            AccountRecord.Builder accountRecordBuilder, GroupRecord.Builder groupRecordBuilder,
+            PhoneRecord.Builder phoneRecordBuilder, EmailRecord.Builder emailRecordBuilder,
+            IMRecord.Builder imRecordBuilder, AddressRecord.Builder addressRecordBuilder,
+            OrgRecord.Builder orgRecordBuilder, Contact contact) {
+        contactRecordBuilder.setId(contact.id);
+        contactRecordBuilder.setVersion(contact.version);
+        contactRecordBuilder.setName(normalizeStr(contact.name));
+        contactRecordBuilder.setNickname(normalizeStr(contact.nickname));
+        if (contact.photo != null && contact.photo.length > 0) {
+            contactRecordBuilder.setPhoto(ByteString.copyFrom(contact.photo));
+        } else {
+            contactRecordBuilder.clearPhoto();
+        }
+        contactRecordBuilder.setPhotoModifyTag(false);
+
+        accountRecordBuilder.setName(normalizeStr(contact.accountInfo.accountName));
+        accountRecordBuilder.setType(normalizeStr(contact.accountInfo.accountType));
+
+        contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
+
+        // group
+        for (GroupInfo groupInfo : contact.groupInfos) {
+            groupRecordBuilder.setId(groupInfo.grId); // only id is required
+            groupRecordBuilder.setDataId(groupInfo.dataId);
+
+            contactRecordBuilder.addGroup(groupRecordBuilder.build());
+
+            groupRecordBuilder.clear();
+        }
+
+        // phone
+        for (PhoneInfo phoneInfo : contact.phoneInfos) {
+            phoneRecordBuilder.setId(phoneInfo.id);
+            phoneRecordBuilder.setType(toPhoneType(phoneInfo.type));
+            phoneRecordBuilder.setNumber(normalizeStr(phoneInfo.number));
+            phoneRecordBuilder.setName(normalizeStr(phoneInfo.customName));
+
+            phoneRecordBuilder.setModifyTag(ModifyTag.SAME);
+
+            contactRecordBuilder.addPhone(phoneRecordBuilder.build());
+
+            phoneRecordBuilder.clear();
+        }
+
+        // email
+        for (EmailInfo emailInfo : contact.emailInfos) {
+            emailRecordBuilder.setId(emailInfo.id);
+            emailRecordBuilder.setType(toEmailType(emailInfo.type));
+            emailRecordBuilder.setEmail(normalizeStr(emailInfo.email));
+            emailRecordBuilder.setName(normalizeStr(emailInfo.customName));
+
+            emailRecordBuilder.setModifyTag(ModifyTag.SAME);
+
+            contactRecordBuilder.addEmail(emailRecordBuilder.build());
+
+            emailRecordBuilder.clear();
+        }
+
+        // im
+        for (ImInfo imInfo : contact.imInfos) {
+            imRecordBuilder.setId(imInfo.id);
+            imRecordBuilder.setType(toImType(imInfo.type));
+            imRecordBuilder.setAccount(normalizeStr(imInfo.account));
+            imRecordBuilder.setName(normalizeStr(imInfo.customName));
+
+            imRecordBuilder.setModifyTag(ModifyTag.SAME);
+
+            contactRecordBuilder.addIm(imRecordBuilder.build());
+
+            imRecordBuilder.clear();
+        }
+
+        // address
+        for (AddressInfo addressInfo : contact.addressInfos) {
+            addressRecordBuilder.setId(addressInfo.id);
+            addressRecordBuilder.setAddressType(toAddressType(addressInfo.type));
+            addressRecordBuilder.setAddress(normalizeStr(addressInfo.address));
+            addressRecordBuilder.setName(normalizeStr(addressInfo.customName));
+            addressRecordBuilder.setCountry(normalizeStr(addressInfo.country));
+            addressRecordBuilder.setProvince(normalizeStr(addressInfo.province));
+            addressRecordBuilder.setCity(normalizeStr(addressInfo.city));
+            addressRecordBuilder.setRoad(normalizeStr(addressInfo.street));
+            addressRecordBuilder.setPostCode(normalizeStr(addressInfo.postcode));
+            addressRecordBuilder.setModifyTag(ModifyTag.SAME);
+
+            contactRecordBuilder.addAddress(addressRecordBuilder.build());
+
+            addressRecordBuilder.clear();
+        }
+
+        // organization
+        for (OrgInfo orgInfo : contact.orgInfos) {
+            orgRecordBuilder.setId(orgInfo.id);
+            orgRecordBuilder.setType(toOrgType(orgInfo.type));
+            orgRecordBuilder.setName(normalizeStr(orgInfo.org));
+            orgRecordBuilder.setName(normalizeStr(orgInfo.customName));
+
+            orgRecordBuilder.setModifyTag(ModifyTag.SAME);
+
+            contactRecordBuilder.addOrg(orgRecordBuilder.build());
+
+            orgRecordBuilder.clear();
         }
     }
 
@@ -940,7 +952,7 @@ public class HandlerFacade {
 
             if (contactRecord != null) {
                 Contact contact = contactRecordToContactForAdd(contactRecord);
-                if (ContactUtilFast.addContact(mContext, contact)) {
+                if (ContactUtilFast.addContact(mContext, contact) > 0) {
                     setResultOK(responseBuilder);
                 } else {
                     setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.addContact");
@@ -1268,10 +1280,41 @@ public class HandlerFacade {
     private void handleTwoWaySlowSync(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleTwoWaySlowSync E");
         
-        populateAllContact(responseBuilder);
+        List<Contact> contactList = ContactUtilFast.getAllContacts(mContext);
+        
+        Slog.d("Contacts number: " + contactList.size());
+
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+        AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+        GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
+        PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
+        EmailRecord.Builder emailRecordBuilder = EmailRecord.newBuilder();
+        IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
+        AddressRecord.Builder addressRecordBuilder = AddressRecord.newBuilder();
+        OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
+        
+        ContactsSync.Builder contactSyncBuilder = ContactsSync.newBuilder();
+        
+        contactSyncBuilder.setType(contactsSync.getType());
+        contactSyncBuilder.setSubType(contactsSync.getSubType());
+        
+
+        for (Contact contact : contactList) {
+            contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
+                    emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
+
+            contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
+
+            accountRecordBuilder.clear();
+            contactRecordBuilder.clear();
+        }
+        
+        responseBuilder.setContactsSync(contactSyncBuilder);
         
         Slog.d("handleTwoWaySlowSync X");
     }
+    
+    
     
     private void handleTwoWaySlowSyncSecond(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleTwoWaySlowSyncSecond E");
@@ -1280,9 +1323,38 @@ public class HandlerFacade {
         
         Slog.d("SyncConflictPloy = " + syncConflictPloy);
         
+        ContactsSync.Builder contactSyncBuilder = ContactsSync.newBuilder();
+        
+        contactSyncBuilder.setType(contactsSync.getType());
+        contactSyncBuilder.setSubType(contactsSync.getSubType());
+        
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+        
+        
         for (ContactRecord contactRecord : contactsSync.getContactRecordList()) {
-            switch (contactRecord.getSyncResult()) {
+            final SyncResult syncResult = contactRecord.getSyncResult();
+            
+            Slog.d("SyncResult = " + syncResult);
+            switch (syncResult) {
                 case PC_ADD: {
+                    Contact contact = contactRecordToContactForAdd(contactRecord);
+                    
+                    final long contactId = ContactUtilFast.addContact(mContext, contact);
+                    if (contactId > 0) {
+                        
+                    }
+                    break;
+                }
+                
+                case PC_MODIFY:
+                case BOTH_MODIFY: {
+                    Contact contact = contactRecordToContactForUpdate(contactRecord);
+                    
+                    break;
+                }
+                
+                case PC_DEL:
+                case BOTH_DEL: {
                     
                     break;
                 }
