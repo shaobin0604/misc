@@ -20,8 +20,9 @@ import java.util.Map;
 public class DatabaseHelper {
 
     private static final String TABLE_CONTACT_VERSIONS = "contact_versions";
+    private static final String TABLE_CALENDAR_VERSIONS = "calendar_versions";
 
-    private static final String[] DEFAULT_COLUMNS = {
+    private static final String[] DEFAULT_CONTACT_VERSION_COLUMNS = {
             ContactVersion._ID, 
             ContactVersion.VERSION
     };
@@ -56,12 +57,12 @@ public class DatabaseHelper {
         return mDb.isOpen();
     }
 
-    public Map<Long, Integer> getLastSyncContactVersion() {
+    public Map<Long, Integer> getLastSyncContactVersions() {
         if (!isOpen()) {
             throw new IllegalStateException("database is not open");
         }
         
-        Cursor cursor = mDb.query(TABLE_CONTACT_VERSIONS, DEFAULT_COLUMNS, null, null, null, null, null);
+        Cursor cursor = mDb.query(TABLE_CONTACT_VERSIONS, DEFAULT_CONTACT_VERSION_COLUMNS, null, null, null, null, null);
         
         Map<Long, Integer> contactVersionDict = Collections.emptyMap();
         

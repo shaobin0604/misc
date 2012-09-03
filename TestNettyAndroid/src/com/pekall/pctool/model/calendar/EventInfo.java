@@ -1,6 +1,8 @@
 
 package com.pekall.pctool.model.calendar;
 
+import android.provider.BaseColumns;
+
 public class EventInfo {
     public long evId;
     public long calendarId;
@@ -84,5 +86,8 @@ public class EventInfo {
         return true;
     }
     
-    
+    public static class EventVersion implements BaseColumns {
+        public long id;
+        
+    }
 }

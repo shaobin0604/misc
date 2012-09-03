@@ -68,7 +68,7 @@ public class Main {
 
         // testQuerySms();
         
-        testQueryMmsAttachment();
+//        testQueryMmsAttachment();
 
         // testQueryCalendar();
 
@@ -76,7 +76,7 @@ public class Main {
 
         // testQueryAccount();
 
-        // testQueryContact();
+         testQueryContact();
 
         // testAddContact();
 
@@ -301,7 +301,7 @@ public class Main {
         CmdRequest.Builder builder = CmdRequest.newBuilder();
         builder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
 
-        postCmdRequest(builder, true);
+        postCmdRequest(builder, /* dumpResponse */ true);
 
         System.out.println("testQueryContact X");
     }

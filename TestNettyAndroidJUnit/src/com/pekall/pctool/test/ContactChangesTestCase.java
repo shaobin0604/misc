@@ -5,10 +5,10 @@ import android.test.AndroidTestCase;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.DatabaseHelper;
-import com.pekall.pctool.model.Utils;
+import com.pekall.pctool.model.FastSyncUtils;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
-import com.pekall.pctool.model.contact.ContactUtilFast;
+import com.pekall.pctool.model.contact.ContactUtil;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
         mDatabaseHelper = new DatabaseHelper(getContext());
         mDatabaseHelper.open();
 
-        List<ContactVersion> contactVersions = ContactUtilFast.getAllContactVersion(getContext());
+        List<ContactVersion> contactVersions = ContactUtil.getAllContactVersions(getContext());
 
         mDatabaseHelper.updateContactVersions(contactVersions);
     }
@@ -41,29 +41,29 @@ public class ContactChangesTestCase extends AndroidTestCase {
 
             contact.name = "add";
             
-            boolean success = ContactUtilFast.addContact(getContext(), contact);
+            boolean success = ContactUtil.addContact(getContext(), contact) > 0;
             
             Slog.d("add success = " + success);
         }
         // update one contact
         {
-            Contact contact = ContactUtilFast.getContactById(getContext(), 8939);
+            Contact contact = ContactUtil.getContactById(getContext(), 8939);
             
             contact.name = "update";
             
-            boolean success = ContactUtilFast.updateContact(getContext(), contact);
+            boolean success = ContactUtil.updateContact(getContext(), contact);
          
             Slog.d("update success = " + success);
         }
         // delete one contact
         {
-            boolean success = ContactUtilFast.deleteContactById(getContext(), 8947);
+            boolean success = ContactUtil.deleteContactById(getContext(), 8947);
             Slog.d("delete success = " + success);
         }
         
 
-        List<ContactVersion> contactVersions = Utils.findContactChanges(
-                ContactUtilFast.getAllContactVersion(getContext()), mDatabaseHelper.getLastSyncContactVersion());
+        List<ContactVersion> contactVersions = FastSyncUtils.calculateContactChanges(
+                ContactUtil.getAllContactVersions(getContext()), mDatabaseHelper.getLastSyncContactVersions());
 
         Slog.d(contactVersions.toString());
     }

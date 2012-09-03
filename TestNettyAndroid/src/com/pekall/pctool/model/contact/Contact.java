@@ -9,19 +9,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Contact {
-    public long id;// rawId
+    public long id;                         // rawId
     public String name;
     public String nickname;
     public byte[] photo;
-    public boolean shouldUpdatePhoto;
-    public int version;
-    public AccountInfo accountInfo = new AccountInfo();
-    public List<GroupInfo> groupInfos = new ArrayList<GroupInfo>();
-    public List<PhoneInfo> phoneInfos = new ArrayList<PhoneInfo>();
-    public List<EmailInfo> emailInfos = new ArrayList<EmailInfo>();
-    public List<ImInfo> imInfos = new ArrayList<ImInfo>();
-    public List<AddressInfo> addressInfos = new ArrayList<AddressInfo>();
-    public List<OrgInfo> orgInfos = new ArrayList<OrgInfo>();
+    public boolean shouldUpdatePhoto;       // whether update photo attribute
+    public int modifyTag;                   // contact change flag(no change, add, update, delete) since last sync
+    public int version;                     // used for detect contact change
+    public AccountInfo accountInfo;
+    public List<GroupInfo> groupInfos;
+    public List<PhoneInfo> phoneInfos;
+    public List<EmailInfo> emailInfos;
+    public List<ImInfo> imInfos;
+    public List<AddressInfo> addressInfos;
+    public List<OrgInfo> orgInfos;
+    
+    public Contact() {
+        modifyTag = ModifyTag.same;
+        accountInfo = new AccountInfo();
+        groupInfos = new ArrayList<GroupInfo>();
+        phoneInfos = new ArrayList<PhoneInfo>();
+        emailInfos = new ArrayList<EmailInfo>();
+        imInfos = new ArrayList<ImInfo>();
+        addressInfos = new ArrayList<AddressInfo>();
+        orgInfos = new ArrayList<OrgInfo>();
+    }
     
     @Override
     public String toString() {
@@ -64,7 +76,7 @@ public class Contact {
         public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Phone.html
         public String number;
         public String customName;
-        public int    modifyFlag;
+        public int    modifyFlag;   // default same
         @Override
         public String toString() {
             return "PhoneInfo [id=" + id + ", type=" + type + ", number=" + number + ", customName=" + customName
@@ -79,7 +91,7 @@ public class Contact {
         public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Email.html
         public String email;
         public String customName;
-        public int    modifyFlag;
+        public int    modifyFlag;   // default same
         @Override
         public String toString() {
             return "EmailInfo [id=" + id + ", type=" + type + ", email=" + email + ", customName=" + customName
@@ -94,7 +106,7 @@ public class Contact {
         public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Im.html
         public String account;
         public String customName;
-        public int    modifyFlag;
+        public int    modifyFlag;   // default same
         @Override
         public String toString() {
             return "ImInfo [id=" + id + ", type=" + type + ", account=" + account + ", customName=" + customName
@@ -113,7 +125,7 @@ public class Contact {
         public String postcode;
         public String address;
         public String customName;
-        public int    modifyFlag;
+        public int    modifyFlag;   // default same
         @Override
         public String toString() {
             return "AddressInfo [id=" + id + ", country=" + country + ", province=" + province + ", city=" + city
@@ -128,7 +140,7 @@ public class Contact {
         public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Organization.html
         public String org;
         public String customName;
-        public int    modifyFlag;
+        public int    modifyFlag;   // default same
         @Override
         public String toString() {
             return "OrgInfo [id=" + id + ", type=" + type + ", org=" + org + ", customName=" + customName
@@ -138,10 +150,10 @@ public class Contact {
     }
     
     public static class ModifyTag {
-        public static int  same = 0;   //未修改
-        public static int  add = 1;    //增加
-        public static int  del = 2;    //删除
-        public static int  edit = 3;   //修改
+        public static final int same = 0;   //未修改
+        public static final int add  = 1;   //增加
+        public static final int del  = 2;   //删除
+        public static final int edit = 3;   //修改
     }
 
     public static class RawContact {
@@ -180,7 +192,7 @@ public class Contact {
 
         public long id;
         public int version;
-        public int modifyTag;
+        public int modifyTag;   // default same
 
         public ContactVersion() {
             super();

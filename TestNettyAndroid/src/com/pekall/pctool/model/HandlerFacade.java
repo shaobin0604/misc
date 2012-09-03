@@ -25,7 +25,7 @@ import com.pekall.pctool.model.contact.Contact.EmailInfo;
 import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
-import com.pekall.pctool.model.contact.ContactUtilFast;
+import com.pekall.pctool.model.contact.ContactUtil;
 import com.pekall.pctool.model.contact.GroupInfo;
 import com.pekall.pctool.model.mms.Mms;
 import com.pekall.pctool.model.mms.Mms.Attachment;
@@ -76,6 +76,7 @@ import java.util.List;
 public class HandlerFacade {
     private static final int RESULT_CODE_OK = 0;
     private static final int RESULT_CODE_ERR_INSUFFICIENT_PARAMS = 100;
+    private static final int RESULT_CODE_ERR_ILLEGAL_PARAMS = 101;
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
 
     private static final String RESULT_MSG_OK = "OK";
@@ -623,7 +624,7 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_GET_ALL_ACCOUNTS);
 
-        List<AccountInfo> accountInfoList = ContactUtilFast
+        List<AccountInfo> accountInfoList = ContactUtil
                 .getAllAccounts(mContext);
 
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
@@ -678,7 +679,7 @@ public class HandlerFacade {
         // accountRecordBuilder.clear();
         // }
 
-        List<GroupInfo> groupInfos = ContactUtilFast.getAllGroups(mContext);
+        List<GroupInfo> groupInfos = ContactUtil.getAllGroups(mContext);
 
         for (GroupInfo groupInfo : groupInfos) {
             groupRecordBuilder.setId(groupInfo.grId);
@@ -722,7 +723,7 @@ public class HandlerFacade {
             groupInfo.accountInfo.accountType = groupRecord.getAccountInfo()
                     .getType();
 
-            if (ContactUtilFast.addGroup(mContext, groupInfo)) {
+            if (ContactUtil.addGroup(mContext, groupInfo)) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.addGroup");
@@ -750,7 +751,7 @@ public class HandlerFacade {
             groupInfo.name = groupRecord.getName();
             groupInfo.note = groupRecord.getNote();
 
-            if (ContactUtilFast.updateGroup(mContext, groupInfo)) {
+            if (ContactUtil.updateGroup(mContext, groupInfo)) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder,
@@ -774,7 +775,7 @@ public class HandlerFacade {
         boolean result = false;
         if (groupIdList != null && groupIdList.size() > 0) {
             for (long groupId : groupIdList) {
-                result = ContactUtilFast.deleteGroup(mContext, groupId);
+                result = ContactUtil.deleteGroup(mContext, groupId);
 
                 if (!result) {
                     break;
@@ -803,18 +804,10 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
 
-        populateAllContact(responseBuilder);
-        
-        setResultOK(responseBuilder);
-        Slog.d("queryContact X");
-        return responseBuilder.build();
-    }
-
-    private void populateAllContact(CmdResponse.Builder responseBuilder) {
-        List<Contact> contactList = ContactUtilFast.getAllContacts(mContext);
+        List<Contact> contactList = ContactUtil.getAllContacts(mContext);
         
         Slog.d("Contacts number: " + contactList.size());
-
+        
         ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
         GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
@@ -823,16 +816,20 @@ public class HandlerFacade {
         IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
         AddressRecord.Builder addressRecordBuilder = AddressRecord.newBuilder();
         OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
-
+        
         for (Contact contact : contactList) {
             contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
                     emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
-
+        
             responseBuilder.addContactRecord(contactRecordBuilder.build());
-
+        
             accountRecordBuilder.clear();
             contactRecordBuilder.clear();
         }
+        
+        setResultOK(responseBuilder);
+        Slog.d("queryContact X");
+        return responseBuilder.build();
     }
 
     private void contactToContactRecord(ContactRecord.Builder contactRecordBuilder,
@@ -850,12 +847,16 @@ public class HandlerFacade {
             contactRecordBuilder.clearPhoto();
         }
         contactRecordBuilder.setPhotoModifyTag(false);
+        
+        contactRecordBuilder.setSyncResult(modifyTagToSyncResult(contact.modifyTag));
 
         accountRecordBuilder.setName(normalizeStr(contact.accountInfo.accountName));
         accountRecordBuilder.setType(normalizeStr(contact.accountInfo.accountType));
 
         contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
 
+        Slog.d("groupInfos = " + contact.groupInfos);
+        
         // group
         for (GroupInfo groupInfo : contact.groupInfos) {
             groupRecordBuilder.setId(groupInfo.grId); // only id is required
@@ -940,6 +941,23 @@ public class HandlerFacade {
             orgRecordBuilder.clear();
         }
     }
+    
+    private static SyncResult modifyTagToSyncResult(int modifyTag) {
+        switch (modifyTag) {
+            case com.pekall.pctool.model.contact.Contact.ModifyTag.add:
+                return SyncResult.PHONE_ADD;
+            case com.pekall.pctool.model.contact.Contact.ModifyTag.edit:
+                return SyncResult.PHONE_MODIFY;
+            case com.pekall.pctool.model.contact.Contact.ModifyTag.del:
+                return SyncResult.PHONE_DEL;
+            case com.pekall.pctool.model.contact.Contact.ModifyTag.same:
+                return SyncResult.NO_CHANGE;
+            default:
+                final String msg = "Error unknown modifyTag = " + modifyTag;
+                Slog.e(msg);
+                throw new IllegalArgumentException(msg);
+        }
+    }
 
     public CmdResponse addContact(CmdRequest request) {
         Slog.d("addContact E");
@@ -952,7 +970,7 @@ public class HandlerFacade {
 
             if (contactRecord != null) {
                 Contact contact = contactRecordToContactForAdd(contactRecord);
-                if (ContactUtilFast.addContact(mContext, contact) > 0) {
+                if (ContactUtil.addContact(mContext, contact) > 0) {
                     setResultOK(responseBuilder);
                 } else {
                     setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.addContact");
@@ -1074,7 +1092,7 @@ public class HandlerFacade {
                 
                 Slog.d("contact: " + contact);
                 
-                if (ContactUtilFast.updateContact(mContext, contact)) {
+                if (ContactUtil.updateContact(mContext, contact)) {
                     setResultOK(responseBuilder);
                 } else {
                     setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.updateContact");
@@ -1203,7 +1221,7 @@ public class HandlerFacade {
         List<Long> contactIdList = request.getRecordIdList();
 
         if (contactIdList != null && contactIdList.size() > 0) {
-            if (ContactUtilFast.deleteContact(mContext, contactIdList)) {
+            if (ContactUtil.deleteContact(mContext, contactIdList)) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.deleteContact");
@@ -1261,11 +1279,19 @@ public class HandlerFacade {
         
         switch (contactsSync.getSubType()) {
             case TWO_WAY_SLOW_SYNC: {
-                handleTwoWaySlowSync(contactsSync, responseBuilder);
+                handleTwoWaySync(contactsSync, responseBuilder, /* fastSync */ false);
+                break;
+            }
+            case TWO_WAY_FAST_SYNC: {
+                handleTwoWaySync(contactsSync, responseBuilder, /* fastSync */ true);
                 break;
             }
             case TWO_WAY_SLOW_SYNC_SECOND: {
-                handleTwoWaySlowSyncSecond(contactsSync, responseBuilder);
+                handleTwoWaySyncSecond(contactsSync, responseBuilder);
+                break;
+            }
+            case TWO_WAY_FAST_SYNC_SECOND: {
+                handleTwoWaySyncSecond(contactsSync, responseBuilder);
                 break;
             }
 
@@ -1276,11 +1302,15 @@ public class HandlerFacade {
         Slog.d("handleSyncWithOutlook X");
     }
 
-
-    private void handleTwoWaySlowSync(ContactsSync contactsSync, Builder responseBuilder) {
-        Slog.d("handleTwoWaySlowSync E");
+    private void handleTwoWaySync(ContactsSync contactsSync, Builder responseBuilder, boolean fastSync) {
+        Slog.d("handleTwoWaySync E, fastSync = " + fastSync);
         
-        List<Contact> contactList = ContactUtilFast.getAllContacts(mContext);
+        List<Contact> contactList = null;
+        if (fastSync) {
+            contactList = FastSyncUtils.findChangedContacts(mContext);
+        } else {
+            contactList = ContactUtil.getAllContacts(mContext);
+        }
         
         Slog.d("Contacts number: " + contactList.size());
 
@@ -1298,6 +1328,10 @@ public class HandlerFacade {
         contactSyncBuilder.setType(contactsSync.getType());
         contactSyncBuilder.setSubType(contactsSync.getSubType());
         
+        if (contactsSync.hasSyncConflictPloy()) {
+            contactSyncBuilder.setSyncConflictPloy(contactsSync.getSyncConflictPloy());
+        }
+        
 
         for (Contact contact : contactList) {
             contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
@@ -1311,37 +1345,59 @@ public class HandlerFacade {
         
         responseBuilder.setContactsSync(contactSyncBuilder);
         
-        Slog.d("handleTwoWaySlowSync X");
+        setResultOK(responseBuilder);
+        
+        Slog.d("handleTwoWaySync X, fastSync = " + fastSync);
     }
     
     
     
-    private void handleTwoWaySlowSyncSecond(ContactsSync contactsSync, Builder responseBuilder) {
-        Slog.d("handleTwoWaySlowSyncSecond E");
-        
-        SyncConflictPloy syncConflictPloy = contactsSync.getSyncConflictPloy();
-        
-        Slog.d("SyncConflictPloy = " + syncConflictPloy);
+    private void handleTwoWaySyncSecond(ContactsSync contactsSync, Builder responseBuilder) {
+        Slog.d("handleTwoWaySyncSecond E");
         
         ContactsSync.Builder contactSyncBuilder = ContactsSync.newBuilder();
         
         contactSyncBuilder.setType(contactsSync.getType());
         contactSyncBuilder.setSubType(contactsSync.getSubType());
         
+        if (contactsSync.hasSyncConflictPloy()) {
+            SyncConflictPloy syncConflictPloy = contactsSync.getSyncConflictPloy();
+
+            Slog.d("SyncConflictPloy = " + syncConflictPloy);
+            
+            contactSyncBuilder.setSyncConflictPloy(contactsSync.getSyncConflictPloy());
+        }
+        
         ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
         
+        boolean success = true;
         
         for (ContactRecord contactRecord : contactsSync.getContactRecordList()) {
             final SyncResult syncResult = contactRecord.getSyncResult();
+            final String pcId = contactRecord.getPcId();
+            Slog.d("SyncResult = " + syncResult + ", pcId = " + pcId);
             
-            Slog.d("SyncResult = " + syncResult);
             switch (syncResult) {
                 case PC_ADD: {
                     Contact contact = contactRecordToContactForAdd(contactRecord);
                     
-                    final long contactId = ContactUtilFast.addContact(mContext, contact);
+                    final long contactId = ContactUtil.addContact(mContext, contact);
                     if (contactId > 0) {
+                        int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
+                        Slog.d("ContactUtilFast.addContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        
+                        contactRecordBuilder.setId(contactId);
+                        contactRecordBuilder.setVersion(contactVersion);
+                        contactRecordBuilder.setPcId(pcId);
+                        contactRecordBuilder.setSyncResult(syncResult);
+                        
+                        contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
+                        
+                        contactRecordBuilder.clear();
+                    } else {
+                        Slog.e("Error ContactUtilFast.addContact, contactId = " + contactId);
+                        success = false;
                     }
                     break;
                 }
@@ -1350,24 +1406,68 @@ public class HandlerFacade {
                 case BOTH_MODIFY: {
                     Contact contact = contactRecordToContactForUpdate(contactRecord);
                     
-                    break;
-                }
-                
-                case PC_DEL:
-                case BOTH_DEL: {
+                    final long contactId = contact.id;
+                    if (ContactUtil.updateContact(mContext, contact)) {
+                        int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
+                        
+                        Slog.d("ContactUtilFast.updateContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        
+                        contactRecordBuilder.setId(contactId);
+                        contactRecordBuilder.setVersion(contactVersion);
+                        contactRecordBuilder.setSyncResult(syncResult);
+                        
+                        contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
+                        
+                        contactRecordBuilder.clear();
+                    } else {
+                        Slog.e("Error ContactUtilFast.updateContact, contactId = " + contactId);
+                        success = false;
+                    }
                     
                     break;
                 }
                 
-                default:
+                case PC_DEL: {
+                    final long contactId = contactRecord.getId();
+                    
+                    if (ContactUtil.deleteContactById(mContext, contactId)) {
+                        Slog.d("ContactUtilFast.deleteContactById OK, contactId = " + contactId);
+                        
+                        contactRecordBuilder.setId(contactId);
+                        contactRecordBuilder.setSyncResult(syncResult);
+                        
+                        contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
+                        
+                        contactRecordBuilder.clear();
+                        
+                    } else {
+                        Slog.e("Error ContactUtilFast.deleteContactById, contactId = " + contactId);
+                        success = false;
+                    }
                     break;
+                }
+                
+                default: {
+                    Slog.e("Error invalid sync result = " + syncResult);
+                    success = false;
+                    break;
+                }
             }
         }
         
+        if (success) {
+            responseBuilder.setContactsSync(contactSyncBuilder);
+            
+            setResultOK(responseBuilder);
+        } else {
+            setResultErrorInternal(responseBuilder, "add, update, delete");
+        }
         
+        FastSyncUtils.notifyUpdateContactVersionDB(mContext);
         
-        Slog.d("handleTwoWaySlowSyncSecond X");
+        Slog.d("handleTwoWaySyncSecond X");
     }
+    
 
     /**
      * Convert protobuf ModifyTag to model ModifyTag
@@ -1658,6 +1758,23 @@ public class HandlerFacade {
         Slog.e(msg);
 
         responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_PARAMS);
+        responseBuilder.setResultMsg(msg);
+    }
+    
+    private static void setResultErrorIllegalParams(
+            CmdResponse.Builder responseBuilder, String... params) {
+        StringBuilder msgBuilder = new StringBuilder(
+                "Error insufficient params: [");
+        for (String param : params) {
+            msgBuilder.append(param);
+            msgBuilder.append(", ");
+        }
+        msgBuilder.append(']');
+        final String msg = msgBuilder.toString();
+
+        Slog.e(msg);
+
+        responseBuilder.setResultCode(RESULT_CODE_ERR_ILLEGAL_PARAMS);
         responseBuilder.setResultMsg(msg);
     }
 
