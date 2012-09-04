@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 
 import com.pekall.pctool.Slog;
+import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
 
 import java.util.Collections;
@@ -20,11 +21,16 @@ import java.util.Map;
 public class DatabaseHelper {
 
     private static final String TABLE_CONTACT_VERSIONS = "contact_versions";
-    private static final String TABLE_CALENDAR_VERSIONS = "calendar_versions";
+    private static final String TABLE_EVENT_VERSIONS = "event_versions";
 
     private static final String[] DEFAULT_CONTACT_VERSION_COLUMNS = {
             ContactVersion._ID, 
-            ContactVersion.VERSION
+            ContactVersion.VERSION,
+    };
+    
+    private static final String[] DEFAULT_EVENT_VERSION_COLUMNS = {
+            EventVersion._ID,
+            EventVersion.VERSION,
     };
 
     private DatabaseOpenHelper mDatabaseOpenHelper;
@@ -119,6 +125,69 @@ public class DatabaseHelper {
         }
         
     }
+    
+    
+    public Map<Long, Integer> getLastSyncEventVersions() {
+        if (!isOpen()) {
+            throw new IllegalStateException("database is not open");
+        }
+        
+        Map<Long, Integer> eventVersionDict = Collections.emptyMap();
+        
+        Cursor cursor = mDb.query(TABLE_EVENT_VERSIONS, DEFAULT_EVENT_VERSION_COLUMNS, null, null, null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                final int count = cursor.getCount();
+                eventVersionDict = new HashMap<Long, Integer>(count);
+                
+                final int idxOfId = cursor.getColumnIndex(EventVersion._ID);
+                final int idxOfVersion = cursor.getColumnIndex(EventVersion.VERSION);
+                
+                do {
+                    eventVersionDict.put(cursor.getLong(idxOfId), cursor.getInt(idxOfVersion));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        return eventVersionDict;
+    }
+    
+    public boolean updateEventVersions(List<EventVersion> eventVersions) {
+        if (!isOpen()) {
+            throw new IllegalStateException("database is not open");
+        }
+        
+        mDb.beginTransaction();
+        try {
+            // delete all old rows
+            mDb.delete(TABLE_EVENT_VERSIONS, null, null);
+            
+            final String insertSQL = "insert into " + TABLE_EVENT_VERSIONS + "(" + 
+                    EventVersion._ID + ", " + 
+                    EventVersion.VERSION + 
+                    ") values(?, ?);";
+            
+            SQLiteStatement insert = mDb.compileStatement(insertSQL);
+            
+            
+            for (EventVersion eventVersion : eventVersions) {
+                insert.bindLong(1, eventVersion.id);
+                insert.bindLong(2, eventVersion.version);
+                
+                insert.executeInsert();
+            }
+            
+            mDb.setTransactionSuccessful();
+            return true;
+        } catch (SQLiteException e) {
+            Slog.e("Error when updateEventVersions", e);
+            return false;  
+        } finally {
+            mDb.endTransaction();
+        }
+        
+    }
 
     private static class DatabaseOpenHelper extends SQLiteOpenHelper {
         private static final String EXEC_SQL_PREFIX = "SQL EXEC -- ";
@@ -126,24 +195,43 @@ public class DatabaseHelper {
         private static final String DB_NAME = "pctool.db";
         private static final int DB_VERSION = 1;
 
-        private static final String CREATE_TABLE_SQL = "CREATE TABLE " +
+        private static final String CREATE_TABLE_CONTACT_VERSIONS_SQL = "CREATE TABLE " +
                 TABLE_CONTACT_VERSIONS + "(" + 
                 ContactVersion._ID + " INTEGER PRIMARY KEY, " +
                 ContactVersion.VERSION + " INTEGER);";
 
-        private static final String DROP_TABLE_SQL = "DROP TABLE IF EXISTS " + TABLE_CONTACT_VERSIONS + ";";
+        private static final String DROP_TABLE_CONTACT_VERSIONS_SQL = "DROP TABLE IF EXISTS " + 
+                TABLE_CONTACT_VERSIONS + ";";
+        
+        
+        private static final String CREATE_TABLE_EVENT_VERSIONS_SQL = "CREATE TABLE " +
+                TABLE_EVENT_VERSIONS + "(" + 
+                EventVersion._ID + " INTEGER PRIMARY KEY, " +
+                EventVersion.VERSION + " INTEGER);";
+        
+        private static final String DROP_TABLE_EVENT_VERSIONS_SQL = "DROP TABLE IF EXISTS " +
+                TABLE_EVENT_VERSIONS + ";";
 
+        
         public DatabaseOpenHelper(Context context) {
             super(context, DB_NAME, null, DB_VERSION);
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
+            db.beginTransaction();
             try {
-                Slog.d(EXEC_SQL_PREFIX + CREATE_TABLE_SQL);
-                db.execSQL(CREATE_TABLE_SQL);
+                Slog.d(EXEC_SQL_PREFIX + CREATE_TABLE_CONTACT_VERSIONS_SQL);
+                db.execSQL(CREATE_TABLE_CONTACT_VERSIONS_SQL);
+                
+                Slog.d(EXEC_SQL_PREFIX + CREATE_TABLE_EVENT_VERSIONS_SQL);
+                db.execSQL(CREATE_TABLE_EVENT_VERSIONS_SQL);
+                
+                db.setTransactionSuccessful();
             } catch (SQLException e) {
                 Slog.e("Error when create tables", e);
+            } finally {
+                db.endTransaction();
             }
 
         }
@@ -153,11 +241,19 @@ public class DatabaseHelper {
             String msg = "Upgrading database from version " + oldVersion
                     + " to " + newVersion + ", which will destroy all old data";
             Slog.w(msg);
+            db.beginTransaction();
             try {
-                Slog.d(EXEC_SQL_PREFIX + DROP_TABLE_SQL);
-                db.execSQL(DROP_TABLE_SQL);
+                Slog.d(EXEC_SQL_PREFIX + DROP_TABLE_CONTACT_VERSIONS_SQL);
+                db.execSQL(DROP_TABLE_CONTACT_VERSIONS_SQL);
+                
+                Slog.d(EXEC_SQL_PREFIX + DROP_TABLE_EVENT_VERSIONS_SQL);
+                db.execSQL(DROP_TABLE_EVENT_VERSIONS_SQL);
+                
+                db.setTransactionSuccessful();
             } catch (SQLException e) {
                 Slog.e("Error when drop tables", e);
+            } finally {
+                db.endTransaction();
             }
 
             onCreate(db);

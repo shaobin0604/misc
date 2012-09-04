@@ -13,10 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
-import com.google.protobuf.ByteString;
 import com.pekall.pctool.Slog;
-import com.pekall.pctool.protos.AppInfoProtos.AppInfoP;
-import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -111,35 +108,6 @@ public class AppUtil {
             appInfos.add(appInfo);
         }
         return appInfos;
-    }
-
-    public static AppInfoPList getUserAppInfoPList(Context context) {
-        AppInfoPList.Builder listBuilder = AppInfoPList.newBuilder();
-
-        PackageManager pm = context.getPackageManager();
-        List<PackageInfo> infos = pm.getInstalledPackages(0);
-
-        Slog.d("infos size = " + infos.size());
-
-        for (PackageInfo info : infos) {
-            ApplicationInfo applicationInfo = info.applicationInfo;
-            if (APP_TYPE_USER_FILTER.filterApp(applicationInfo)) {
-                AppInfoP.Builder itemBuilder = AppInfoP.newBuilder();
-
-                itemBuilder.setLabel(applicationInfo.loadLabel(pm).toString());
-                itemBuilder.setIcon(ByteString.copyFrom(drawableToBytes(applicationInfo.loadIcon(pm))));
-                itemBuilder.setPackageName(info.packageName);
-                itemBuilder.setVersionName(info.versionName);
-                itemBuilder.setVersionCode(info.versionCode);
-
-                File apkFile = new File(applicationInfo.sourceDir);
-                itemBuilder.setApkFileSize(apkFile.length());
-                itemBuilder.setApkFilePath(apkFile.getAbsolutePath());
-
-                listBuilder.addAppInfos(itemBuilder);
-            }
-        }
-        return listBuilder.build();
     }
 
     /**

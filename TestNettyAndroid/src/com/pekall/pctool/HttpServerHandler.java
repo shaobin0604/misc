@@ -12,10 +12,8 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import android.content.UriMatcher;
 import android.net.Uri;
 
-import com.example.tutorial.AddressBookProtos.AddressBook;
 import com.pekall.pctool.model.HandlerFacade;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
-import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
@@ -385,28 +383,6 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
 
         ChannelBuffer buffer = new DynamicChannelBuffer(2048);
         buffer.writeBytes(cmdResponse.toByteArray());
-
-        response.setContent(buffer);
-        response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-        response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
-    }
-
-    private void handleApps(HttpRequest request, HttpResponse response) {
-        AppInfoPList appInfoPList = mHandlerFacade.getAppInfoPList();
-
-        ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-        buffer.writeBytes(appInfoPList.toByteArray());
-
-        response.setContent(buffer);
-        response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-        response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
-    }
-
-    private void handleTest(HttpRequest request, HttpResponse response) {
-        AddressBook addressBook = mHandlerFacade.getAddressBook();
-
-        ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-        buffer.writeBytes(addressBook.toByteArray());
 
         response.setContent(buffer);
         response.setHeader(CONTENT_TYPE, "application/x-protobuf");

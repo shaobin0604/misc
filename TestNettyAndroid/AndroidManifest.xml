@@ -31,7 +31,7 @@
         android:theme="@style/AppTheme" >
         <service android:name=".HttpServerService" />
         <service android:name="org.swiftp.FTPServerService" />
-        <service android:name=".UpdateContactVersionDBService"></service>
+        <service android:name=".UpdateVersionDBService"></service>
 
         <receiver
             android:name=".AmCommandReceiver"

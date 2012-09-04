@@ -8,8 +8,6 @@ import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
-import com.example.tutorial.AddressBookProtos.AddressBook;
-import com.example.tutorial.AddressBookProtos.Person;
 import com.google.protobuf.ByteString;
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
@@ -33,7 +31,6 @@ import com.pekall.pctool.model.mms.Mms.Slide;
 import com.pekall.pctool.model.mms.MmsUtil;
 import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
-import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AddressRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AddressRecord.AddressType;
@@ -51,8 +48,6 @@ import com.pekall.pctool.protos.MsgDefProtos.CmdType;
 import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
 import com.pekall.pctool.protos.MsgDefProtos.ContactsSync;
 import com.pekall.pctool.protos.MsgDefProtos.EmailRecord;
-import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
-import com.pekall.pctool.protos.MsgDefProtos.SyncType;
 import com.pekall.pctool.protos.MsgDefProtos.EmailRecord.EmailType;
 import com.pekall.pctool.protos.MsgDefProtos.GroupRecord;
 import com.pekall.pctool.protos.MsgDefProtos.IMRecord;
@@ -1781,21 +1776,6 @@ public class HandlerFacade {
     // -------------------------------------------------------------------------
     // TEST code
     // -------------------------------------------------------------------------
-
-    public AddressBook getAddressBook() {
-        AddressBook.Builder builder = AddressBook.newBuilder();
-        builder.addPerson(getPerson("李雷", 1));
-        builder.addPerson(getPerson("韩梅梅", 2));
-        return builder.build();
-    }
-
-    private Person getPerson(String name, int id) {
-        return Person.newBuilder().setName(name).setId(id).build();
-    }
-
-    public AppInfoPList getAppInfoPList() {
-        return AppUtil.getUserAppInfoPList(mContext);
-    }
 
     public CmdResponse queryAppRecordList() {
         CmdResponse.Builder response = CmdResponse.newBuilder();

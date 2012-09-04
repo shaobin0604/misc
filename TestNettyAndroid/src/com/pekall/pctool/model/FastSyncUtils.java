@@ -4,7 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.pekall.pctool.Slog;
-import com.pekall.pctool.UpdateContactVersionDBService;
+import com.pekall.pctool.UpdateVersionDBService;
+import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
@@ -16,10 +17,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class FastSyncUtils {
+    public static final String ACTION_UPDATE_CONTACT_VERSION = "action.UPDATE_CONTACT_VERSION";
+    public static final String ACTION_UPDATE_EVENT_VERSION = "action.UPDATE_EVENT_VERSION";
+    
+    //
+    // Contact fast sync
+    //
     
     public static void notifyUpdateContactVersionDB(Context context) {
         Slog.d("notifyUpdateContactVersionDB E");
-        Intent intent = new Intent(context, UpdateContactVersionDBService.class);
+        Intent intent = new Intent(context, UpdateVersionDBService.class);
+        intent.setAction(ACTION_UPDATE_CONTACT_VERSION);
         context.startService(intent);
         Slog.d("notifyUpdateContactVersionDB X");
     }
@@ -87,6 +95,86 @@ public class FastSyncUtils {
         
         for (Entry<Long, Integer> entry : lastSyncVersions.entrySet()) {
             changes.add(new ContactVersion(entry.getKey(), entry.getValue(), ModifyTag.del));
+        }
+        
+        return changes;
+    }
+    
+    //
+    // Calendar Event fast sync
+    //
+    
+    public static void notifyUpdateEventVersionDB(Context context) {
+        Slog.d("notifyUpdateEventVersionDB E");
+        Intent intent = new Intent(context, UpdateVersionDBService.class);
+        intent.setAction(ACTION_UPDATE_EVENT_VERSION);
+        context.startService(intent);
+        Slog.d("notifyUpdateEventVersionDB X");
+    }
+    
+    public static List<Contact> findChangedEvents(Context context) {
+        DatabaseHelper databaseHelper = new DatabaseHelper(context);
+        
+        databaseHelper.open();
+        Map<Long, Integer> lastSyncVersions = databaseHelper.getLastSyncEventVersions();
+        databaseHelper.close();
+
+        List<ContactVersion> currentVersions = ContactUtil.getAllContactVersions(context);
+        
+        List<ContactVersion> changedVersions = calculateContactChanges(currentVersions, lastSyncVersions);
+        
+        //
+        // Get the changed(add, update, delete) contacts
+        //
+        Contact contact = null;
+        List<Contact> changedContacts = new ArrayList<Contact>();
+        for (ContactVersion contactVersion : changedVersions) {
+            switch (contactVersion.modifyTag) {
+                case ModifyTag.add:
+                case ModifyTag.edit:
+                    contact = ContactUtil.getContactById(context, contactVersion.id);
+                    break;
+                case ModifyTag.del:
+                    contact = new Contact();
+                    contact.id = contactVersion.id;
+                    break;
+                default:
+                    final String msg = "Error invalid modifyTag = " + contactVersion.modifyTag;
+                    Slog.e(msg);
+                    throw new IllegalStateException(msg);
+            }
+            contact.modifyTag = contactVersion.modifyTag;
+            
+            changedContacts.add(contact);
+        }
+        return changedContacts;
+    }
+    
+    public static List<EventVersion> calculateEventChanges(List<EventVersion> currentVersions, Map<Long, Integer> lastSyncVersions) {
+        
+        List<EventVersion> changes = new ArrayList<EventVersion>();
+        
+        for (EventVersion eventVersion : currentVersions) {
+            final Integer lastSyncVersion = lastSyncVersions.get(eventVersion.id);
+            
+            if (lastSyncVersion == null) {
+                // cannot find record in last sync table, treat as add
+                eventVersion.modifyTag = ModifyTag.add;
+                
+                changes.add(eventVersion);
+            } else {
+                if (lastSyncVersion != eventVersion.version) {
+                    // version changed, treat as update
+                    eventVersion.modifyTag = ModifyTag.edit;
+                    
+                    changes.add(eventVersion);
+                }
+                lastSyncVersions.remove(eventVersion.id);
+            }
+        }
+        
+        for (Entry<Long, Integer> entry : lastSyncVersions.entrySet()) {
+            changes.add(new EventVersion(entry.getKey(), entry.getValue(), ModifyTag.del));
         }
         
         return changes;

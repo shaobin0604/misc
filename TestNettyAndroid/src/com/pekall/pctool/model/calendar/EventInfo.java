@@ -87,7 +87,59 @@ public class EventInfo {
     }
     
     public static class EventVersion implements BaseColumns {
+        public static final String VERSION = "version";
+
         public long id;
+        public long version;
+        public int modifyTag;   // default same
+        
+        public EventVersion(long id, long version, int modifyTag) {
+            super();
+            this.id = id;
+            this.version = version;
+            this.modifyTag = modifyTag;
+        }
+
+        public EventVersion() {
+            super();
+            // TODO Auto-generated constructor stub
+        }
+
+        @Override
+        public String toString() {
+            return "EventVersion [id=" + id + ", version=" + version + ", modifyTag=" + modifyTag + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + (int) (id ^ (id >>> 32));
+            result = prime * result + modifyTag;
+            result = prime * result + (int) (version ^ (version >>> 32));
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            EventVersion other = (EventVersion) obj;
+            if (id != other.id)
+                return false;
+            if (modifyTag != other.modifyTag)
+                return false;
+            if (version != other.version)
+                return false;
+            return true;
+        }
+
+        
+
         
     }
 }
