@@ -189,4 +189,30 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         
         Slog.d(cmdResponse.toString());
     }
+    
+    public void testSyncContactWithOutlookTwoSlowSyncSecondUpdatePhone1() throws Exception {
+        CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+        ContactsSync.Builder contactsSyncBuilder = ContactsSync.newBuilder();
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+        
+        cmdRequestBuilder.setCmdType(CmdType.CMD_SYNC_CONTACTS);
+        
+        contactsSyncBuilder.setType(SyncType.OUTLOOK_PHONE);
+        contactsSyncBuilder.setSubType(SyncSubType.TWO_WAY_SLOW_SYNC_SECOND);
+        
+        contactRecordBuilder.setId(10);
+        contactRecordBuilder.setName("sync add-2");
+        contactRecordBuilder.setNickname("pc modify");
+        contactRecordBuilder.setSyncResult(SyncResult.PC_MODIFY);
+        contactRecordBuilder.setPcId("outlook-2");
+        
+        contactsSyncBuilder.addContactRecord(contactRecordBuilder.build());
+        contactRecordBuilder.clear();
+        
+        cmdRequestBuilder.setContactsSync(contactsSyncBuilder);
+        
+        CmdResponse cmdResponse = mHandlerFacade.syncContactWithOutlook(cmdRequestBuilder.build());
+        
+        Slog.d(cmdResponse.toString());
+    }
 }

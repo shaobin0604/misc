@@ -52,14 +52,14 @@ public class UpdateVersionDBService extends IntentService {
                 Slog.e("Error update contact version");
             }
         } else if (FastSyncUtils.ACTION_UPDATE_EVENT_VERSION.equals(action)) {
-            // TODO
-            List<ContactVersion> contactVersions = CalendarUtil.getAllEventVersions(this);
-            boolean success = mDatabaseHelper.updateContactVersions(contactVersions);
-            if (success) {
-                Slog.d("update event version OK");
-            } else {
-                Slog.e("Error update event version");
-            }
+//            // TODO
+//            List<ContactVersion> contactVersions = CalendarUtil.getAllEventVersions(this);
+//            boolean success = mDatabaseHelper.updateContactVersions(contactVersions);
+//            if (success) {
+//                Slog.d("update event version OK");
+//            } else {
+//                Slog.e("Error update event version");
+//            }
         }
     }
 

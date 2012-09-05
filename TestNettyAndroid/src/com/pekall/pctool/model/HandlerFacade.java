@@ -1128,8 +1128,11 @@ public class HandlerFacade {
             GroupInfo groupInfo = new GroupInfo();
 
             // only group id is required
-            groupInfo.grId = groupRecord.getId();
-
+            
+            if (groupRecord.hasId()) {
+                groupInfo.grId = groupRecord.getId();
+            }
+            
             groupInfo.modifyFlag = toModelModifyTag(groupRecord.getModifyTag());
 
             contact.addGroupInfo(groupInfo);
@@ -1139,6 +1142,9 @@ public class HandlerFacade {
         for (PhoneRecord phoneRecord : contactRecord.getPhoneList()) {
             PhoneInfo phoneInfo = new PhoneInfo();
 
+            if (phoneRecord.hasId()) {
+                phoneInfo.id = phoneRecord.getId();
+            }
             phoneInfo.type = toCommonDataKindsPhoneType(phoneRecord.getType());
             phoneInfo.number = phoneRecord.getNumber();
             phoneInfo.customName = phoneRecord.getName();
@@ -1151,7 +1157,10 @@ public class HandlerFacade {
         // email
         for (EmailRecord emailRecord : contactRecord.getEmailList()) {
             EmailInfo emailInfo = new EmailInfo();
-
+            
+            if (emailRecord.hasId()) {
+                emailInfo.id = emailRecord.getId();
+            }
             emailInfo.type = toCommonDataKindsEmailType(emailRecord.getType());
             emailInfo.email = emailRecord.getEmail();
             emailInfo.customName = emailRecord.getName();
@@ -1165,6 +1174,9 @@ public class HandlerFacade {
         for (IMRecord imRecord : contactRecord.getImList()) {
             ImInfo imInfo = new ImInfo();
 
+            if (imRecord.hasId()) {
+                imInfo.id = imRecord.getId();
+            }
             imInfo.type = toCommonDataKindsImType(imRecord.getType());
             imInfo.account = imRecord.getAccount();
             imInfo.customName = imRecord.getName();
@@ -1178,6 +1190,9 @@ public class HandlerFacade {
         for (AddressRecord addressRecord : contactRecord.getAddressList()) {
             AddressInfo addressInfo = new AddressInfo();
 
+            if (addressRecord.hasId()) {
+                addressInfo.id = addressRecord.getId();
+            }
             addressInfo.type = toCommonDataKindsAddressType(addressRecord.getAddressType());
             addressInfo.address = addressRecord.getAddress();
             addressInfo.customName = addressRecord.getName();
@@ -1196,6 +1211,9 @@ public class HandlerFacade {
         for (OrgRecord orgRecord : contactRecord.getOrgList()) {
             OrgInfo orgInfo = new OrgInfo();
 
+            if (orgRecord.hasId()) {
+                orgInfo.id = orgRecord.getId();
+            }
             orgInfo.type = toCommonDataKindsOrganizationType(orgRecord.getType());
             orgInfo.org = orgRecord.getOrgName();
             orgInfo.customName = orgRecord.getName();
@@ -1216,7 +1234,7 @@ public class HandlerFacade {
         List<Long> contactIdList = request.getRecordIdList();
 
         if (contactIdList != null && contactIdList.size() > 0) {
-            if (ContactUtil.deleteContact(mContext, contactIdList)) {
+            if (ContactUtil.deleteContactByIds(mContext, contactIdList)) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.deleteContact");
