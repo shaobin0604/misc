@@ -7,8 +7,10 @@ import android.os.IBinder;
 
 import com.pekall.pctool.model.DatabaseHelper;
 import com.pekall.pctool.model.FastSyncUtils;
-import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.model.calendar.CalendarUtil;
+import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
+import com.pekall.pctool.model.contact.ContactUtil;
 
 import java.util.List;
 
@@ -52,14 +54,13 @@ public class UpdateVersionDBService extends IntentService {
                 Slog.e("Error update contact version");
             }
         } else if (FastSyncUtils.ACTION_UPDATE_EVENT_VERSION.equals(action)) {
-//            // TODO
-//            List<ContactVersion> contactVersions = CalendarUtil.getAllEventVersions(this);
-//            boolean success = mDatabaseHelper.updateContactVersions(contactVersions);
-//            if (success) {
-//                Slog.d("update event version OK");
-//            } else {
-//                Slog.e("Error update event version");
-//            }
+            List<EventVersion> eventVersions = CalendarUtil.queryEventVersions(this);
+            boolean success = mDatabaseHelper.updateEventVersions(eventVersions);
+            if (success) {
+                Slog.d("update event version OK");
+            } else {
+                Slog.e("Error update event version");
+            }
         }
     }
 

@@ -19,6 +19,7 @@ import android.text.format.Time;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
+import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class CalendarUtil {
     /**
      * 查询所有日历(所有账户的日历)
      */
-    public static List<CalendarInfo> getAllCalendarInfos(Context context) {
+    public static List<CalendarInfo> queryCalendarAll(Context context) {
         List<CalendarInfo> calendarInfoList = new ArrayList<CalendarInfo>();
         Cursor cur = null;
         ContentResolver cr = context.getContentResolver();
@@ -87,7 +88,7 @@ public class CalendarUtil {
     /**
      * 查询某个账户下面的具体的日历
      */
-    public static List<CalendarInfo> getAllCalendarOfAccount(Context context, AccountInfo account) {
+    public static List<CalendarInfo> queryCalendarByAccount(Context context, AccountInfo account) {
         List<CalendarInfo> calendarInfoList = new ArrayList<CalendarInfo>();
         Cursor cur = null;
         ContentResolver cr = context.getContentResolver();
@@ -127,6 +128,8 @@ public class CalendarUtil {
             return true;
         return false;
     }
+    
+    
 
     /**
      * addEvent must need calendarId
@@ -206,7 +209,7 @@ public class CalendarUtil {
         } else {
             values.put(Events.DTEND, eventInfo.endTime);
         }
-        Uri myUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfo.evId);
+        Uri myUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfo.id);
         int rows = cr.update(myUri, values, null, null);
         if (rows == 0) {
             Slog.e("Error update Event");
@@ -216,7 +219,7 @@ public class CalendarUtil {
             values = new ContentValues();
             values.put(Reminders.MINUTES, eventInfo.alertTime);
             rows = cr.update(Reminders.CONTENT_URI, values, Reminders.EVENT_ID + "=?", new String[] {
-                    String.valueOf(eventInfo.evId)
+                    String.valueOf(eventInfo.id)
             });
             if (rows == 0) {
                 Slog.e("Error update reminder");
@@ -230,7 +233,7 @@ public class CalendarUtil {
      * 删除一个事件
      */
     public static boolean deleteEvent(Context context, EventInfo eventInfo) {
-        return deleteEvent(context, eventInfo.evId);
+        return deleteEvent(context, eventInfo.id);
     }
 
     public static boolean deleteEvent(Context context, long eventInfoId) {
@@ -248,14 +251,14 @@ public class CalendarUtil {
      * 查询某个事件下面的提醒时间
      */
     public static int[] getReminderTime(Context context, EventInfo eventInfo) {
-        return getReminderTime(context, eventInfo.evId);
+        return getReminderTime(context, eventInfo.id);
     }
 
-    public static int[] getReminderTime(Context context, long eventInfoId) {
+    public static int[] getReminderTime(Context context, long eventId) {
         ContentResolver cr = context.getContentResolver();
         String selection = Reminders.EVENT_ID + " = ? ";
         String[] selectionArgs = new String[] {
-                String.valueOf(eventInfoId)
+                String.valueOf(eventId)
         };
         Cursor cur = cr.query(Reminders.CONTENT_URI, new String[] {
                 Reminders._ID, Reminders.MINUTES
@@ -268,35 +271,56 @@ public class CalendarUtil {
         }
         return alertTime;
     }
+    
+    public static List<EventVersion> queryEventVersions(Context context) {
+        List<EventInfo> eventInfos = queryEvents(context);
+        
+        List<EventVersion> eventVersions = new ArrayList<EventInfo.EventVersion>();
+        
+        for (EventInfo eventInfo : eventInfos) {
+            EventVersion eventVersion = new EventVersion();
+            
+            eventVersion.id = eventInfo.id;
+            eventVersion.version = eventInfo.getChecksum();
+            
+            eventVersions.add(eventVersion);
+        }
+        return eventVersions;
+    }
+    
+    public static List<EventInfo> queryEvents(Context context) {
+        return queryEventsByCalendarId(context, 0);
+    }
 
     /**
-     * Query events for a calendar, if the calendar is empty, return all events Note: 
-     * synchronization when only set an account can query the account the following event
+     * Query events for a calendar, if the calendar is empty, return all events.
+     * 
+     * Note: synchronization when only set an account can query the account the following event
      * @param cr
      * @param context
      * @return
      */
-    public static List<EventInfo> getEvents(Context context, long calendarId) {
+    public static List<EventInfo> queryEventsByCalendarId(Context context, long calendarId) {
         List<EventInfo> er = new ArrayList<EventInfo>();
-        Cursor cur = null;
-        Uri uri = Events.CONTENT_URI;
         String projection[] = new String[] {
                 Events._ID, Events.TITLE, Events.DESCRIPTION, Events.DTSTART, Events.DTEND, Events.RRULE,
                 Events.EVENT_LOCATION, Events.CALENDAR_ID,
         };
-        if (calendarId <= 0) {
-            cur = context.getContentResolver().query(uri, projection, null, null, null);
-        } else {
-            String selection = Events.CALENDAR_ID + "=?";
-            String selectionArgs[] = {
-                    String.valueOf(calendarId)
-            };
-            cur = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+        
+        String selection = null;
+        String[] selectionArgs = null;
+        
+        if (calendarId > 0) {
+            selection = Events.CALENDAR_ID + "=?";
+            selectionArgs = new String[] {String.valueOf(calendarId)};
         }
+        
+        Cursor cur = context.getContentResolver().query(Events.CONTENT_URI, projection, selection, selectionArgs, null);
+        
         while (cur.moveToNext()) {
             EventInfo evr = new EventInfo();
 
-            evr.evId = cur.getLong(PROJECTION_EVENTS_ID_INDEX);
+            evr.id = cur.getLong(PROJECTION_EVENTS_ID_INDEX);
             evr.title = cur.getString(PROJECTION_EVENTS_TITLE_INDEX);
             evr.note = cur.getString(PROJECTION_EVENTS_DESCRIPTION_INDEX);
             evr.startTime = cur.getLong(PROJECTION_EVENTS_DTSTART_INDEX);
@@ -316,7 +340,7 @@ public class CalendarUtil {
     /**
      * 查询到某一个事件
      */
-    public static EventInfo queryByEventId(Context context, long evId) {
+    public static EventInfo queryEventById(Context context, long id) {
         Uri uri = Events.CONTENT_URI;
         EventInfo evr = null;
         String projection[] = new String[] {
@@ -325,12 +349,12 @@ public class CalendarUtil {
         };
         String selection = Events._ID + "=?";
         String selectionArgs[] = {
-                String.valueOf(evId)
+                String.valueOf(id)
         };
         Cursor cur = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
         while (cur.moveToNext()) {
             evr = new EventInfo();
-            evr.evId = cur.getLong(PROJECTION_EVENTS_ID_INDEX);
+            evr.id = cur.getLong(PROJECTION_EVENTS_ID_INDEX);
             evr.title = cur.getString(PROJECTION_EVENTS_TITLE_INDEX);
             evr.note = cur.getString(PROJECTION_EVENTS_DESCRIPTION_INDEX);
             evr.startTime = cur.getLong(PROJECTION_EVENTS_DTSTART_INDEX);

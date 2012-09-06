@@ -126,25 +126,30 @@ public class DatabaseHelper {
         
     }
     
-    
-    public Map<Long, Integer> getLastSyncEventVersions() {
+    /**
+     * Get event version since last sync, format in {:id => :version}
+     * 
+     * @return the event version since last sync
+     */
+    public Map<Long, Long> getLastSyncEventVersions() {
         if (!isOpen()) {
             throw new IllegalStateException("database is not open");
         }
         
-        Map<Long, Integer> eventVersionDict = Collections.emptyMap();
+        // {:id => :version}
+        Map<Long, Long> eventVersionDict = Collections.emptyMap();
         
         Cursor cursor = mDb.query(TABLE_EVENT_VERSIONS, DEFAULT_EVENT_VERSION_COLUMNS, null, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 final int count = cursor.getCount();
-                eventVersionDict = new HashMap<Long, Integer>(count);
+                eventVersionDict = new HashMap<Long, Long>(count);
                 
                 final int idxOfId = cursor.getColumnIndex(EventVersion._ID);
                 final int idxOfVersion = cursor.getColumnIndex(EventVersion.VERSION);
                 
                 do {
-                    eventVersionDict.put(cursor.getLong(idxOfId), cursor.getInt(idxOfVersion));
+                    eventVersionDict.put(cursor.getLong(idxOfId), cursor.getLong(idxOfVersion));
                 } while (cursor.moveToNext());
             }
             cursor.close();

@@ -44,9 +44,9 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ContactUtil {
-    
+
     private static final boolean DUMP_PARAMS = true;
-    
+
     /****** Account ***********************************/
     public static final String DEFAULT_ACCOUNT_NAME = "contacts.account.name.local";
     public static final String DEFAULT_ACCOUNT_TYPE = "contacts.account.type.local";
@@ -93,14 +93,14 @@ public class ContactUtil {
                 rw.rawId = cursor.getLong(RAWCONTACTS_ID);
                 rw.version = cursor.getInt(RAWCONTACTS_VERSION);
                 rw.accountInfo.accountName = account.accountName;
-				rw.accountInfo.accountType = account.accountType;
+                rw.accountInfo.accountType = account.accountType;
                 lr.add(rw);
             } while (cursor.moveToNext());
         }
         cursor.close();
         return lr;
     }
-    
+
     /**
      * Get the specified contact version
      * 
@@ -111,10 +111,12 @@ public class ContactUtil {
     public static int getContactVersion(Context context, long id) {
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts.VERSION
-        }, RawContacts.DELETED + "!=? AND " + RawContacts._ID + "=?", new String[] {String.valueOf(DELETE_FLAG), String.valueOf(id)}, null);
-        
+        }, RawContacts.DELETED + "!=? AND " + RawContacts._ID + "=?", new String[] {
+                String.valueOf(DELETE_FLAG), String.valueOf(id)
+        }, null);
+
         int version = -1;
-        
+
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 version = cursor.getInt(cursor.getColumnIndex(RawContacts.VERSION));
@@ -123,20 +125,20 @@ public class ContactUtil {
         }
         return version;
     }
-    
+
     /**
      * get all version of contacts
-     *  
+     * 
      * @param context
      * @return
      */
     public static List<ContactVersion> getAllContactVersions(Context context) {
         List<ContactVersion> contactVersions = new ArrayList<ContactVersion>();
-        
+
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts._ID, RawContacts.VERSION
         }, RawContacts.DELETED + "!=" + DELETE_FLAG, null, null);
-        
+
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 final int IndexOfId = cursor.getColumnIndex(RawContacts._ID);
@@ -173,13 +175,13 @@ public class ContactUtil {
             final int GROUP_ACCOUNT_NAME = cursorOfGroup.getColumnIndex(Groups.ACCOUNT_NAME);
             do {
                 GroupInfo gi = new GroupInfo();
-                
+
                 gi.grId = cursorOfGroup.getLong(GROUP_ID);
                 gi.name = cursorOfGroup.getString(GROUP_TITLE);
                 gi.note = cursorOfGroup.getString(GROUP_NOTES);
                 gi.accountInfo.accountType = cursorOfGroup.getString(GROUP_ACCOUNT_TYPE);
                 gi.accountInfo.accountName = cursorOfGroup.getString(GROUP_ACCOUNT_NAME);
-                
+
                 li.add(gi);
 
             } while (cursorOfGroup.moveToNext());
@@ -351,9 +353,234 @@ public class ContactUtil {
             return false;
         }
     }
-    
+
     public static int deleteContactAll(Context context) {
         return context.getContentResolver().delete(RawContacts.CONTENT_URI, null, null);
+    }
+
+    public static boolean updateContactForce(Context context, Contact contact) {
+        Slog.d("updateContactForce E");
+
+        if (DUMP_PARAMS) {
+            Slog.d(">>>>> DUMP CONTACT >>>>>");
+            Slog.d(contact.toString());
+            Slog.d("<<<<< DUMP CONTACT <<<<<");
+        }
+
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+        
+        // has group
+        if (contact.groupInfos != null) {
+            for (int i = 0; i < contact.groupInfos.size(); i++) {
+                GroupInfo gi = new GroupInfo();
+                gi = contact.groupInfos.get(i);
+                if (gi.modifyFlag == ModifyTag.add) {
+                    ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                            .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                            .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
+                            .withValue(Data.DATA1, gi.grId).build());
+                } else if (gi.modifyFlag == ModifyTag.del) {
+                    ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId))
+                            .build());
+                } else if (gi.modifyFlag == ModifyTag.edit) {
+                    ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(Data._ID + "=?", new String[] {
+                                    String.valueOf(gi.dataId)
+                            }).withValue(Data.DATA1, gi.grId).build());
+                }
+            }
+        }
+        // update photo
+        if (contact.shouldUpdatePhoto) {
+            if (hasField(context, "photo", contact.id)) {
+                if (contact.photo != null) {
+                    ops.add(ContentProviderOperation
+                            .newUpdate(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(
+                                    Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                                    new String[] {
+                                            String.valueOf(contact.id), Photo.CONTENT_ITEM_TYPE
+                                    }).withValue(Data.DATA15, contact.photo)
+                            .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1).build());
+                } else {
+                    long dataPhotoId = -1;
+                    Uri uri = Data.CONTENT_URI;
+                    Cursor cursor = context.getContentResolver().query(uri, new String[] {
+                            Data._ID
+                    }, Data.CONTENT_TYPE + "=? and" + Data.RAW_CONTACT_ID + "=?", new String[] {
+                            Photo.CONTENT_ITEM_TYPE, String.valueOf(contact.id)
+                    }, null);
+                    if (cursor.moveToNext())
+                        dataPhotoId = cursor.getLong(cursor.getColumnIndex(Data._ID));
+                    cursor.close();
+                    if (-1 != dataPhotoId) {
+                        ops.add(ContentProviderOperation.newDelete(
+                                ContentUris.withAppendedId(Data.CONTENT_URI, dataPhotoId)).build());
+                    }
+                }
+            } else {
+                if (contact.photo != null) {
+                    ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                            .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                            .withValue(ContactsContract.Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE)
+                            .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, contact.photo).build());
+                }
+            }
+        }
+        // update nickname
+        if (hasField(context, "nickname", contact.id)) {
+            ops.add(ContentProviderOperation
+                    .newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                            new String[] {
+                                    String.valueOf(contact.id), Nickname.CONTENT_ITEM_TYPE
+                            }).withValue(Nickname.NAME, contact.nickname).build());
+        } else {
+            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                    .withValue(ContactsContract.Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, contact.nickname).build());
+        }
+        // update Name
+        if (hasField(context, "name", contact.id)) {
+            ops.add(ContentProviderOperation
+                    .newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                            new String[] {
+                                    String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
+                            }).withValue(StructuredName.DISPLAY_NAME, contact.name).build());
+        } else {
+            ops.add(ContentProviderOperation
+                    .newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                    .withValue(ContactsContract.Data.MIMETYPE,
+                            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, "")
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, "")
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, "").build());
+        }
+
+        // update Phone
+        for (Iterator<PhoneInfo> iter = contact.phoneInfos.iterator(); iter.hasNext();) {
+            PhoneInfo pr = iter.next();
+            if (pr.modifyFlag == ModifyTag.add) {
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(ContactsContract.Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
+                        .withValue(Phone.NUMBER, pr.number).withValue(Phone.TYPE, pr.type)
+                        .withValue(Phone.DATA3, pr.customName).build());
+            } else if (pr.modifyFlag == ModifyTag.del) {
+                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, pr.id)).build());
+            } else if (pr.modifyFlag == ModifyTag.edit) {
+                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(pr.id)
+                        }).withValue(Phone.NUMBER, pr.number).withValue(Phone.DATA3, pr.customName)
+                        .withValue(Phone.TYPE, pr.type).build());
+            }
+        }
+        // update Email
+        for (Iterator<EmailInfo> iter = contact.emailInfos.iterator(); iter.hasNext();) {
+            EmailInfo er = iter.next();
+            if (er.modifyFlag == ModifyTag.add) {
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(ContactsContract.Data.MIMETYPE, Email.CONTENT_ITEM_TYPE)
+                        .withValue(Email.ADDRESS, er.email).withValue(Email.TYPE, er.type)
+                        .withValue(Email.DATA3, er.customName).build());
+            } else if (er.modifyFlag == ModifyTag.del) {
+                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, er.id)).build());
+            } else if (er.modifyFlag == ModifyTag.edit) {
+                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(er.id)
+                        }).withValue(Email.ADDRESS, er.email).withValue(Email.DATA3, er.customName)
+                        .withValue(Email.TYPE, er.type).build());
+            }
+        }
+
+        // update Organization
+        for (Iterator<OrgInfo> iter = contact.orgInfos.iterator(); iter.hasNext();) {
+            OrgInfo or = iter.next();
+            if (or.modifyFlag == ModifyTag.add) {
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
+                        .withValue(Organization.COMPANY, or.org).withValue(Organization.TYPE, or.type)
+                        .withValue(Organization.DATA3, or.customName).build());
+            } else if (or.modifyFlag == ModifyTag.del) {
+                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, or.id)).build());
+            } else if (or.modifyFlag == ModifyTag.edit) {
+                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(or.id)
+                        }).withValue(Organization.COMPANY, or.org).withValue(Organization.TYPE, or.type)
+                        .withValue(Organization.DATA3, or.customName).build());
+            }
+        }
+        // update Address
+        for (Iterator<AddressInfo> iter = contact.addressInfos.iterator(); iter.hasNext();) {
+            AddressInfo ar = iter.next();
+            if (ar.modifyFlag == ModifyTag.add) {
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(ContactsContract.Data.MIMETYPE, StructuredPostal.CONTENT_ITEM_TYPE)
+                        .withValue(StructuredPostal.COUNTRY, ar.country).withValue(StructuredPostal.CITY, ar.city)
+                        .withValue(StructuredPostal.STREET, ar.street)
+                        .withValue(StructuredPostal.POSTCODE, ar.postcode)
+                        .withValue(StructuredPostal.REGION, ar.province)
+                        .withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address).withValue(Data.DATA3, ar.customName)
+                        .withValue(StructuredPostal.TYPE, ar.type).build());
+
+            } else if (ar.modifyFlag == ModifyTag.del) {
+                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ar.id)).build());
+            } else if (ar.modifyFlag == ModifyTag.edit) {
+                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(ar.id)
+                        }).withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address)
+                        .withValue(StructuredPostal.COUNTRY, ar.country).withValue(StructuredPostal.CITY, ar.city)
+                        .withValue(StructuredPostal.STREET, ar.street)
+                        .withValue(StructuredPostal.POSTCODE, ar.postcode)
+                        .withValue(StructuredPostal.DATA3, ar.customName)
+                        .withValue(StructuredPostal.REGION, ar.province).withValue(StructuredPostal.TYPE, ar.type)
+                        .build());
+            }
+        }
+        // update InfoM
+        for (Iterator<ImInfo> iter = contact.imInfos.iterator(); iter.hasNext();) {
+            ImInfo ir = iter.next();
+            if (ir.modifyFlag == ModifyTag.add) {
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(ContactsContract.Data.MIMETYPE, Im.CONTENT_ITEM_TYPE)
+                        .withValue(Im.DATA1, ir.account)
+                        .withValue(Im.TYPE, ir.type).withValue(Data.DATA3, ir.customName).build());
+            } else if (ir.modifyFlag == ModifyTag.del) {
+                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ir.id)).build());
+            } else if (ir.modifyFlag == ModifyTag.edit) {
+                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(ir.id)
+                        }).withValue(Im.DATA1, ir.account).withValue(Im.TYPE, ir.type)
+                        .withValue(Im.DATA3, ir.customName)
+                        .build());
+            }
+        }
+
+        try {
+            Slog.d(ops.toString());
+
+            context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+            return true;
+        } catch (RemoteException e) {
+            Slog.e("Error updateContact", e);
+            return false;
+        } catch (OperationApplicationException e) {
+            Slog.e("Error updateContact", e);
+            return false;
+        }
     }
 
     /**
@@ -365,13 +592,13 @@ public class ContactUtil {
      */
     public static boolean updateContact(Context context, Contact contact) {
         Slog.d("updateContact E");
-        
+
         if (DUMP_PARAMS) {
             Slog.d(">>>>> DUMP CONTACT >>>>>");
             Slog.d(contact.toString());
             Slog.d("<<<<< DUMP CONTACT <<<<<");
         }
-        
+
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
         // has group
         if (contact.groupInfos != null) {
@@ -567,14 +794,15 @@ public class ContactUtil {
                 ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                         .withSelection(Data._ID + "=?", new String[] {
                                 String.valueOf(ir.id)
-                        }).withValue(Im.DATA1, ir.account).withValue(Im.TYPE, ir.type).withValue(Im.DATA3, ir.customName)
+                        }).withValue(Im.DATA1, ir.account).withValue(Im.TYPE, ir.type)
+                        .withValue(Im.DATA3, ir.customName)
                         .build());
             }
         }
-        
+
         try {
             Slog.d(ops.toString());
-            
+
             context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
             return true;
         } catch (RemoteException e) {
@@ -624,7 +852,8 @@ public class ContactUtil {
             ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                     .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                     .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
-                    .withValue(ContactsContract.Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE).withValue(Photo.PHOTO, contact.photo)
+                    .withValue(ContactsContract.Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE)
+                    .withValue(Photo.PHOTO, contact.photo)
                     .build());
         }
         // name
@@ -799,8 +1028,8 @@ public class ContactUtil {
         while (cursor.moveToNext()) {
             RawContact rw = new RawContact();
             rw.rawId = cursor.getLong(cursor.getColumnIndex(Data.RAW_CONTACT_ID));
-			rw.accountInfo.accountName = gi.accountInfo.accountName;
-			rw.accountInfo.accountType = gi.accountInfo.accountType;
+            rw.accountInfo.accountName = gi.accountInfo.accountName;
+            rw.accountInfo.accountType = gi.accountInfo.accountType;
             lr.add(rw);
         }
         cursor.close();
@@ -1018,9 +1247,9 @@ public class ContactUtil {
             RawContact rc = lr.get(i);
             Contact c = new Contact();
             c.id = rc.rawId;
-			c.version = rc.version;
-			c.accountInfo.accountName = rc.accountInfo.accountName;
-			c.accountInfo.accountType = rc.accountInfo.accountType;
+            c.version = rc.version;
+            c.accountInfo.accountName = rc.accountInfo.accountName;
+            c.accountInfo.accountType = rc.accountInfo.accountType;
             for (int j = 0; j < ld.size(); j++) {
                 DataModel d = ld.get(j);
                 if (d.rawId == rc.rawId) { // one contact
@@ -1322,7 +1551,7 @@ public class ContactUtil {
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
         }, RawContacts.DELETED + "!=" + DELETE_FLAG + " and " + RawContacts._ID + "=?", new String[] {
-            String.valueOf(rawId)
+                String.valueOf(rawId)
         }, null);
         RawContact rw = new RawContact();
         if (cursor.moveToFirst()) {

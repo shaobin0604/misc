@@ -5,6 +5,8 @@ import android.content.Intent;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.UpdateVersionDBService;
+import com.pekall.pctool.model.calendar.CalendarUtil;
+import com.pekall.pctool.model.calendar.EventInfo;
 import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
@@ -112,50 +114,50 @@ public class FastSyncUtils {
         Slog.d("notifyUpdateEventVersionDB X");
     }
     
-    public static List<Contact> findChangedEvents(Context context) {
+    public static List<EventInfo> findChangedEvents(Context context) {
         DatabaseHelper databaseHelper = new DatabaseHelper(context);
         
         databaseHelper.open();
-        Map<Long, Integer> lastSyncVersions = databaseHelper.getLastSyncEventVersions();
+        Map<Long, Long> lastSyncVersions = databaseHelper.getLastSyncEventVersions();
         databaseHelper.close();
 
-        List<ContactVersion> currentVersions = ContactUtil.getAllContactVersions(context);
+        List<EventVersion> currentVersions = CalendarUtil.queryEventVersions(context);
         
-        List<ContactVersion> changedVersions = calculateContactChanges(currentVersions, lastSyncVersions);
+        List<EventVersion> changedVersions = calculateEventChanges(currentVersions, lastSyncVersions);
         
         //
         // Get the changed(add, update, delete) contacts
         //
-        Contact contact = null;
-        List<Contact> changedContacts = new ArrayList<Contact>();
-        for (ContactVersion contactVersion : changedVersions) {
-            switch (contactVersion.modifyTag) {
+        EventInfo eventInfo = null;
+        List<EventInfo> changedEvents = new ArrayList<EventInfo>();
+        for (EventVersion eventVersion : changedVersions) {
+            switch (eventVersion.modifyTag) {
                 case ModifyTag.add:
                 case ModifyTag.edit:
-                    contact = ContactUtil.getContactById(context, contactVersion.id);
+                    eventInfo = CalendarUtil.queryEventById(context, eventVersion.id);
                     break;
                 case ModifyTag.del:
-                    contact = new Contact();
-                    contact.id = contactVersion.id;
+                    eventInfo = new EventInfo();
+                    eventInfo.id = eventVersion.id;
                     break;
                 default:
-                    final String msg = "Error invalid modifyTag = " + contactVersion.modifyTag;
+                    final String msg = "Error invalid modifyTag = " + eventVersion.modifyTag;
                     Slog.e(msg);
                     throw new IllegalStateException(msg);
             }
-            contact.modifyTag = contactVersion.modifyTag;
+            eventInfo.modifyTag = eventVersion.modifyTag;
             
-            changedContacts.add(contact);
+            changedEvents.add(eventInfo);
         }
-        return changedContacts;
+        return changedEvents;
     }
     
-    public static List<EventVersion> calculateEventChanges(List<EventVersion> currentVersions, Map<Long, Integer> lastSyncVersions) {
+    public static List<EventVersion> calculateEventChanges(List<EventVersion> currentVersions, Map<Long, Long> lastSyncVersions) {
         
         List<EventVersion> changes = new ArrayList<EventVersion>();
         
         for (EventVersion eventVersion : currentVersions) {
-            final Integer lastSyncVersion = lastSyncVersions.get(eventVersion.id);
+            final Long lastSyncVersion = lastSyncVersions.get(eventVersion.id);
             
             if (lastSyncVersion == null) {
                 // cannot find record in last sync table, treat as add
@@ -173,7 +175,7 @@ public class FastSyncUtils {
             }
         }
         
-        for (Entry<Long, Integer> entry : lastSyncVersions.entrySet()) {
+        for (Entry<Long, Long> entry : lastSyncVersions.entrySet()) {
             changes.add(new EventVersion(entry.getKey(), entry.getValue(), ModifyTag.del));
         }
         

@@ -3,9 +3,24 @@ package com.pekall.pctool.model.calendar;
 
 import android.provider.BaseColumns;
 
-public class EventInfo {
-    public long evId;
-    public long calendarId;
+import com.pekall.pctool.Slog;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.zip.Adler32;
+
+public class EventInfo implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    
+    
+    transient public long id;
+    transient public long calendarId;
+    
     public String title;
     public String place;
     public long startTime;
@@ -15,9 +30,54 @@ public class EventInfo {
     public String note;
     public String timeZone;
     
+    transient private long checksum;    // the cached checksum
+    transient private boolean hasChecksum;
+    transient public int modifyTag;     // event change flag(no change, add, update, delete) since last sync
+    
+    private static final Adler32 sChecksum = new Adler32();
+    
+    /**
+     * Get checksum of this event info
+     * 
+     * @return checksum of this event info, 0 if error happens
+     */
+    public long getChecksum() {
+        if (hasChecksum) {
+            return checksum;
+        }
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(bos);
+            oos.writeObject(this);
+            byte[] bytes = bos.toByteArray();
+            synchronized (sChecksum) {
+                sChecksum.reset();
+                sChecksum.update(bytes);
+                checksum = sChecksum.getValue();
+                hasChecksum = true;
+            }
+        } catch (IOException e) {
+            Slog.e("Error getChecksum", e);
+            checksum = 0;
+            hasChecksum = false;
+        } finally {
+            if (oos != null) {
+                try {
+                    oos.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        return checksum;
+    }
+    
     @Override
     public String toString() {
-        return "EventInfo [evId=" + evId + ", calendarId=" + calendarId + ", title=" + title + ", place=" + place
+        return "EventInfo [evId=" + id + ", calendarId=" + calendarId + ", title=" + title + ", place=" + place
                 + ", startTime=" + startTime + ", endTime=" + endTime + ", alertTime=" + alertTime + ", rrule=" + rrule
                 + ", note=" + note + ", timeZone=" + timeZone + "]";
     }
@@ -29,7 +89,7 @@ public class EventInfo {
         result = prime * result + alertTime;
         result = prime * result + (int) (calendarId ^ (calendarId >>> 32));
         result = prime * result + (int) (endTime ^ (endTime >>> 32));
-        result = prime * result + (int) (evId ^ (evId >>> 32));
+        result = prime * result + (int) (id ^ (id >>> 32));
         result = prime * result + ((note == null) ? 0 : note.hashCode());
         result = prime * result + ((place == null) ? 0 : place.hashCode());
         result = prime * result + ((rrule == null) ? 0 : rrule.hashCode());
@@ -54,7 +114,7 @@ public class EventInfo {
             return false;
         if (endTime != other.endTime)
             return false;
-        if (evId != other.evId)
+        if (id != other.id)
             return false;
         if (note == null) {
             if (other.note != null)
@@ -137,9 +197,6 @@ public class EventInfo {
                 return false;
             return true;
         }
-
-        
-
         
     }
 }

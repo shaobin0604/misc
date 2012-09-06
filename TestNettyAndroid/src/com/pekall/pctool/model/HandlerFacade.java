@@ -35,6 +35,7 @@ import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AddressRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AddressRecord.AddressType;
 import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
+import com.pekall.pctool.protos.MsgDefProtos.AgendaSync;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppLocationType;
 import com.pekall.pctool.protos.MsgDefProtos.AppRecord.AppType;
@@ -75,6 +76,8 @@ public class HandlerFacade {
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
 
     private static final String RESULT_MSG_OK = "OK";
+    
+    private static final boolean DUMP_CMD_REQUEST = true;
 
     private Context mContext;
 
@@ -435,7 +438,7 @@ public class HandlerFacade {
         Slog.d("queryCalendar E");
 
         List<CalendarInfo> calendarInfoList = CalendarUtil
-                .getAllCalendarInfos(mContext);
+                .queryCalendarAll(mContext);
 
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CALENDAR);
@@ -480,13 +483,13 @@ public class HandlerFacade {
 
         Slog.d("calendarId = " + calendarId);
 
-        List<EventInfo> eventInfoList = CalendarUtil.getEvents(mContext,
+        List<EventInfo> eventInfoList = CalendarUtil.queryEventsByCalendarId(mContext,
                 calendarId);
 
         AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
 
         for (EventInfo eventInfo : eventInfoList) {
-            agendaRecordBuilder.setId(eventInfo.evId);
+            agendaRecordBuilder.setId(eventInfo.id);
             agendaRecordBuilder.setCalendarId(eventInfo.calendarId);
 
             agendaRecordBuilder.setSubject(normalizeStr(eventInfo.title));
@@ -556,7 +559,7 @@ public class HandlerFacade {
             AgendaRecord agendaRecord = cmdRequest.getAgendaParams();
             EventInfo eventInfo = new EventInfo();
 
-            eventInfo.evId = agendaRecord.getId();
+            eventInfo.id = agendaRecord.getId();
             eventInfo.calendarId = agendaRecord.getCalendarId();
             eventInfo.title = agendaRecord.getSubject();
             eventInfo.place = agendaRecord.getLocation();
@@ -608,6 +611,82 @@ public class HandlerFacade {
         }
         Slog.d("deleteAgenda X");
         return responseBuilder.build();
+    }
+
+    
+    public CmdResponse syncAgendaWithOutlook(CmdRequest cmdRequest) {
+        Slog.d("syncAgendaWithOutlook E");
+
+        if (DUMP_CMD_REQUEST) {
+            Slog.d(">>>>> dump CmdRequest >>>>>");
+            Slog.d(cmdRequest.toString());
+            Slog.d("<<<<< dump CmdRequest <<<<<");
+        }
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_SYNC_AGENDAS);
+        
+        if (cmdRequest.hasAgendaSync()) {
+            AgendaSync agendaSync = cmdRequest.getAgendaSync();
+            
+            switch (agendaSync.getType()) {
+                case PC_PHONE: {
+                    
+                    break;
+                }
+                case OUTLOOK_PHONE: {
+                    handleSyncAgendaWithOutlook(agendaSync, responseBuilder);
+                    break;
+                }
+
+                default: {
+                    break;
+                }
+            }
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "Agenda Sync");
+        }
+        
+        Slog.d("syncAgendaWithOutlook X");
+        return responseBuilder.build();
+    }
+    
+    private void handleSyncAgendaWithOutlook(AgendaSync agendaSync, Builder responseBuilder) {
+        Slog.d("handleSyncAgendaWithOutlook E");
+        
+        switch (agendaSync.getSubType()) {
+            case TWO_WAY_SLOW_SYNC: {
+                handleTwoWaySyncAgenda(agendaSync, responseBuilder, /* fastSync */ false);
+                break;
+            }
+            case TWO_WAY_FAST_SYNC: {
+                handleTwoWaySyncAgenda(agendaSync, responseBuilder, /* fastSync */ true);
+                break;
+            }
+            case TWO_WAY_SLOW_SYNC_SECOND: {
+                handleTwoWaySyncAgendaSecond(agendaSync, responseBuilder);
+                break;
+            }
+            case TWO_WAY_FAST_SYNC_SECOND: {
+                handleTwoWaySyncAgendaSecond(agendaSync, responseBuilder);
+                break;
+            }
+
+            default:
+                break;
+        }
+        
+        Slog.d("handleSyncAgendaWithOutlook X");        
+    }
+
+    private void handleTwoWaySyncAgenda(AgendaSync agendaSync, Builder responseBuilder, boolean fastSync) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    private void handleTwoWaySyncAgendaSecond(AgendaSync agendaSync, Builder responseBuilder) {
+        // TODO Auto-generated method stub
+        
     }
 
     // ------------------------------------------------------------------------
@@ -1250,20 +1329,20 @@ public class HandlerFacade {
     //
     // Sync contact with outlook
     //
-    public CmdResponse syncContactWithOutlook(CmdRequest request) {
+    public CmdResponse syncContactWithOutlook(CmdRequest cmdRequest) {
         Slog.d("syncContactWithOutlook E");
         
-        Slog.d(">>>>> dump CmdRequest >>>>>");
-        
-        Slog.d(request.toString());
-        
-        Slog.d("<<<<< dump CmdRequest <<<<<");
+        if (DUMP_CMD_REQUEST) {
+            Slog.d(">>>>> dump CmdRequest >>>>>");
+            Slog.d(cmdRequest.toString());
+            Slog.d("<<<<< dump CmdRequest <<<<<");
+        }
         
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_SYNC_CONTACTS);
         
-        if (request.hasContactsSync()) {
-            ContactsSync contactsSync = request.getContactsSync();
+        if (cmdRequest.hasContactsSync()) {
+            ContactsSync contactsSync = cmdRequest.getContactsSync();
             
             switch (contactsSync.getType()) {
                 case PC_PHONE: {
@@ -1271,7 +1350,7 @@ public class HandlerFacade {
                     break;
                 }
                 case OUTLOOK_PHONE: {
-                    handleSyncWithOutlook(contactsSync, responseBuilder);
+                    handleSyncContactWithOutlook(contactsSync, responseBuilder);
                     break;
                 }
 
@@ -1287,35 +1366,36 @@ public class HandlerFacade {
         return responseBuilder.build();
     }
 
-    private void handleSyncWithOutlook(ContactsSync contactsSync, Builder responseBuilder) {
-        Slog.d("handleSyncWithOutlook E");
+    private void handleSyncContactWithOutlook(ContactsSync contactsSync, Builder responseBuilder) {
+        Slog.d("handleSyncContactWithOutlook E");
         
         switch (contactsSync.getSubType()) {
             case TWO_WAY_SLOW_SYNC: {
-                handleTwoWaySync(contactsSync, responseBuilder, /* fastSync */ false);
+                handleTwoWaySyncContact(contactsSync, responseBuilder, /* fastSync */ false);
                 break;
             }
             case TWO_WAY_FAST_SYNC: {
-                handleTwoWaySync(contactsSync, responseBuilder, /* fastSync */ true);
+                handleTwoWaySyncContact(contactsSync, responseBuilder, /* fastSync */ true);
                 break;
             }
             case TWO_WAY_SLOW_SYNC_SECOND: {
-                handleTwoWaySyncSecond(contactsSync, responseBuilder);
+                handleTwoWaySyncContactSecond(contactsSync, responseBuilder);
                 break;
             }
             case TWO_WAY_FAST_SYNC_SECOND: {
-                handleTwoWaySyncSecond(contactsSync, responseBuilder);
+                handleTwoWaySyncContactSecond(contactsSync, responseBuilder);
                 break;
             }
 
             default:
+                Slog.e("Error");
                 break;
         }
         
-        Slog.d("handleSyncWithOutlook X");
+        Slog.d("handleSyncContactWithOutlook X");
     }
 
-    private void handleTwoWaySync(ContactsSync contactsSync, Builder responseBuilder, boolean fastSync) {
+    private void handleTwoWaySyncContact(ContactsSync contactsSync, Builder responseBuilder, boolean fastSync) {
         Slog.d("handleTwoWaySync E, fastSync = " + fastSync);
         
         List<Contact> contactList = null;
@@ -1365,7 +1445,7 @@ public class HandlerFacade {
     
     
     
-    private void handleTwoWaySyncSecond(ContactsSync contactsSync, Builder responseBuilder) {
+    private void handleTwoWaySyncContactSecond(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleTwoWaySyncSecond E");
         
         ContactsSync.Builder contactSyncBuilder = ContactsSync.newBuilder();
@@ -1415,7 +1495,10 @@ public class HandlerFacade {
                     break;
                 }
                 
-                case PC_MODIFY:
+                case PC_MODIFY: {
+                    
+                    break;
+                }
                 case BOTH_MODIFY: {
                     Contact contact = contactRecordToContactForUpdate(contactRecord);
                     
@@ -1833,5 +1916,7 @@ public class HandlerFacade {
 
         return response.build();
     }
+
+    
 
 }
