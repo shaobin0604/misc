@@ -86,11 +86,12 @@ enum MsgOriginType
 message SMSRecord
 {
 	optional int64 				msg_id = 1;
-	optional MsgOriginType		msg_origin = 2;
-	optional string 			phone_num = 3;	//发送或者接收者电话号码
-	optional string				msg_text = 4;	//消息内容
-	optional int64				msg_time = 5; 	//接收时间或发送时间
-	optional bool				read_tag = 6;	//是否已读
+	optional int64				contact_id = 2;
+	optional MsgOriginType		msg_origin = 3;
+	optional string 			phone_num = 4;	//发送或者接收者电话号码
+	optional string				msg_text = 5;	//消息内容
+	optional int64				msg_time = 6; 	//接收时间或发送时间
+	optional bool				read_tag = 7;	//是否已读
 }
 
 //彩信附件
@@ -121,13 +122,14 @@ message SlideRecord
 message MMSRecord
 {
 	optional int64 				msg_id = 1;
-	optional MsgOriginType		msg_origin = 2;
-	optional string 			phone_num = 3;
-	optional string				subject = 4;	//主题
-	optional int64				msg_time = 5; 	//接收时间或发送时间
-	optional bool				read_tag = 6;	//是否已读
-	repeated SlideRecord		slide = 7;	 	//幻灯片
-	repeated AttachmentRecord 	attachment = 8; //非幻灯片附件
+	optional int64				contact_id = 2;
+	optional MsgOriginType		msg_origin = 3;
+	optional string 			phone_num = 4;
+	optional string				subject = 5;	//主题
+	optional int64				msg_time = 6; 	//接收时间或发送时间
+	optional bool				read_tag = 7;	//是否已读
+	repeated SlideRecord		slide = 8;	 	//幻灯片
+	repeated AttachmentRecord 	attachment = 9; //非幻灯片附件
 }
 
 //编辑动作类型

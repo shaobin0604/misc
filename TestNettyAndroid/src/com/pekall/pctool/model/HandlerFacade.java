@@ -138,6 +138,7 @@ public class HandlerFacade {
 
         for (Sms sms : smsList) {
             smsBuilder.setMsgId(sms.rowId);
+            smsBuilder.setContactId(sms.person);
             smsBuilder.setMsgOrigin(smsTypeToMsgOriginType(sms.type));
             smsBuilder.setPhoneNum(normalizeStr(sms.address));
             smsBuilder.setMsgText(normalizeStr(sms.body));
@@ -275,6 +276,7 @@ public class HandlerFacade {
 //            Slog.d("<<<<< dump mms <<<<<");
             
             mmsRecordBuilder.setMsgId(mms.rowId);
+            mmsRecordBuilder.setContactId(mms.person);
             mmsRecordBuilder.setMsgOrigin(mmsTypeToMsgOriginType(mms.msgBoxIndex));
             mmsRecordBuilder.setPhoneNum(normalizeStr(mms.phoneNum));
             mmsRecordBuilder.setSubject(normalizeStr(mms.subject));

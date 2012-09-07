@@ -1746,23 +1746,27 @@ public final class MsgDefProtos {
     boolean hasMsgId();
     long getMsgId();
     
-    // optional .pekall.pcsuite.MsgOriginType msg_origin = 2;
+    // optional int64 contact_id = 2;
+    boolean hasContactId();
+    long getContactId();
+    
+    // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
     boolean hasMsgOrigin();
     com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin();
     
-    // optional string phone_num = 3;
+    // optional string phone_num = 4;
     boolean hasPhoneNum();
     String getPhoneNum();
     
-    // optional string msg_text = 4;
+    // optional string msg_text = 5;
     boolean hasMsgText();
     String getMsgText();
     
-    // optional int64 msg_time = 5;
+    // optional int64 msg_time = 6;
     boolean hasMsgTime();
     long getMsgTime();
     
-    // optional bool read_tag = 6;
+    // optional bool read_tag = 7;
     boolean hasReadTag();
     boolean getReadTag();
   }
@@ -1805,21 +1809,31 @@ public final class MsgDefProtos {
       return msgId_;
     }
     
-    // optional .pekall.pcsuite.MsgOriginType msg_origin = 2;
-    public static final int MSG_ORIGIN_FIELD_NUMBER = 2;
+    // optional int64 contact_id = 2;
+    public static final int CONTACT_ID_FIELD_NUMBER = 2;
+    private long contactId_;
+    public boolean hasContactId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public long getContactId() {
+      return contactId_;
+    }
+    
+    // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
+    public static final int MSG_ORIGIN_FIELD_NUMBER = 3;
     private com.pekall.pctool.protos.MsgDefProtos.MsgOriginType msgOrigin_;
     public boolean hasMsgOrigin() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     public com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin() {
       return msgOrigin_;
     }
     
-    // optional string phone_num = 3;
-    public static final int PHONE_NUM_FIELD_NUMBER = 3;
+    // optional string phone_num = 4;
+    public static final int PHONE_NUM_FIELD_NUMBER = 4;
     private java.lang.Object phoneNum_;
     public boolean hasPhoneNum() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     public String getPhoneNum() {
       java.lang.Object ref = phoneNum_;
@@ -1847,11 +1861,11 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional string msg_text = 4;
-    public static final int MSG_TEXT_FIELD_NUMBER = 4;
+    // optional string msg_text = 5;
+    public static final int MSG_TEXT_FIELD_NUMBER = 5;
     private java.lang.Object msgText_;
     public boolean hasMsgText() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     public String getMsgText() {
       java.lang.Object ref = msgText_;
@@ -1879,21 +1893,21 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional int64 msg_time = 5;
-    public static final int MSG_TIME_FIELD_NUMBER = 5;
+    // optional int64 msg_time = 6;
+    public static final int MSG_TIME_FIELD_NUMBER = 6;
     private long msgTime_;
     public boolean hasMsgTime() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     public long getMsgTime() {
       return msgTime_;
     }
     
-    // optional bool read_tag = 6;
-    public static final int READ_TAG_FIELD_NUMBER = 6;
+    // optional bool read_tag = 7;
+    public static final int READ_TAG_FIELD_NUMBER = 7;
     private boolean readTag_;
     public boolean hasReadTag() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     public boolean getReadTag() {
       return readTag_;
@@ -1901,6 +1915,7 @@ public final class MsgDefProtos {
     
     private void initFields() {
       msgId_ = 0L;
+      contactId_ = 0L;
       msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
       phoneNum_ = "";
       msgText_ = "";
@@ -1923,19 +1938,22 @@ public final class MsgDefProtos {
         output.writeInt64(1, msgId_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeEnum(2, msgOrigin_.getNumber());
+        output.writeInt64(2, contactId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getPhoneNumBytes());
+        output.writeEnum(3, msgOrigin_.getNumber());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getMsgTextBytes());
+        output.writeBytes(4, getPhoneNumBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeInt64(5, msgTime_);
+        output.writeBytes(5, getMsgTextBytes());
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeBool(6, readTag_);
+        output.writeInt64(6, msgTime_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeBool(7, readTag_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1952,23 +1970,27 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(2, msgOrigin_.getNumber());
+          .computeInt64Size(2, contactId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getPhoneNumBytes());
+          .computeEnumSize(3, msgOrigin_.getNumber());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getMsgTextBytes());
+          .computeBytesSize(4, getPhoneNumBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(5, msgTime_);
+          .computeBytesSize(5, getMsgTextBytes());
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(6, readTag_);
+          .computeInt64Size(6, msgTime_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(7, readTag_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2096,16 +2118,18 @@ public final class MsgDefProtos {
         super.clear();
         msgId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
-        msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
+        contactId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
-        phoneNum_ = "";
+        msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
         bitField0_ = (bitField0_ & ~0x00000004);
-        msgText_ = "";
+        phoneNum_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
-        msgTime_ = 0L;
+        msgText_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
-        readTag_ = false;
+        msgTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000020);
+        readTag_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
       
@@ -2151,21 +2175,25 @@ public final class MsgDefProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.msgOrigin_ = msgOrigin_;
+        result.contactId_ = contactId_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.phoneNum_ = phoneNum_;
+        result.msgOrigin_ = msgOrigin_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.msgText_ = msgText_;
+        result.phoneNum_ = phoneNum_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        result.msgTime_ = msgTime_;
+        result.msgText_ = msgText_;
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
+        }
+        result.msgTime_ = msgTime_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
         }
         result.readTag_ = readTag_;
         result.bitField0_ = to_bitField0_;
@@ -2186,6 +2214,9 @@ public final class MsgDefProtos {
         if (other == com.pekall.pctool.protos.MsgDefProtos.SMSRecord.getDefaultInstance()) return this;
         if (other.hasMsgId()) {
           setMsgId(other.getMsgId());
+        }
+        if (other.hasContactId()) {
+          setContactId(other.getContactId());
         }
         if (other.hasMsgOrigin()) {
           setMsgOrigin(other.getMsgOrigin());
@@ -2239,33 +2270,38 @@ public final class MsgDefProtos {
               break;
             }
             case 16: {
+              bitField0_ |= 0x00000002;
+              contactId_ = input.readInt64();
+              break;
+            }
+            case 24: {
               int rawValue = input.readEnum();
               com.pekall.pctool.protos.MsgDefProtos.MsgOriginType value = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.valueOf(rawValue);
               if (value == null) {
-                unknownFields.mergeVarintField(2, rawValue);
+                unknownFields.mergeVarintField(3, rawValue);
               } else {
-                bitField0_ |= 0x00000002;
+                bitField0_ |= 0x00000004;
                 msgOrigin_ = value;
               }
               break;
             }
-            case 26: {
-              bitField0_ |= 0x00000004;
+            case 34: {
+              bitField0_ |= 0x00000008;
               phoneNum_ = input.readBytes();
               break;
             }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              msgText_ = input.readBytes();
-              break;
-            }
-            case 40: {
+            case 42: {
               bitField0_ |= 0x00000010;
-              msgTime_ = input.readInt64();
+              msgText_ = input.readBytes();
               break;
             }
             case 48: {
               bitField0_ |= 0x00000020;
+              msgTime_ = input.readInt64();
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000040;
               readTag_ = input.readBool();
               break;
             }
@@ -2296,10 +2332,31 @@ public final class MsgDefProtos {
         return this;
       }
       
-      // optional .pekall.pcsuite.MsgOriginType msg_origin = 2;
+      // optional int64 contact_id = 2;
+      private long contactId_ ;
+      public boolean hasContactId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public long getContactId() {
+        return contactId_;
+      }
+      public Builder setContactId(long value) {
+        bitField0_ |= 0x00000002;
+        contactId_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearContactId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        contactId_ = 0L;
+        onChanged();
+        return this;
+      }
+      
+      // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
       private com.pekall.pctool.protos.MsgDefProtos.MsgOriginType msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
       public boolean hasMsgOrigin() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       public com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin() {
         return msgOrigin_;
@@ -2308,22 +2365,22 @@ public final class MsgDefProtos {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         msgOrigin_ = value;
         onChanged();
         return this;
       }
       public Builder clearMsgOrigin() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
         onChanged();
         return this;
       }
       
-      // optional string phone_num = 3;
+      // optional string phone_num = 4;
       private java.lang.Object phoneNum_ = "";
       public boolean hasPhoneNum() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       public String getPhoneNum() {
         java.lang.Object ref = phoneNum_;
@@ -2339,27 +2396,27 @@ public final class MsgDefProtos {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         phoneNum_ = value;
         onChanged();
         return this;
       }
       public Builder clearPhoneNum() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         phoneNum_ = getDefaultInstance().getPhoneNum();
         onChanged();
         return this;
       }
       void setPhoneNum(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         phoneNum_ = value;
         onChanged();
       }
       
-      // optional string msg_text = 4;
+      // optional string msg_text = 5;
       private java.lang.Object msgText_ = "";
       public boolean hasMsgText() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       public String getMsgText() {
         java.lang.Object ref = msgText_;
@@ -2375,60 +2432,60 @@ public final class MsgDefProtos {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
         msgText_ = value;
         onChanged();
         return this;
       }
       public Builder clearMsgText() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         msgText_ = getDefaultInstance().getMsgText();
         onChanged();
         return this;
       }
       void setMsgText(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         msgText_ = value;
         onChanged();
       }
       
-      // optional int64 msg_time = 5;
+      // optional int64 msg_time = 6;
       private long msgTime_ ;
       public boolean hasMsgTime() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       public long getMsgTime() {
         return msgTime_;
       }
       public Builder setMsgTime(long value) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         msgTime_ = value;
         onChanged();
         return this;
       }
       public Builder clearMsgTime() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
         msgTime_ = 0L;
         onChanged();
         return this;
       }
       
-      // optional bool read_tag = 6;
+      // optional bool read_tag = 7;
       private boolean readTag_ ;
       public boolean hasReadTag() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       public boolean getReadTag() {
         return readTag_;
       }
       public Builder setReadTag(boolean value) {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000040;
         readTag_ = value;
         onChanged();
         return this;
       }
       public Builder clearReadTag() {
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
         readTag_ = false;
         onChanged();
         return this;
@@ -3790,27 +3847,31 @@ public final class MsgDefProtos {
     boolean hasMsgId();
     long getMsgId();
     
-    // optional .pekall.pcsuite.MsgOriginType msg_origin = 2;
+    // optional int64 contact_id = 2;
+    boolean hasContactId();
+    long getContactId();
+    
+    // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
     boolean hasMsgOrigin();
     com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin();
     
-    // optional string phone_num = 3;
+    // optional string phone_num = 4;
     boolean hasPhoneNum();
     String getPhoneNum();
     
-    // optional string subject = 4;
+    // optional string subject = 5;
     boolean hasSubject();
     String getSubject();
     
-    // optional int64 msg_time = 5;
+    // optional int64 msg_time = 6;
     boolean hasMsgTime();
     long getMsgTime();
     
-    // optional bool read_tag = 6;
+    // optional bool read_tag = 7;
     boolean hasReadTag();
     boolean getReadTag();
     
-    // repeated .pekall.pcsuite.SlideRecord slide = 7;
+    // repeated .pekall.pcsuite.SlideRecord slide = 8;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.SlideRecord> 
         getSlideList();
     com.pekall.pctool.protos.MsgDefProtos.SlideRecord getSlide(int index);
@@ -3820,7 +3881,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.SlideRecordOrBuilder getSlideOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.AttachmentRecord attachment = 8;
+    // repeated .pekall.pcsuite.AttachmentRecord attachment = 9;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord> 
         getAttachmentList();
     com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord getAttachment(int index);
@@ -3869,21 +3930,31 @@ public final class MsgDefProtos {
       return msgId_;
     }
     
-    // optional .pekall.pcsuite.MsgOriginType msg_origin = 2;
-    public static final int MSG_ORIGIN_FIELD_NUMBER = 2;
+    // optional int64 contact_id = 2;
+    public static final int CONTACT_ID_FIELD_NUMBER = 2;
+    private long contactId_;
+    public boolean hasContactId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public long getContactId() {
+      return contactId_;
+    }
+    
+    // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
+    public static final int MSG_ORIGIN_FIELD_NUMBER = 3;
     private com.pekall.pctool.protos.MsgDefProtos.MsgOriginType msgOrigin_;
     public boolean hasMsgOrigin() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     public com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin() {
       return msgOrigin_;
     }
     
-    // optional string phone_num = 3;
-    public static final int PHONE_NUM_FIELD_NUMBER = 3;
+    // optional string phone_num = 4;
+    public static final int PHONE_NUM_FIELD_NUMBER = 4;
     private java.lang.Object phoneNum_;
     public boolean hasPhoneNum() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     public String getPhoneNum() {
       java.lang.Object ref = phoneNum_;
@@ -3911,11 +3982,11 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional string subject = 4;
-    public static final int SUBJECT_FIELD_NUMBER = 4;
+    // optional string subject = 5;
+    public static final int SUBJECT_FIELD_NUMBER = 5;
     private java.lang.Object subject_;
     public boolean hasSubject() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     public String getSubject() {
       java.lang.Object ref = subject_;
@@ -3943,28 +4014,28 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional int64 msg_time = 5;
-    public static final int MSG_TIME_FIELD_NUMBER = 5;
+    // optional int64 msg_time = 6;
+    public static final int MSG_TIME_FIELD_NUMBER = 6;
     private long msgTime_;
     public boolean hasMsgTime() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     public long getMsgTime() {
       return msgTime_;
     }
     
-    // optional bool read_tag = 6;
-    public static final int READ_TAG_FIELD_NUMBER = 6;
+    // optional bool read_tag = 7;
+    public static final int READ_TAG_FIELD_NUMBER = 7;
     private boolean readTag_;
     public boolean hasReadTag() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     public boolean getReadTag() {
       return readTag_;
     }
     
-    // repeated .pekall.pcsuite.SlideRecord slide = 7;
-    public static final int SLIDE_FIELD_NUMBER = 7;
+    // repeated .pekall.pcsuite.SlideRecord slide = 8;
+    public static final int SLIDE_FIELD_NUMBER = 8;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.SlideRecord> slide_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.SlideRecord> getSlideList() {
       return slide_;
@@ -3984,8 +4055,8 @@ public final class MsgDefProtos {
       return slide_.get(index);
     }
     
-    // repeated .pekall.pcsuite.AttachmentRecord attachment = 8;
-    public static final int ATTACHMENT_FIELD_NUMBER = 8;
+    // repeated .pekall.pcsuite.AttachmentRecord attachment = 9;
+    public static final int ATTACHMENT_FIELD_NUMBER = 9;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord> attachment_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord> getAttachmentList() {
       return attachment_;
@@ -4007,6 +4078,7 @@ public final class MsgDefProtos {
     
     private void initFields() {
       msgId_ = 0L;
+      contactId_ = 0L;
       msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
       phoneNum_ = "";
       subject_ = "";
@@ -4031,25 +4103,28 @@ public final class MsgDefProtos {
         output.writeInt64(1, msgId_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeEnum(2, msgOrigin_.getNumber());
+        output.writeInt64(2, contactId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getPhoneNumBytes());
+        output.writeEnum(3, msgOrigin_.getNumber());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getSubjectBytes());
+        output.writeBytes(4, getPhoneNumBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeInt64(5, msgTime_);
+        output.writeBytes(5, getSubjectBytes());
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeBool(6, readTag_);
+        output.writeInt64(6, msgTime_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeBool(7, readTag_);
       }
       for (int i = 0; i < slide_.size(); i++) {
-        output.writeMessage(7, slide_.get(i));
+        output.writeMessage(8, slide_.get(i));
       }
       for (int i = 0; i < attachment_.size(); i++) {
-        output.writeMessage(8, attachment_.get(i));
+        output.writeMessage(9, attachment_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -4066,31 +4141,35 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(2, msgOrigin_.getNumber());
+          .computeInt64Size(2, contactId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getPhoneNumBytes());
+          .computeEnumSize(3, msgOrigin_.getNumber());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getSubjectBytes());
+          .computeBytesSize(4, getPhoneNumBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(5, msgTime_);
+          .computeBytesSize(5, getSubjectBytes());
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(6, readTag_);
+          .computeInt64Size(6, msgTime_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(7, readTag_);
       }
       for (int i = 0; i < slide_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(7, slide_.get(i));
+          .computeMessageSize(8, slide_.get(i));
       }
       for (int i = 0; i < attachment_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, attachment_.get(i));
+          .computeMessageSize(9, attachment_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4220,25 +4299,27 @@ public final class MsgDefProtos {
         super.clear();
         msgId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
-        msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
+        contactId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
-        phoneNum_ = "";
+        msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
         bitField0_ = (bitField0_ & ~0x00000004);
-        subject_ = "";
+        phoneNum_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
-        msgTime_ = 0L;
+        subject_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
-        readTag_ = false;
+        msgTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000020);
+        readTag_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
         if (slideBuilder_ == null) {
           slide_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000040);
+          bitField0_ = (bitField0_ & ~0x00000080);
         } else {
           slideBuilder_.clear();
         }
         if (attachmentBuilder_ == null) {
           attachment_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ = (bitField0_ & ~0x00000100);
         } else {
           attachmentBuilder_.clear();
         }
@@ -4287,36 +4368,40 @@ public final class MsgDefProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.msgOrigin_ = msgOrigin_;
+        result.contactId_ = contactId_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.phoneNum_ = phoneNum_;
+        result.msgOrigin_ = msgOrigin_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.subject_ = subject_;
+        result.phoneNum_ = phoneNum_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        result.msgTime_ = msgTime_;
+        result.subject_ = subject_;
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
+        result.msgTime_ = msgTime_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
         result.readTag_ = readTag_;
         if (slideBuilder_ == null) {
-          if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          if (((bitField0_ & 0x00000080) == 0x00000080)) {
             slide_ = java.util.Collections.unmodifiableList(slide_);
-            bitField0_ = (bitField0_ & ~0x00000040);
+            bitField0_ = (bitField0_ & ~0x00000080);
           }
           result.slide_ = slide_;
         } else {
           result.slide_ = slideBuilder_.build();
         }
         if (attachmentBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          if (((bitField0_ & 0x00000100) == 0x00000100)) {
             attachment_ = java.util.Collections.unmodifiableList(attachment_);
-            bitField0_ = (bitField0_ & ~0x00000080);
+            bitField0_ = (bitField0_ & ~0x00000100);
           }
           result.attachment_ = attachment_;
         } else {
@@ -4341,6 +4426,9 @@ public final class MsgDefProtos {
         if (other.hasMsgId()) {
           setMsgId(other.getMsgId());
         }
+        if (other.hasContactId()) {
+          setContactId(other.getContactId());
+        }
         if (other.hasMsgOrigin()) {
           setMsgOrigin(other.getMsgOrigin());
         }
@@ -4360,7 +4448,7 @@ public final class MsgDefProtos {
           if (!other.slide_.isEmpty()) {
             if (slide_.isEmpty()) {
               slide_ = other.slide_;
-              bitField0_ = (bitField0_ & ~0x00000040);
+              bitField0_ = (bitField0_ & ~0x00000080);
             } else {
               ensureSlideIsMutable();
               slide_.addAll(other.slide_);
@@ -4373,7 +4461,7 @@ public final class MsgDefProtos {
               slideBuilder_.dispose();
               slideBuilder_ = null;
               slide_ = other.slide_;
-              bitField0_ = (bitField0_ & ~0x00000040);
+              bitField0_ = (bitField0_ & ~0x00000080);
               slideBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getSlideFieldBuilder() : null;
@@ -4386,7 +4474,7 @@ public final class MsgDefProtos {
           if (!other.attachment_.isEmpty()) {
             if (attachment_.isEmpty()) {
               attachment_ = other.attachment_;
-              bitField0_ = (bitField0_ & ~0x00000080);
+              bitField0_ = (bitField0_ & ~0x00000100);
             } else {
               ensureAttachmentIsMutable();
               attachment_.addAll(other.attachment_);
@@ -4399,7 +4487,7 @@ public final class MsgDefProtos {
               attachmentBuilder_.dispose();
               attachmentBuilder_ = null;
               attachment_ = other.attachment_;
-              bitField0_ = (bitField0_ & ~0x00000080);
+              bitField0_ = (bitField0_ & ~0x00000100);
               attachmentBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getAttachmentFieldBuilder() : null;
@@ -4445,43 +4533,48 @@ public final class MsgDefProtos {
               break;
             }
             case 16: {
+              bitField0_ |= 0x00000002;
+              contactId_ = input.readInt64();
+              break;
+            }
+            case 24: {
               int rawValue = input.readEnum();
               com.pekall.pctool.protos.MsgDefProtos.MsgOriginType value = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.valueOf(rawValue);
               if (value == null) {
-                unknownFields.mergeVarintField(2, rawValue);
+                unknownFields.mergeVarintField(3, rawValue);
               } else {
-                bitField0_ |= 0x00000002;
+                bitField0_ |= 0x00000004;
                 msgOrigin_ = value;
               }
               break;
             }
-            case 26: {
-              bitField0_ |= 0x00000004;
+            case 34: {
+              bitField0_ |= 0x00000008;
               phoneNum_ = input.readBytes();
               break;
             }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              subject_ = input.readBytes();
-              break;
-            }
-            case 40: {
+            case 42: {
               bitField0_ |= 0x00000010;
-              msgTime_ = input.readInt64();
+              subject_ = input.readBytes();
               break;
             }
             case 48: {
               bitField0_ |= 0x00000020;
+              msgTime_ = input.readInt64();
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000040;
               readTag_ = input.readBool();
               break;
             }
-            case 58: {
+            case 66: {
               com.pekall.pctool.protos.MsgDefProtos.SlideRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.SlideRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addSlide(subBuilder.buildPartial());
               break;
             }
-            case 66: {
+            case 74: {
               com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addAttachment(subBuilder.buildPartial());
@@ -4514,10 +4607,31 @@ public final class MsgDefProtos {
         return this;
       }
       
-      // optional .pekall.pcsuite.MsgOriginType msg_origin = 2;
+      // optional int64 contact_id = 2;
+      private long contactId_ ;
+      public boolean hasContactId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public long getContactId() {
+        return contactId_;
+      }
+      public Builder setContactId(long value) {
+        bitField0_ |= 0x00000002;
+        contactId_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearContactId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        contactId_ = 0L;
+        onChanged();
+        return this;
+      }
+      
+      // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
       private com.pekall.pctool.protos.MsgDefProtos.MsgOriginType msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
       public boolean hasMsgOrigin() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       public com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin() {
         return msgOrigin_;
@@ -4526,22 +4640,22 @@ public final class MsgDefProtos {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         msgOrigin_ = value;
         onChanged();
         return this;
       }
       public Builder clearMsgOrigin() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
         onChanged();
         return this;
       }
       
-      // optional string phone_num = 3;
+      // optional string phone_num = 4;
       private java.lang.Object phoneNum_ = "";
       public boolean hasPhoneNum() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       public String getPhoneNum() {
         java.lang.Object ref = phoneNum_;
@@ -4557,27 +4671,27 @@ public final class MsgDefProtos {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         phoneNum_ = value;
         onChanged();
         return this;
       }
       public Builder clearPhoneNum() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         phoneNum_ = getDefaultInstance().getPhoneNum();
         onChanged();
         return this;
       }
       void setPhoneNum(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         phoneNum_ = value;
         onChanged();
       }
       
-      // optional string subject = 4;
+      // optional string subject = 5;
       private java.lang.Object subject_ = "";
       public boolean hasSubject() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       public String getSubject() {
         java.lang.Object ref = subject_;
@@ -4593,72 +4707,72 @@ public final class MsgDefProtos {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
         subject_ = value;
         onChanged();
         return this;
       }
       public Builder clearSubject() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         subject_ = getDefaultInstance().getSubject();
         onChanged();
         return this;
       }
       void setSubject(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         subject_ = value;
         onChanged();
       }
       
-      // optional int64 msg_time = 5;
+      // optional int64 msg_time = 6;
       private long msgTime_ ;
       public boolean hasMsgTime() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       public long getMsgTime() {
         return msgTime_;
       }
       public Builder setMsgTime(long value) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         msgTime_ = value;
         onChanged();
         return this;
       }
       public Builder clearMsgTime() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
         msgTime_ = 0L;
         onChanged();
         return this;
       }
       
-      // optional bool read_tag = 6;
+      // optional bool read_tag = 7;
       private boolean readTag_ ;
       public boolean hasReadTag() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       public boolean getReadTag() {
         return readTag_;
       }
       public Builder setReadTag(boolean value) {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000040;
         readTag_ = value;
         onChanged();
         return this;
       }
       public Builder clearReadTag() {
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
         readTag_ = false;
         onChanged();
         return this;
       }
       
-      // repeated .pekall.pcsuite.SlideRecord slide = 7;
+      // repeated .pekall.pcsuite.SlideRecord slide = 8;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.SlideRecord> slide_ =
         java.util.Collections.emptyList();
       private void ensureSlideIsMutable() {
-        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+        if (!((bitField0_ & 0x00000080) == 0x00000080)) {
           slide_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.SlideRecord>(slide_);
-          bitField0_ |= 0x00000040;
+          bitField0_ |= 0x00000080;
          }
       }
       
@@ -4774,7 +4888,7 @@ public final class MsgDefProtos {
       public Builder clearSlide() {
         if (slideBuilder_ == null) {
           slide_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000040);
+          bitField0_ = (bitField0_ & ~0x00000080);
           onChanged();
         } else {
           slideBuilder_.clear();
@@ -4830,7 +4944,7 @@ public final class MsgDefProtos {
           slideBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.SlideRecord, com.pekall.pctool.protos.MsgDefProtos.SlideRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.SlideRecordOrBuilder>(
                   slide_,
-                  ((bitField0_ & 0x00000040) == 0x00000040),
+                  ((bitField0_ & 0x00000080) == 0x00000080),
                   getParentForChildren(),
                   isClean());
           slide_ = null;
@@ -4838,13 +4952,13 @@ public final class MsgDefProtos {
         return slideBuilder_;
       }
       
-      // repeated .pekall.pcsuite.AttachmentRecord attachment = 8;
+      // repeated .pekall.pcsuite.AttachmentRecord attachment = 9;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord> attachment_ =
         java.util.Collections.emptyList();
       private void ensureAttachmentIsMutable() {
-        if (!((bitField0_ & 0x00000080) == 0x00000080)) {
+        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
           attachment_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord>(attachment_);
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000100;
          }
       }
       
@@ -4960,7 +5074,7 @@ public final class MsgDefProtos {
       public Builder clearAttachment() {
         if (attachmentBuilder_ == null) {
           attachment_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ = (bitField0_ & ~0x00000100);
           onChanged();
         } else {
           attachmentBuilder_.clear();
@@ -5016,7 +5130,7 @@ public final class MsgDefProtos {
           attachmentBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord, com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AttachmentRecordOrBuilder>(
                   attachment_,
-                  ((bitField0_ & 0x00000080) == 0x00000080),
+                  ((bitField0_ & 0x00000100) == 0x00000100),
                   getParentForChildren(),
                   isClean());
           attachment_ = null;
@@ -21132,27 +21246,28 @@ public final class MsgDefProtos {
       "n_code\030\007 \001(\005\022\020\n\010apk_path\030\006 \001(\t\022\014\n\004size\030\010" +
       " \001(\003\022\020\n\010app_icon\030\t \001(\014\"\037\n\007AppType\022\n\n\006SYS" +
       "TEM\020\000\022\010\n\004USER\020\001\"-\n\017AppLocationType\022\014\n\010IN" +
-      "TERNAL\020\000\022\014\n\010EXTERNAL\020\001\"\227\001\n\tSMSRecord\022\016\n\006",
-      "msg_id\030\001 \001(\003\0221\n\nmsg_origin\030\002 \001(\0162\035.pekal" +
-      "l.pcsuite.MsgOriginType\022\021\n\tphone_num\030\003 \001" +
-      "(\t\022\020\n\010msg_text\030\004 \001(\t\022\020\n\010msg_time\030\005 \001(\003\022\020" +
-      "\n\010read_tag\030\006 \001(\010\"\274\001\n\020AttachmentRecord\022=\n" +
-      "\004type\030\001 \001(\0162/.pekall.pcsuite.AttachmentR" +
-      "ecord.AttachmentType\022\014\n\004name\030\002 \001(\t\022\014\n\004si" +
-      "ze\030\003 \001(\003\022\017\n\007content\030\004 \001(\014\"<\n\016AttachmentT" +
-      "ype\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022\t\n\005" +
-      "OTHER\020\003\"c\n\013SlideRecord\022\020\n\010duration\030\001 \001(\005" +
-      "\022\014\n\004text\030\002 \001(\t\0224\n\nattachment\030\003 \003(\0132 .pek",
-      "all.pcsuite.AttachmentRecord\"\370\001\n\tMMSReco" +
-      "rd\022\016\n\006msg_id\030\001 \001(\003\0221\n\nmsg_origin\030\002 \001(\0162\035" +
+      "TERNAL\020\000\022\014\n\010EXTERNAL\020\001\"\253\001\n\tSMSRecord\022\016\n\006",
+      "msg_id\030\001 \001(\003\022\022\n\ncontact_id\030\002 \001(\003\0221\n\nmsg_" +
+      "origin\030\003 \001(\0162\035.pekall.pcsuite.MsgOriginT" +
+      "ype\022\021\n\tphone_num\030\004 \001(\t\022\020\n\010msg_text\030\005 \001(\t" +
+      "\022\020\n\010msg_time\030\006 \001(\003\022\020\n\010read_tag\030\007 \001(\010\"\274\001\n" +
+      "\020AttachmentRecord\022=\n\004type\030\001 \001(\0162/.pekall" +
+      ".pcsuite.AttachmentRecord.AttachmentType" +
+      "\022\014\n\004name\030\002 \001(\t\022\014\n\004size\030\003 \001(\003\022\017\n\007content\030" +
+      "\004 \001(\014\"<\n\016AttachmentType\022\t\n\005IMAGE\020\000\022\t\n\005VI" +
+      "DEO\020\001\022\t\n\005AUDIO\020\002\022\t\n\005OTHER\020\003\"c\n\013SlideReco" +
+      "rd\022\020\n\010duration\030\001 \001(\005\022\014\n\004text\030\002 \001(\t\0224\n\nat",
+      "tachment\030\003 \003(\0132 .pekall.pcsuite.Attachme" +
+      "ntRecord\"\214\002\n\tMMSRecord\022\016\n\006msg_id\030\001 \001(\003\022\022" +
+      "\n\ncontact_id\030\002 \001(\003\0221\n\nmsg_origin\030\003 \001(\0162\035" +
       ".pekall.pcsuite.MsgOriginType\022\021\n\tphone_n" +
-      "um\030\003 \001(\t\022\017\n\007subject\030\004 \001(\t\022\020\n\010msg_time\030\005 " +
-      "\001(\003\022\020\n\010read_tag\030\006 \001(\010\022*\n\005slide\030\007 \003(\0132\033.p" +
+      "um\030\004 \001(\t\022\017\n\007subject\030\005 \001(\t\022\020\n\010msg_time\030\006 " +
+      "\001(\003\022\020\n\010read_tag\030\007 \001(\010\022*\n\005slide\030\010 \003(\0132\033.p" +
       "ekall.pcsuite.SlideRecord\0224\n\nattachment\030" +
-      "\010 \003(\0132 .pekall.pcsuite.AttachmentRecord\"" +
+      "\t \003(\0132 .pekall.pcsuite.AttachmentRecord\"" +
       "+\n\rAccountRecord\022\014\n\004type\030\001 \001(\t\022\014\n\004name\030\002" +
-      " \001(\t\"\252\001\n\013GroupRecord\022\n\n\002id\030\001 \001(\003\022\017\n\007data" +
-      "_id\030\002 \001(\003\0223\n\014account_info\030\003 \001(\0132\035.pekall",
+      " \001(\t\"\252\001\n\013GroupRecord\022\n\n\002id\030\001 \001(\003\022\017\n\007data",
+      "_id\030\002 \001(\003\0223\n\014account_info\030\003 \001(\0132\035.pekall" +
       ".pcsuite.AccountRecord\022\014\n\004name\030\004 \001(\t\022\014\n\004" +
       "note\030\005 \001(\t\022-\n\nmodify_tag\030\006 \001(\0162\031.pekall." +
       "pcsuite.ModifyTag\"\226\002\n\013PhoneRecord\022\n\n\002id\030" +
@@ -21161,8 +21276,8 @@ public final class MsgDefProtos {
       "me\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162\031.pekall.pc" +
       "suite.ModifyTag\"y\n\tPhoneType\022\n\n\006MOBILE\020\000" +
       "\022\010\n\004WORK\020\001\022\010\n\004HOME\020\002\022\010\n\004MAIN\020\003\022\014\n\010WORK_F" +
-      "AX\020\004\022\014\n\010HOME_FAX\020\005\022\t\n\005PAGER\020\006\022\t\n\005OTHER\020\007" +
-      "\022\020\n\014USER_DEFINED\020c\"\330\001\n\013EmailRecord\022\n\n\002id",
+      "AX\020\004\022\014\n\010HOME_FAX\020\005\022\t\n\005PAGER\020\006\022\t\n\005OTHER\020\007",
+      "\022\020\n\014USER_DEFINED\020c\"\330\001\n\013EmailRecord\022\n\n\002id" +
       "\030\001 \001(\003\022\r\n\005email\030\002 \001(\t\0223\n\004type\030\003 \001(\0162%.pe" +
       "kall.pcsuite.EmailRecord.EmailType\022\014\n\004na" +
       "me\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162\031.pekall.pc" +
@@ -21171,8 +21286,8 @@ public final class MsgDefProtos {
       "\n\010IMRecord\022\n\n\002id\030\001 \001(\003\022\017\n\007account\030\002 \001(\t\022" +
       "-\n\004type\030\003 \001(\0162\037.pekall.pcsuite.IMRecord." +
       "IMType\022\014\n\004name\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\016" +
-      "2\031.pekall.pcsuite.ModifyTag\"z\n\006IMType\022\006\n" +
-      "\002QQ\020\000\022\007\n\003MSN\020\001\022\t\n\005YAHOO\020\002\022\007\n\003AIM\020\003\022\t\n\005SK",
+      "2\031.pekall.pcsuite.ModifyTag\"z\n\006IMType\022\006\n",
+      "\002QQ\020\000\022\007\n\003MSN\020\001\022\t\n\005YAHOO\020\002\022\007\n\003AIM\020\003\022\t\n\005SK" +
       "YPE\020\004\022\t\n\005GTALK\020\005\022\007\n\003ICQ\020\006\022\n\n\006JABBER\020\007\022\016\n" +
       "\nNETMEETING\020\010\022\020\n\014USER_DEFINED\020c\"\274\002\n\rAddr" +
       "essRecord\022\n\n\002id\030\001 \001(\003\022?\n\014address_type\030\002 " +
@@ -21181,8 +21296,8 @@ public final class MsgDefProtos {
       "\007country\030\005 \001(\t\022\020\n\010province\030\006 \001(\t\022\014\n\004city" +
       "\030\007 \001(\t\022\014\n\004road\030\010 \001(\t\022\021\n\tpost_code\030\t \001(\t\022" +
       "-\n\nmodify_tag\030\n \001(\0162\031.pekall.pcsuite.Mod" +
-      "ifyTag\">\n\013AddressType\022\010\n\004WORK\020\000\022\010\n\004HOME\020" +
-      "\001\022\t\n\005OTHER\020\002\022\020\n\014USER_DEFINED\020c\"\314\001\n\tOrgRe",
+      "ifyTag\">\n\013AddressType\022\010\n\004WORK\020\000\022\010\n\004HOME\020",
+      "\001\022\t\n\005OTHER\020\002\022\020\n\014USER_DEFINED\020c\"\314\001\n\tOrgRe" +
       "cord\022\n\n\002id\030\001 \001(\003\022\020\n\010org_name\030\002 \001(\t\022/\n\004ty" +
       "pe\030\003 \001(\0162!.pekall.pcsuite.OrgRecord.OrgT" +
       "ype\022\014\n\004name\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162\031." +
@@ -21191,8 +21306,8 @@ public final class MsgDefProtos {
       "\n\rContactRecord\022\n\n\002id\030\001 \001(\003\022\014\n\004name\030\002 \001(" +
       "\t\022\020\n\010nickname\030\003 \001(\t\022\r\n\005photo\030\004 \001(\014\022\030\n\020ph" +
       "oto_modify_tag\030\005 \001(\010\022\017\n\007version\030\006 \001(\005\022/\n" +
-      "\013sync_result\030\007 \001(\0162\032.pekall.pcsuite.Sync" +
-      "Result\022\r\n\005pc_id\030\010 \001(\t\0223\n\014account_info\030\t ",
+      "\013sync_result\030\007 \001(\0162\032.pekall.pcsuite.Sync",
+      "Result\022\r\n\005pc_id\030\010 \001(\t\0223\n\014account_info\030\t " +
       "\001(\0132\035.pekall.pcsuite.AccountRecord\022*\n\005gr" +
       "oup\030\n \003(\0132\033.pekall.pcsuite.GroupRecord\022*" +
       "\n\005phone\030\013 \003(\0132\033.pekall.pcsuite.PhoneReco" +
@@ -21201,8 +21316,8 @@ public final class MsgDefProtos {
       "cord\022.\n\007address\030\016 \003(\0132\035.pekall.pcsuite.A" +
       "ddressRecord\022&\n\003org\030\017 \003(\0132\031.pekall.pcsui" +
       "te.OrgRecord\"\332\001\n\014ContactsSync\022&\n\004type\030\001 " +
-      "\002(\0162\030.pekall.pcsuite.SyncType\022-\n\010sub_typ" +
-      "e\030\002 \002(\0162\033.pekall.pcsuite.SyncSubType\022<\n\022",
+      "\002(\0162\030.pekall.pcsuite.SyncType\022-\n\010sub_typ",
+      "e\030\002 \002(\0162\033.pekall.pcsuite.SyncSubType\022<\n\022" +
       "sync_conflict_ploy\030\003 \001(\0162 .pekall.pcsuit" +
       "e.SyncConflictPloy\0225\n\016contact_record\030\004 \003" +
       "(\0132\035.pekall.pcsuite.ContactRecord\"_\n\016Cal" +
@@ -21211,8 +21326,8 @@ public final class MsgDefProtos {
       "name\030\003 \001(\t\"\200\002\n\014AgendaRecord\022\n\n\002id\030\001 \001(\003\022" +
       "\023\n\013calendar_id\030\002 \001(\003\022\017\n\007subject\030\003 \001(\t\022\020\n" +
       "\010location\030\004 \001(\t\022\022\n\nstart_time\030\005 \001(\003\022\020\n\010e" +
-      "nd_time\030\006 \001(\003\022\023\n\013repeat_rule\030\007 \001(\t\022\022\n\nal" +
-      "ert_time\030\010 \001(\005\022\014\n\004note\030\t \001(\t\022\017\n\007version\030",
+      "nd_time\030\006 \001(\003\022\023\n\013repeat_rule\030\007 \001(\t\022\022\n\nal",
+      "ert_time\030\010 \001(\005\022\014\n\004note\030\t \001(\t\022\017\n\007version\030" +
       "\n \001(\005\022/\n\013sync_result\030\013 \001(\0162\032.pekall.pcsu" +
       "ite.SyncResult\022\r\n\005pc_id\030\014 \001(\t\"\326\001\n\nAgenda" +
       "Sync\022&\n\004type\030\001 \002(\0162\030.pekall.pcsuite.Sync" +
@@ -21221,8 +21336,8 @@ public final class MsgDefProtos {
       " .pekall.pcsuite.SyncConflictPloy\0223\n\rage" +
       "nda_record\030\004 \003(\0132\034.pekall.pcsuite.Agenda" +
       "Record\"\334\003\n\nCmdRequest\022)\n\010cmd_type\030\001 \002(\0162" +
-      "\027.pekall.pcsuite.CmdType\022\021\n\trecord_id\030\002 " +
-      "\003(\003\022-\n\nsms_params\030\003 \001(\0132\031.pekall.pcsuite",
+      "\027.pekall.pcsuite.CmdType\022\021\n\trecord_id\030\002 ",
+      "\003(\003\022-\n\nsms_params\030\003 \001(\0132\031.pekall.pcsuite" +
       ".SMSRecord\022-\n\nmms_params\030\004 \001(\0132\031.pekall." +
       "pcsuite.MMSRecord\0221\n\014group_params\030\005 \001(\0132" +
       "\033.pekall.pcsuite.GroupRecord\0225\n\016contact_" +
@@ -21231,8 +21346,8 @@ public final class MsgDefProtos {
       "ite.AgendaRecord\022-\n\napp_params\030\010 \001(\0132\031.p" +
       "ekall.pcsuite.AppRecord\0223\n\rcontacts_sync" +
       "\030\t \001(\0132\034.pekall.pcsuite.ContactsSync\022/\n\013" +
-      "agenda_sync\030\n \001(\0132\032.pekall.pcsuite.Agend" +
-      "aSync\"\343\004\n\013CmdResponse\022)\n\010cmd_type\030\001 \002(\0162",
+      "agenda_sync\030\n \001(\0132\032.pekall.pcsuite.Agend",
+      "aSync\"\343\004\n\013CmdResponse\022)\n\010cmd_type\030\001 \002(\0162" +
       "\027.pekall.pcsuite.CmdType\022\023\n\013result_code\030" +
       "\002 \002(\005\022\022\n\nresult_msg\030\003 \002(\t\022-\n\nsms_record\030" +
       "\004 \003(\0132\031.pekall.pcsuite.SMSRecord\022-\n\nmms_" +
@@ -21241,8 +21356,8 @@ public final class MsgDefProtos {
       ".ContactRecord\0227\n\017calendar_record\030\007 \003(\0132" +
       "\036.pekall.pcsuite.CalendarRecord\0223\n\ragend" +
       "a_record\030\010 \003(\0132\034.pekall.pcsuite.AgendaRe" +
-      "cord\022-\n\napp_record\030\t \003(\0132\031.pekall.pcsuit" +
-      "e.AppRecord\0225\n\016account_record\030\n \003(\0132\035.pe",
+      "cord\022-\n\napp_record\030\t \003(\0132\031.pekall.pcsuit",
+      "e.AppRecord\0225\n\016account_record\030\n \003(\0132\035.pe" +
       "kall.pcsuite.AccountRecord\0221\n\014group_reco" +
       "rd\030\013 \003(\0132\033.pekall.pcsuite.GroupRecord\0223\n" +
       "\rcontacts_sync\030\014 \001(\0132\034.pekall.pcsuite.Co" +
@@ -21251,8 +21366,8 @@ public final class MsgDefProtos {
       "EART_BEAT\020\000\022\021\n\rCMD_QUERY_SMS\020\001\022\022\n\016CMD_DE" +
       "LETE_SMS\020\002\022\020\n\014CMD_SEND_SMS\020\003\022\022\n\016CMD_IMPO" +
       "RT_SMS\020\004\022\021\n\rCMD_QUERY_MMS\020\005\022\022\n\016CMD_DELET" +
-      "E_MMS\020\006\022\020\n\014CMD_SEND_MMS\020\007\022\022\n\016CMD_IMPORT_" +
-      "MMS\020\010\022\031\n\025CMD_REICEIVED_NEW_MSG\020\t\022\026\n\022CMD_",
+      "E_MMS\020\006\022\020\n\014CMD_SEND_MMS\020\007\022\022\n\016CMD_IMPORT_",
+      "MMS\020\010\022\031\n\025CMD_REICEIVED_NEW_MSG\020\t\022\026\n\022CMD_" +
       "GET_ALL_GROUPS\020\n\022\021\n\rCMD_ADD_GROUP\020\013\022\024\n\020C" +
       "MD_DELETE_GROUP\020\014\022\022\n\016CMD_EDIT_GROUP\020\r\022\030\n" +
       "\024CMD_GET_ALL_ACCOUNTS\020\016\022\026\n\022CMD_QUERY_CON" +
@@ -21261,8 +21376,8 @@ public final class MsgDefProtos {
       "D_SYNC_CONTACTS\020\023\022\026\n\022CMD_QUERY_CALENDAR\020" +
       "\024\022\025\n\021CMD_QUERY_AGENDAS\020\025\022\022\n\016CMD_ADD_AGEN" +
       "DA\020\026\022\025\n\021CMD_DELETE_AGENDA\020\027\022\023\n\017CMD_EDIT_" +
-      "AGENDA\020\030\022\024\n\020CMD_SYNC_AGENDAS\020\031\022\021\n\rCMD_QU" +
-      "ERY_APP\020\032\022\022\n\016CMD_UPLOAD_APK\020\033\022\024\n\020CMD_DOW",
+      "AGENDA\020\030\022\024\n\020CMD_SYNC_AGENDAS\020\031\022\021\n\rCMD_QU",
+      "ERY_APP\020\032\022\022\n\016CMD_UPLOAD_APK\020\033\022\024\n\020CMD_DOW" +
       "NLOAD_APK\020\034*b\n\rMsgOriginType\022\007\n\003ANY\020\000\022\t\n" +
       "\005INBOX\020\001\022\013\n\007SENTBOX\020\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006O" +
       "UTBOX\020\004\022\n\n\006FAILED\020\005\022\n\n\006QUEUED\020\006*1\n\tModif" +
@@ -21271,8 +21386,8 @@ public final class MsgDefProtos {
       "PHONE\020\001*\313\001\n\013SyncSubType\022\025\n\021TWO_WAY_SLOW_" +
       "SYNC\020\000\022\025\n\021TWO_WAY_FAST_SYNC\020\001\022\026\n\022PHONE_R" +
       "EFRESH_SYNC\020\002\022\023\n\017PC_REFRESH_SYNC\020\003\022\023\n\017PH" +
-      "ONE_FAST_SYNC\020\004\022\020\n\014PC_FAST_SYNC\020\005\022\034\n\030TWO" +
-      "_WAY_SLOW_SYNC_SECOND\020\006\022\034\n\030TWO_WAY_FAST_",
+      "ONE_FAST_SYNC\020\004\022\020\n\014PC_FAST_SYNC\020\005\022\034\n\030TWO",
+      "_WAY_SLOW_SYNC_SECOND\020\006\022\034\n\030TWO_WAY_FAST_" +
       "SYNC_SECOND\020\007*\221\001\n\nSyncResult\022\r\n\tNO_CHANG" +
       "E\020\000\022\n\n\006PC_ADD\020\001\022\n\n\006PC_DEL\020\002\022\r\n\tPC_MODIFY" +
       "\020\003\022\017\n\013BOTH_MODIFY\020\005\022\r\n\tPHONE_ADD\020\006\022\r\n\tPH" +
@@ -21299,7 +21414,7 @@ public final class MsgDefProtos {
           internal_static_pekall_pcsuite_SMSRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_SMSRecord_descriptor,
-              new java.lang.String[] { "MsgId", "MsgOrigin", "PhoneNum", "MsgText", "MsgTime", "ReadTag", },
+              new java.lang.String[] { "MsgId", "ContactId", "MsgOrigin", "PhoneNum", "MsgText", "MsgTime", "ReadTag", },
               com.pekall.pctool.protos.MsgDefProtos.SMSRecord.class,
               com.pekall.pctool.protos.MsgDefProtos.SMSRecord.Builder.class);
           internal_static_pekall_pcsuite_AttachmentRecord_descriptor =
@@ -21323,7 +21438,7 @@ public final class MsgDefProtos {
           internal_static_pekall_pcsuite_MMSRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_MMSRecord_descriptor,
-              new java.lang.String[] { "MsgId", "MsgOrigin", "PhoneNum", "Subject", "MsgTime", "ReadTag", "Slide", "Attachment", },
+              new java.lang.String[] { "MsgId", "ContactId", "MsgOrigin", "PhoneNum", "Subject", "MsgTime", "ReadTag", "Slide", "Attachment", },
               com.pekall.pctool.protos.MsgDefProtos.MMSRecord.class,
               com.pekall.pctool.protos.MsgDefProtos.MMSRecord.Builder.class);
           internal_static_pekall_pcsuite_AccountRecord_descriptor =

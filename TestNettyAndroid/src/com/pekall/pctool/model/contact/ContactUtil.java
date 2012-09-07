@@ -26,6 +26,7 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.RawContacts;
+import android.telephony.PhoneNumberUtils;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
@@ -66,6 +67,38 @@ public class ContactUtil {
      * This utility class cannot be instantiated
      */
     private ContactUtil() {
+    }
+    
+    /**
+     * Get the {@link Contact} id by phone number 
+     * 
+     * @param context
+     * @param number
+     * @return {@link Contact} id or zero if cannot find the {@link Contact}
+     */
+    public static long getRawContactId(Context context, String number) {
+        Cursor c = null;
+        try {
+            c = context.getContentResolver().query(Phone.CONTENT_URI,
+                    new String[] {
+                            Phone.RAW_CONTACT_ID, Phone.NUMBER
+                    }, null, null, null);
+            if (c != null && c.moveToFirst()) {
+                while (!c.isAfterLast()) {
+                    if (PhoneNumberUtils.compare(number, c.getString(/* Phone.NUMBER */ 1))) {
+                        return c.getLong(/* Phone.RAW_CONTACT_ID */ 0);
+                    }
+                    c.moveToNext();
+                }
+            }
+        } catch (Exception e) {
+            Slog.e("getContactId error:", e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return 0;
     }
 
     /**
@@ -371,23 +404,19 @@ public class ContactUtil {
         
         // has group
         if (contact.groupInfos != null) {
+            
+            // delete all groups first
+            ops.add(ContentProviderOperation.newDelete(Phone.CONTENT_URI)
+                    .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=?", new String[] {String.valueOf(contact.id)})
+                            .build());
+            
             for (int i = 0; i < contact.groupInfos.size(); i++) {
                 GroupInfo gi = new GroupInfo();
                 gi = contact.groupInfos.get(i);
-                if (gi.modifyFlag == ModifyTag.add) {
-                    ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                            .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                            .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
-                            .withValue(Data.DATA1, gi.grId).build());
-                } else if (gi.modifyFlag == ModifyTag.del) {
-                    ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId))
-                            .build());
-                } else if (gi.modifyFlag == ModifyTag.edit) {
-                    ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                            .withSelection(Data._ID + "=?", new String[] {
-                                    String.valueOf(gi.dataId)
-                            }).withValue(Data.DATA1, gi.grId).build());
-                }
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
+                        .withValue(Data.DATA1, gi.grId).build());
             }
         }
         // update photo

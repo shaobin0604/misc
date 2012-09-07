@@ -48,6 +48,16 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         Slog.d(cmdResponse.toString());
     }
     
+    public void testQuerySms() throws Exception {
+        CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+        
+        cmdRequestBuilder.setCmdType(CmdType.CMD_QUERY_SMS);
+        
+        CmdResponse cmdResponse = mHandlerFacade.querySms(cmdRequestBuilder.build());
+        
+        Slog.d(cmdResponse.toString());
+    }
+    
     public void testQueryMms() throws Exception {
         CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
         

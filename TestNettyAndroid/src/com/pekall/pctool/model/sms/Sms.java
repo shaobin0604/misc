@@ -27,6 +27,8 @@ public class Sms {
     public static final int READ_FALSE = 0;
     
     public long rowId;         // The id of Sms
+    public long threadId;      // The thread this Sms belongs to
+    public long person;        // The contact id of the sender/recipient
     public String address;     // The phone number of the sender/recipient.
     public long date;          // The Java date representation (including millisecond) of the time when the message was sent/received. 
     public int protocol;       // Protocol used by the message, its mostly 0 in case of SMS messages.
@@ -38,13 +40,78 @@ public class Sms {
     public int locked;
     public int errorCode;
     
-    
     @Override
     public String toString() {
-        return "Sms [rowId=" + rowId + ", address=" + address + ", date=" + date + ", protocol=" + protocol + ", read="
-                + read + ", status=" + status + ", type=" + type + ", body=" + body + ", serviceCenter="
-                + serviceCenter + ", locked=" + locked + ", errorCode=" + errorCode + "]";
+        return "Sms [rowId=" + rowId + ", threadId=" + threadId + ", person=" + person + ", address=" + address
+                + ", date=" + date + ", protocol=" + protocol + ", read=" + read + ", status=" + status + ", type="
+                + type + ", body=" + body + ", serviceCenter=" + serviceCenter + ", locked=" + locked + ", errorCode="
+                + errorCode + "]";
     }
-    
-    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((address == null) ? 0 : address.hashCode());
+        result = prime * result + ((body == null) ? 0 : body.hashCode());
+        result = prime * result + (int) (date ^ (date >>> 32));
+        result = prime * result + errorCode;
+        result = prime * result + locked;
+        result = prime * result + (int) (person ^ (person >>> 32));
+        result = prime * result + protocol;
+        result = prime * result + read;
+        result = prime * result + (int) (rowId ^ (rowId >>> 32));
+        result = prime * result + ((serviceCenter == null) ? 0 : serviceCenter.hashCode());
+        result = prime * result + status;
+        result = prime * result + (int) (threadId ^ (threadId >>> 32));
+        result = prime * result + type;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Sms other = (Sms) obj;
+        if (address == null) {
+            if (other.address != null)
+                return false;
+        } else if (!address.equals(other.address))
+            return false;
+        if (body == null) {
+            if (other.body != null)
+                return false;
+        } else if (!body.equals(other.body))
+            return false;
+        if (date != other.date)
+            return false;
+        if (errorCode != other.errorCode)
+            return false;
+        if (locked != other.locked)
+            return false;
+        if (person != other.person)
+            return false;
+        if (protocol != other.protocol)
+            return false;
+        if (read != other.read)
+            return false;
+        if (rowId != other.rowId)
+            return false;
+        if (serviceCenter == null) {
+            if (other.serviceCenter != null)
+                return false;
+        } else if (!serviceCenter.equals(other.serviceCenter))
+            return false;
+        if (status != other.status)
+            return false;
+        if (threadId != other.threadId)
+            return false;
+        if (type != other.type)
+            return false;
+        return true;
+    }
 }

@@ -17,6 +17,8 @@ public class Mms {
 	
     public long rowId;
     public int msgBoxIndex; // 0: all, 1: inbox, 2: sent, 3: draft, 4: outbox
+    public long threadId;
+    public long person;
     public String phoneNum;
     public String subject;
     public long date;

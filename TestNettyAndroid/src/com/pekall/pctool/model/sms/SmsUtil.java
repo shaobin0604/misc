@@ -12,6 +12,7 @@ import android.os.RemoteException;
 import android.telephony.PhoneNumberUtils;
 
 import com.pekall.pctool.Slog;
+import com.pekall.pctool.model.contact.ContactUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 public class SmsUtil {
 
     private static final int INVALID_ROW_ID = 0;
+    
     private static final String ERROR_CODE = "error_code";
     private static final String LOCKED = "locked";
     private static final String SERVICE_CENTER = "service_center";
@@ -29,6 +31,8 @@ public class SmsUtil {
     private static final String PROTOCOL = "protocol";
     private static final String DATE = "date";
     private static final String ADDRESS = "address";
+    private static final String PERSON = "person";
+    private static final String THREAD_ID = "thread_id";
     private static final String _ID = "_id";
 
     private static final String SMS_AUTHORITY = "sms";
@@ -50,6 +54,10 @@ public class SmsUtil {
     private static final Uri SMS_QUEUED_URI = Uri.parse(SMS_QUEUED);
 
     private static final String DEFAULT_SORT_ORDER = "date DESC";
+    
+    private static final String[] DEFAULT_PROJECTION = {
+        _ID, THREAD_ID, PERSON, ADDRESS, DATE, PROTOCOL, READ, STATUS, TYPE, BODY, SERVICE_CENTER, LOCKED, ERROR_CODE,
+    };
 
     // prevent this class being instantiated
     private SmsUtil() {
@@ -64,26 +72,35 @@ public class SmsUtil {
     public static List<Sms> querySmsList(Context context) {
         List<Sms> smsList = new ArrayList<Sms>();
         ContentResolver resolver = context.getContentResolver();
-        Cursor cursor = resolver.query(SMS_ALL_URI, null, null, null, DEFAULT_SORT_ORDER);
+        
+        Cursor cursor = resolver.query(SMS_ALL_URI, DEFAULT_PROJECTION, null, null, DEFAULT_SORT_ORDER);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                int rowIdIndex = cursor.getColumnIndex(_ID);
-                int addressIndex = cursor.getColumnIndex(ADDRESS);
-                int dateIndex = cursor.getColumnIndex(DATE);
-                int protocolIndex = cursor.getColumnIndex(PROTOCOL);
-                int readIndex = cursor.getColumnIndex(READ);
-                int statusIndex = cursor.getColumnIndex(STATUS);
-                int typeIndex = cursor.getColumnIndex(TYPE);
-                int bodyIndex = cursor.getColumnIndex(BODY);
-                int serviceCenterIndex = cursor.getColumnIndex(SERVICE_CENTER);
-                int lockedIndex = cursor.getColumnIndex(LOCKED);
-                int errorCodeIndex = cursor.getColumnIndex(ERROR_CODE);
+                final int rowIdIndex = cursor.getColumnIndex(_ID);
+                final int threadIdIndex = cursor.getColumnIndex(THREAD_ID);
+                final int personIndex = cursor.getColumnIndex(PERSON);
+                final int addressIndex = cursor.getColumnIndex(ADDRESS);
+                final int dateIndex = cursor.getColumnIndex(DATE);
+                final int protocolIndex = cursor.getColumnIndex(PROTOCOL);
+                final int readIndex = cursor.getColumnIndex(READ);
+                final int statusIndex = cursor.getColumnIndex(STATUS);
+                final int typeIndex = cursor.getColumnIndex(TYPE);
+                final int bodyIndex = cursor.getColumnIndex(BODY);
+                final int serviceCenterIndex = cursor.getColumnIndex(SERVICE_CENTER);
+                final int lockedIndex = cursor.getColumnIndex(LOCKED);
+                final int errorCodeIndex = cursor.getColumnIndex(ERROR_CODE);
+                
                 do {
                     Sms sms = new Sms();
 
                     sms.rowId = cursor.getLong(rowIdIndex);
+                    sms.threadId = cursor.getLong(threadIdIndex);
                     sms.address = cursor.getString(addressIndex);
+                    sms.person = cursor.getLong(personIndex);
+                    if (sms.person <= 0) {
+                        sms.person = ContactUtil.getRawContactId(context, sms.address);
+                    }
                     sms.date = cursor.getLong(dateIndex);
                     sms.protocol = cursor.getInt(protocolIndex);
                     sms.read = cursor.getInt(readIndex);

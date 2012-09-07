@@ -1,7 +1,6 @@
 
 package com.pekall.pctool.test;
 
-import android.net.Uri;
 import android.test.AndroidTestCase;
 
 import com.pekall.pctool.Slog;
@@ -17,13 +16,21 @@ public class SmsUtilTestCase extends AndroidTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        SmsUtil.deleteSmsAll(getContext());
+//        SmsUtil.deleteSmsAll(getContext());
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        SmsUtil.deleteSmsAll(getContext());
+//        SmsUtil.deleteSmsAll(getContext());
+    }
+    
+    public void testQuerySms() throws Exception {
+        List<Sms> smsList = SmsUtil.querySmsList(getContext());
+        
+        for (Sms sms : smsList) {
+            Slog.d(sms.toString());
+        }
     }
     
     public void testSmsOperation() throws Exception {

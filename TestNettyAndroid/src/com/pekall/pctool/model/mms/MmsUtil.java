@@ -12,11 +12,13 @@ import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.util.Xml;
 
 import com.pekall.pctool.Slog;
+import com.pekall.pctool.model.contact.ContactUtil;
 import com.pekall.pctool.model.mms.Mms.Attachment;
 import com.pekall.pctool.model.mms.Mms.Slide;
 
@@ -42,20 +44,27 @@ public class MmsUtil {
     public static List<Mms> query(Context cxt) {
         List<Mms> mmsList = new ArrayList<Mms>();
         Cursor cursor = cxt.getContentResolver().query(MAIN_MMS_URI, new String[] {
-                "_id", "msg_box", "sub", "date", "read"
+                "_id", "thread_id", "msg_box", "sub", "date", "read"
         }, null, null, "_id desc");
 
         while (cursor.moveToNext()) {
             Mms mms = new Mms();
 
             mms.rowId = cursor.getLong(cursor.getColumnIndex("_id"));
+            mms.threadId = cursor.getLong(cursor.getColumnIndex("thread_id"));
             mms.msgBoxIndex = cursor.getInt(cursor.getColumnIndex("msg_box"));
 
             Cursor cursorAddress = cxt.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
                     null, null, null, null);
-            if (cursorAddress.moveToFirst())
+            
+            if (cursorAddress.moveToFirst()) {
                 mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
+            }
             cursorAddress.close();
+            
+            if (!TextUtils.isEmpty(mms.phoneNum)) {
+                mms.person = ContactUtil.getRawContactId(cxt, mms.phoneNum);
+            }
 
             String str = cursor.getString(cursor.getColumnIndex("sub"));
             if (str != null) {
