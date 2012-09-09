@@ -402,35 +402,52 @@ public class ContactUtil {
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
         
-        // has group
-        if (contact.groupInfos != null) {
-            
-            // delete all groups first
-            ops.add(ContentProviderOperation.newDelete(Phone.CONTENT_URI)
-                    .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=?", new String[] {String.valueOf(contact.id)})
-                            .build());
-            
-            for (int i = 0; i < contact.groupInfos.size(); i++) {
-                GroupInfo gi = new GroupInfo();
-                gi = contact.groupInfos.get(i);
-                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                        .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
-                        .withValue(Data.DATA1, gi.grId).build());
-            }
+        // update Name
+        if (hasField(context, "name", contact.id)) {
+            ops.add(ContentProviderOperation
+                    .newUpdate(Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + " = ?",
+                            new String[] {
+                                    String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
+                            }).withValue(StructuredName.DISPLAY_NAME, contact.name).build());
+        } else {
+            ops.add(ContentProviderOperation
+                    .newInsert(Data.CONTENT_URI)
+                    .withValue(Data.RAW_CONTACT_ID, contact.id)
+                    .withValue(Data.MIMETYPE, StructuredName.CONTENT_ITEM_TYPE)
+                    .withValue(StructuredName.DISPLAY_NAME, contact.name)
+                    .withValue(StructuredName.FAMILY_NAME, "")
+                    .withValue(StructuredName.GIVEN_NAME, "")
+                    .withValue(StructuredName.MIDDLE_NAME, "").build());
         }
+        
+        // update nickname
+        if (hasField(context, "nickname", contact.id)) {
+            ops.add(ContentProviderOperation
+                    .newUpdate(Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + " = ?",
+                            new String[] {
+                                    String.valueOf(contact.id), Nickname.CONTENT_ITEM_TYPE
+                            }).withValue(Nickname.NAME, contact.nickname).build());
+        } else {
+            ops.add(ContentProviderOperation.newInsert(Data.CONTENT_URI)
+                    .withValue(Data.RAW_CONTACT_ID, contact.id)
+                    .withValue(Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
+                    .withValue(Nickname.NAME, contact.nickname).build());
+        }
+        
         // update photo
         if (contact.shouldUpdatePhoto) {
             if (hasField(context, "photo", contact.id)) {
                 if (contact.photo != null) {
                     ops.add(ContentProviderOperation
-                            .newUpdate(ContactsContract.Data.CONTENT_URI)
+                            .newUpdate(Data.CONTENT_URI)
                             .withSelection(
-                                    Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                                    Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + " = ?",
                                     new String[] {
                                             String.valueOf(contact.id), Photo.CONTENT_ITEM_TYPE
                                     }).withValue(Data.DATA15, contact.photo)
-                            .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1).build());
+                            .withValue(Data.IS_SUPER_PRIMARY, 1).build());
                 } else {
                     long dataPhotoId = -1;
                     Uri uri = Data.CONTENT_URI;
@@ -449,165 +466,169 @@ public class ContactUtil {
                 }
             } else {
                 if (contact.photo != null) {
-                    ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                            .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                            .withValue(ContactsContract.Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE)
-                            .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, contact.photo).build());
+                    ops.add(ContentProviderOperation
+                            .newInsert(Data.CONTENT_URI)
+                            .withValue(Data.RAW_CONTACT_ID, contact.id)
+                            .withValue(Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE)
+                            .withValue(Photo.PHOTO, contact.photo).build());
                 }
             }
         }
-        // update nickname
-        if (hasField(context, "nickname", contact.id)) {
+        
+        // update Group
+        if (contact.groupInfos != null) {
+
+            // first delete all groups
             ops.add(ContentProviderOperation
-                    .newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                    .newDelete(Data.CONTENT_URI)
+                    .withSelection(
+                            Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?",
                             new String[] {
-                                    String.valueOf(contact.id), Nickname.CONTENT_ITEM_TYPE
-                            }).withValue(Nickname.NAME, contact.nickname).build());
-        } else {
-            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                    .withValue(ContactsContract.Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, contact.nickname).build());
-        }
-        // update Name
-        if (hasField(context, "name", contact.id)) {
-            ops.add(ContentProviderOperation
-                    .newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                            new String[] {
-                                    String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
-                            }).withValue(StructuredName.DISPLAY_NAME, contact.name).build());
-        } else {
-            ops.add(ContentProviderOperation
-                    .newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                    .withValue(ContactsContract.Data.MIMETYPE,
-                            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, "")
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, "")
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, "").build());
+                                    String.valueOf(contact.id),
+                                    GroupMembership.CONTENT_ITEM_TYPE
+                            })
+                    .build());
+
+            for (GroupInfo gi : contact.groupInfos) {
+                ops.add(ContentProviderOperation
+                        .newInsert(Data.CONTENT_URI)
+                        .withValue(Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
+                        .withValue(Data.DATA1, gi.grId).build());
+            }
         }
 
         // update Phone
-        for (Iterator<PhoneInfo> iter = contact.phoneInfos.iterator(); iter.hasNext();) {
-            PhoneInfo pr = iter.next();
-            if (pr.modifyFlag == ModifyTag.add) {
-                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                        .withValue(ContactsContract.Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
-                        .withValue(Phone.NUMBER, pr.number).withValue(Phone.TYPE, pr.type)
-                        .withValue(Phone.DATA3, pr.customName).build());
-            } else if (pr.modifyFlag == ModifyTag.del) {
-                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, pr.id)).build());
-            } else if (pr.modifyFlag == ModifyTag.edit) {
-                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {
-                                String.valueOf(pr.id)
-                        }).withValue(Phone.NUMBER, pr.number).withValue(Phone.DATA3, pr.customName)
-                        .withValue(Phone.TYPE, pr.type).build());
-            }
-        }
+		if (contact.phoneInfos != null) {
+		    
+            // first delete all phones
+            ops.add(ContentProviderOperation
+                    .newDelete(Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?", new String[] {
+                            String.valueOf(contact.id), Phone.CONTENT_ITEM_TYPE
+                    })
+                    .build());
+
+			for (PhoneInfo pr : contact.phoneInfos) {
+					ops.add(ContentProviderOperation
+							.newInsert(Data.CONTENT_URI)
+							.withValue(Data.RAW_CONTACT_ID, contact.id)
+							.withValue(Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
+							.withValue(Phone.NUMBER, pr.number)
+							.withValue(Phone.TYPE, pr.type)
+							.withValue(Phone.DATA3, pr.customName).build());
+				}
+		}
+    
         // update Email
-        for (Iterator<EmailInfo> iter = contact.emailInfos.iterator(); iter.hasNext();) {
-            EmailInfo er = iter.next();
-            if (er.modifyFlag == ModifyTag.add) {
-                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                        .withValue(ContactsContract.Data.MIMETYPE, Email.CONTENT_ITEM_TYPE)
-                        .withValue(Email.ADDRESS, er.email).withValue(Email.TYPE, er.type)
+        if (contact.emailInfos != null) {
+
+            // first delete all email
+            ops.add(ContentProviderOperation
+                    .newDelete(Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?", new String[] {
+                            String.valueOf(contact.id), Email.CONTENT_ITEM_TYPE
+                    })
+                    .build());
+
+            for (EmailInfo er : contact.emailInfos) {
+                ops.add(ContentProviderOperation
+                        .newInsert(Data.CONTENT_URI)
+                        .withValue(Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(Data.MIMETYPE, Email.CONTENT_ITEM_TYPE)
+                        .withValue(Email.ADDRESS, er.email)
+                        .withValue(Email.TYPE, er.type)
                         .withValue(Email.DATA3, er.customName).build());
-            } else if (er.modifyFlag == ModifyTag.del) {
-                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, er.id)).build());
-            } else if (er.modifyFlag == ModifyTag.edit) {
-                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {
-                                String.valueOf(er.id)
-                        }).withValue(Email.ADDRESS, er.email).withValue(Email.DATA3, er.customName)
-                        .withValue(Email.TYPE, er.type).build());
             }
         }
 
         // update Organization
-        for (Iterator<OrgInfo> iter = contact.orgInfos.iterator(); iter.hasNext();) {
-            OrgInfo or = iter.next();
-            if (or.modifyFlag == ModifyTag.add) {
-                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                        .withValue(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
-                        .withValue(Organization.COMPANY, or.org).withValue(Organization.TYPE, or.type)
-                        .withValue(Organization.DATA3, or.customName).build());
-            } else if (or.modifyFlag == ModifyTag.del) {
-                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, or.id)).build());
-            } else if (or.modifyFlag == ModifyTag.edit) {
-                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {
-                                String.valueOf(or.id)
-                        }).withValue(Organization.COMPANY, or.org).withValue(Organization.TYPE, or.type)
+		if (contact.orgInfos != null) {
+		    
+		 // first delete all organizations
+            ops.add(ContentProviderOperation
+                    .newDelete(Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?", new String[] {
+                            String.valueOf(contact.id), Organization.CONTENT_ITEM_TYPE
+                    })
+                    .build());
+		
+            for (OrgInfo or : contact.orgInfos) {
+                ops.add(ContentProviderOperation
+                        .newInsert(Data.CONTENT_URI)
+                        .withValue(Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
+                        .withValue(Organization.COMPANY, or.org)
+                        .withValue(Organization.TYPE, or.type)
                         .withValue(Organization.DATA3, or.customName).build());
             }
-        }
+		}
+		
         // update Address
-        for (Iterator<AddressInfo> iter = contact.addressInfos.iterator(); iter.hasNext();) {
-            AddressInfo ar = iter.next();
-            if (ar.modifyFlag == ModifyTag.add) {
-                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                        .withValue(ContactsContract.Data.MIMETYPE, StructuredPostal.CONTENT_ITEM_TYPE)
-                        .withValue(StructuredPostal.COUNTRY, ar.country).withValue(StructuredPostal.CITY, ar.city)
+        if (contact.addressInfos != null) {
+            // first delete all addresses
+            ops.add(ContentProviderOperation
+                    .newDelete(Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?", new String[] {
+                            String.valueOf(contact.id), StructuredPostal.CONTENT_ITEM_TYPE
+                    })
+                    .build());
+
+            for (AddressInfo ar : contact.addressInfos) {
+                ops.add(ContentProviderOperation
+                        .newInsert(Data.CONTENT_URI)
+                        .withValue(Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(Data.MIMETYPE, StructuredPostal.CONTENT_ITEM_TYPE)
+                        .withValue(Data.DATA3, ar.customName)
+                        .withValue(StructuredPostal.COUNTRY, ar.country)
+                        .withValue(StructuredPostal.CITY, ar.city)
                         .withValue(StructuredPostal.STREET, ar.street)
                         .withValue(StructuredPostal.POSTCODE, ar.postcode)
                         .withValue(StructuredPostal.REGION, ar.province)
-                        .withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address).withValue(Data.DATA3, ar.customName)
+                        .withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address)
                         .withValue(StructuredPostal.TYPE, ar.type).build());
-
-            } else if (ar.modifyFlag == ModifyTag.del) {
-                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ar.id)).build());
-            } else if (ar.modifyFlag == ModifyTag.edit) {
-                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {
-                                String.valueOf(ar.id)
-                        }).withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address)
-                        .withValue(StructuredPostal.COUNTRY, ar.country).withValue(StructuredPostal.CITY, ar.city)
-                        .withValue(StructuredPostal.STREET, ar.street)
-                        .withValue(StructuredPostal.POSTCODE, ar.postcode)
-                        .withValue(StructuredPostal.DATA3, ar.customName)
-                        .withValue(StructuredPostal.REGION, ar.province).withValue(StructuredPostal.TYPE, ar.type)
-                        .build());
             }
         }
-        // update InfoM
-        for (Iterator<ImInfo> iter = contact.imInfos.iterator(); iter.hasNext();) {
-            ImInfo ir = iter.next();
-            if (ir.modifyFlag == ModifyTag.add) {
-                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                        .withValue(ContactsContract.Data.MIMETYPE, Im.CONTENT_ITEM_TYPE)
+        
+        // update IM
+        if (contact.imInfos != null) {
+            // first delete all im
+            ops.add(ContentProviderOperation
+                    .newDelete(Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?", new String[] {
+                            String.valueOf(contact.id), Im.CONTENT_ITEM_TYPE
+                    })
+                    .build());
+
+            for (ImInfo ir : contact.imInfos) {
+                ops.add(ContentProviderOperation
+                        .newInsert(Data.CONTENT_URI)
+                        .withValue(Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(Data.MIMETYPE, Im.CONTENT_ITEM_TYPE)
                         .withValue(Im.DATA1, ir.account)
-                        .withValue(Im.TYPE, ir.type).withValue(Data.DATA3, ir.customName).build());
-            } else if (ir.modifyFlag == ModifyTag.del) {
-                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ir.id)).build());
-            } else if (ir.modifyFlag == ModifyTag.edit) {
-                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {
-                                String.valueOf(ir.id)
-                        }).withValue(Im.DATA1, ir.account).withValue(Im.TYPE, ir.type)
-                        .withValue(Im.DATA3, ir.customName)
-                        .build());
+                        .withValue(Im.TYPE, ir.type)
+                        .withValue(Data.DATA3, ir.customName).build());
             }
         }
 
         try {
-            Slog.d(ops.toString());
+            
+            if (DUMP_PARAMS) {
+                Slog.d(ops.toString());
+            }
 
             context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+            
+            Slog.d("updateContactForce X");
+            
             return true;
         } catch (RemoteException e) {
-            Slog.e("Error updateContact", e);
+            Slog.e("Error updateContactForce", e);
+            Slog.d("updateContactForce X");
             return false;
         } catch (OperationApplicationException e) {
-            Slog.e("Error updateContact", e);
+            Slog.e("Error updateContactForce", e);
+            Slog.d("updateContactForce X");
             return false;
         }
     }
