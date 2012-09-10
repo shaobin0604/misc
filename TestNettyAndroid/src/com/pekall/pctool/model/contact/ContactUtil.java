@@ -27,6 +27,7 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.RawContacts;
 import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
@@ -391,6 +392,13 @@ public class ContactUtil {
         return context.getContentResolver().delete(RawContacts.CONTENT_URI, null, null);
     }
 
+    /**
+     * Update Contact when there is no ModifyTag
+     * 
+     * @param context
+     * @param contact
+     * @return
+     */
     public static boolean updateContactForce(Context context, Contact contact) {
         Slog.d("updateContactForce E");
 
@@ -650,27 +658,42 @@ public class ContactUtil {
         }
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        // has group
-        if (contact.groupInfos != null) {
-            for (int i = 0; i < contact.groupInfos.size(); i++) {
-                GroupInfo gi = new GroupInfo();
-                gi = contact.groupInfos.get(i);
-                if (gi.modifyFlag == ModifyTag.add) {
-                    ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                            .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                            .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
-                            .withValue(Data.DATA1, gi.grId).build());
-                } else if (gi.modifyFlag == ModifyTag.del) {
-                    ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId))
-                            .build());
-                } else if (gi.modifyFlag == ModifyTag.edit) {
-                    ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                            .withSelection(Data._ID + "=?", new String[] {
-                                    String.valueOf(gi.dataId)
-                            }).withValue(Data.DATA1, gi.grId).build());
-                }
-            }
+        
+        // update Name
+        if (hasField(context, "name", contact.id)) {
+            ops.add(ContentProviderOperation
+                    .newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                            new String[] {
+                                    String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
+                            }).withValue(StructuredName.DISPLAY_NAME, contact.name).build());
+        } else {
+            ops.add(ContentProviderOperation
+                    .newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                    .withValue(ContactsContract.Data.MIMETYPE,
+                            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, "")
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, "")
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, "").build());
         }
+        
+        // update nickname
+        if (hasField(context, "nickname", contact.id)) {
+            ops.add(ContentProviderOperation
+                    .newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
+                            new String[] {
+                                    String.valueOf(contact.id), Nickname.CONTENT_ITEM_TYPE
+                            }).withValue(Nickname.NAME, contact.nickname).build());
+        } else {
+            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                    .withValue(ContactsContract.Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
+                    .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, contact.nickname).build());
+        }
+        
         // update photo
         if (contact.shouldUpdatePhoto) {
             if (hasField(context, "photo", contact.id)) {
@@ -708,38 +731,27 @@ public class ContactUtil {
                 }
             }
         }
-        // update nickname
-        if (hasField(context, "nickname", contact.id)) {
-            ops.add(ContentProviderOperation
-                    .newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                            new String[] {
-                                    String.valueOf(contact.id), Nickname.CONTENT_ITEM_TYPE
-                            }).withValue(Nickname.NAME, contact.nickname).build());
-        } else {
-            ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                    .withValue(ContactsContract.Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, contact.nickname).build());
-        }
-        // update Name
-        if (hasField(context, "name", contact.id)) {
-            ops.add(ContentProviderOperation
-                    .newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                            new String[] {
-                                    String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
-                            }).withValue(StructuredName.DISPLAY_NAME, contact.name).build());
-        } else {
-            ops.add(ContentProviderOperation
-                    .newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
-                    .withValue(ContactsContract.Data.MIMETYPE,
-                            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, "")
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, "")
-                    .withValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, "").build());
+        
+        // has group
+        if (contact.groupInfos != null) {
+            for (int i = 0; i < contact.groupInfos.size(); i++) {
+                GroupInfo gi = new GroupInfo();
+                gi = contact.groupInfos.get(i);
+                if (gi.modifyFlag == ModifyTag.add) {
+                    ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                            .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
+                            .withValue(ContactsContract.Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
+                            .withValue(Data.DATA1, gi.grId).build());
+                } else if (gi.modifyFlag == ModifyTag.del) {
+                    ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId))
+                            .build());
+                } else if (gi.modifyFlag == ModifyTag.edit) {
+                    ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(Data._ID + "=?", new String[] {
+                                    String.valueOf(gi.dataId)
+                            }).withValue(Data.DATA1, gi.grId).build());
+                }
+            }
         }
 
         // update Phone
@@ -874,10 +886,12 @@ public class ContactUtil {
      */
     public static long addContact(Context context, Contact contact) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        if (contact.accountInfo.accountName == null || "".equals(contact.accountInfo.accountName)) {
+        
+        if (TextUtils.isEmpty(contact.accountInfo.accountName)) {
             contact.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
             contact.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
         }
+        
         // rawcontacts'account
         // don't give c._Id value because it is automatically increased
         ops.add(ContentProviderOperation

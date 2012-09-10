@@ -77,7 +77,7 @@ public class HandlerFacade {
 
     private static final String RESULT_MSG_OK = "OK";
     
-    private static final boolean DUMP_CMD_REQUEST = true;
+    private static final boolean DUMP_PARAM = true;
 
     private Context mContext;
 
@@ -475,32 +475,22 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_AGENDAS);
 
-        long calendarId = CalendarUtil.INVALID_CALENDAR_ID;
+        List<EventInfo> eventInfoList;
         if (request.hasAgendaParams()) {
+            Slog.i("calendar id provided");
             AgendaRecord agendaRecord = request.getAgendaParams();
-            calendarId = agendaRecord.getCalendarId();
+            long calendarId = agendaRecord.getCalendarId();
+            
+            eventInfoList = CalendarUtil.queryEventsByCalendarId(mContext, calendarId);
         } else {
-            Slog.e("calendar id not provided");
+            Slog.i("calendar id not provided");
+            eventInfoList = CalendarUtil.queryEvents(mContext);
         }
-
-        Slog.d("calendarId = " + calendarId);
-
-        List<EventInfo> eventInfoList = CalendarUtil.queryEventsByCalendarId(mContext,
-                calendarId);
 
         AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
 
         for (EventInfo eventInfo : eventInfoList) {
-            agendaRecordBuilder.setId(eventInfo.id);
-            agendaRecordBuilder.setCalendarId(eventInfo.calendarId);
-
-            agendaRecordBuilder.setSubject(normalizeStr(eventInfo.title));
-            agendaRecordBuilder.setLocation(normalizeStr(eventInfo.place));
-            agendaRecordBuilder.setStartTime(eventInfo.startTime);
-            agendaRecordBuilder.setEndTime(eventInfo.endTime);
-            agendaRecordBuilder.setRepeatRule(normalizeStr(eventInfo.rrule));
-            agendaRecordBuilder.setAlertTime(eventInfo.alertTime);
-            agendaRecordBuilder.setNote(normalizeStr(eventInfo.note));
+            eventInfoToAgendaRecord(agendaRecordBuilder, eventInfo);
 
             responseBuilder.addAgendaRecord(agendaRecordBuilder.build());
 
@@ -514,6 +504,18 @@ public class HandlerFacade {
         return responseBuilder.build();
     }
 
+    private void eventInfoToAgendaRecord(AgendaRecord.Builder agendaRecordBuilder, EventInfo eventInfo) {
+        agendaRecordBuilder.setId(eventInfo.id);
+        agendaRecordBuilder.setCalendarId(eventInfo.calendarId);
+        agendaRecordBuilder.setSubject(normalizeStr(eventInfo.title));
+        agendaRecordBuilder.setLocation(normalizeStr(eventInfo.place));
+        agendaRecordBuilder.setStartTime(eventInfo.startTime);
+        agendaRecordBuilder.setEndTime(eventInfo.endTime);
+        agendaRecordBuilder.setRepeatRule(normalizeStr(eventInfo.rrule));
+        agendaRecordBuilder.setAlertTime(eventInfo.alertTime);
+        agendaRecordBuilder.setNote(normalizeStr(eventInfo.note));
+    }
+
     public CmdResponse addAgenda(CmdRequest request) {
         Slog.d("addAgenda E");
 
@@ -523,21 +525,15 @@ public class HandlerFacade {
         if (request.hasAgendaParams()) {
             AgendaRecord agendaRecord = request.getAgendaParams();
             
-            Slog.d("===== dump request =====");
-            Slog.d(agendaRecord.toString());
+            if (DUMP_PARAM) {
+                Slog.d(">>>>> dump agendaRecord >>>>>");
+                Slog.d(agendaRecord.toString());
+                Slog.d("<<<<< dump agendaRecord <<<<<");
+            }
 
-            EventInfo eventInfo = new EventInfo();
-            
-            eventInfo.calendarId = agendaRecord.getCalendarId();
-            eventInfo.title = agendaRecord.getSubject();
-            eventInfo.place = agendaRecord.getLocation();
-            eventInfo.startTime = agendaRecord.getStartTime();
-            eventInfo.endTime = agendaRecord.getEndTime();
-            eventInfo.alertTime = agendaRecord.getAlertTime();
-            eventInfo.rrule = agendaRecord.getRepeatRule();
-            eventInfo.note = agendaRecord.getNote();
+            EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
 
-            if (CalendarUtil.addEvent(mContext, eventInfo)) {
+            if (CalendarUtil.addEvent(mContext, eventInfo) > 0) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder, "CalendarUtil.addEvent");
@@ -551,6 +547,20 @@ public class HandlerFacade {
         return responseBuilder.build();
     }
 
+    private EventInfo agendaRecordToEventInfoForAdd(AgendaRecord agendaRecord) {
+        EventInfo eventInfo = new EventInfo();
+        
+        eventInfo.calendarId = agendaRecord.getCalendarId();
+        eventInfo.title = agendaRecord.getSubject();
+        eventInfo.place = agendaRecord.getLocation();
+        eventInfo.startTime = agendaRecord.getStartTime();
+        eventInfo.endTime = agendaRecord.getEndTime();
+        eventInfo.alertTime = agendaRecord.getAlertTime();
+        eventInfo.rrule = agendaRecord.getRepeatRule();
+        eventInfo.note = agendaRecord.getNote();
+        return eventInfo;
+    }
+
     public CmdResponse updateAgenda(CmdRequest cmdRequest) {
         Slog.d("updateAgenda E");
 
@@ -559,17 +569,8 @@ public class HandlerFacade {
 
         if (cmdRequest.hasAgendaParams()) {
             AgendaRecord agendaRecord = cmdRequest.getAgendaParams();
-            EventInfo eventInfo = new EventInfo();
-
-            eventInfo.id = agendaRecord.getId();
-            eventInfo.calendarId = agendaRecord.getCalendarId();
-            eventInfo.title = agendaRecord.getSubject();
-            eventInfo.place = agendaRecord.getLocation();
-            eventInfo.startTime = agendaRecord.getStartTime();
-            eventInfo.endTime = agendaRecord.getEndTime();
-            eventInfo.alertTime = agendaRecord.getAlertTime();
-            eventInfo.rrule = agendaRecord.getRepeatRule();
-            eventInfo.note = agendaRecord.getNote();
+            
+            EventInfo eventInfo = agendaRecordToEventInfoForUpdate(agendaRecord);
 
             if (CalendarUtil.updateEvent(mContext, eventInfo)) {
                 setResultOK(responseBuilder);
@@ -583,6 +584,21 @@ public class HandlerFacade {
 
         Slog.d("updateAgenda X");
         return responseBuilder.build();
+    }
+
+    private EventInfo agendaRecordToEventInfoForUpdate(AgendaRecord agendaRecord) {
+        EventInfo eventInfo = new EventInfo();
+
+        eventInfo.id = agendaRecord.getId();
+        eventInfo.calendarId = agendaRecord.getCalendarId();
+        eventInfo.title = agendaRecord.getSubject();
+        eventInfo.place = agendaRecord.getLocation();
+        eventInfo.startTime = agendaRecord.getStartTime();
+        eventInfo.endTime = agendaRecord.getEndTime();
+        eventInfo.alertTime = agendaRecord.getAlertTime();
+        eventInfo.rrule = agendaRecord.getRepeatRule();
+        eventInfo.note = agendaRecord.getNote();
+        return eventInfo;
     }
 
     public CmdResponse deleteAgenda(CmdRequest cmdRequest) {
@@ -619,7 +635,7 @@ public class HandlerFacade {
     public CmdResponse syncAgendaWithOutlook(CmdRequest cmdRequest) {
         Slog.d("syncAgendaWithOutlook E");
 
-        if (DUMP_CMD_REQUEST) {
+        if (DUMP_PARAM) {
             Slog.d(">>>>> dump CmdRequest >>>>>");
             Slog.d(cmdRequest.toString());
             Slog.d("<<<<< dump CmdRequest <<<<<");
@@ -658,19 +674,19 @@ public class HandlerFacade {
         
         switch (agendaSync.getSubType()) {
             case TWO_WAY_SLOW_SYNC: {
-                handleTwoWaySyncAgenda(agendaSync, responseBuilder, /* fastSync */ false);
+                handleSyncAgendaTwoWay(agendaSync, responseBuilder, /* fastSync */ false);
                 break;
             }
             case TWO_WAY_FAST_SYNC: {
-                handleTwoWaySyncAgenda(agendaSync, responseBuilder, /* fastSync */ true);
+                handleSyncAgendaTwoWay(agendaSync, responseBuilder, /* fastSync */ true);
                 break;
             }
             case TWO_WAY_SLOW_SYNC_SECOND: {
-                handleTwoWaySyncAgendaSecond(agendaSync, responseBuilder);
+                handleSyncAgendaTwoWaySecond(agendaSync, responseBuilder);
                 break;
             }
             case TWO_WAY_FAST_SYNC_SECOND: {
-                handleTwoWaySyncAgendaSecond(agendaSync, responseBuilder);
+                handleSyncAgendaTwoWaySecond(agendaSync, responseBuilder);
                 break;
             }
 
@@ -681,14 +697,155 @@ public class HandlerFacade {
         Slog.d("handleSyncAgendaWithOutlook X");        
     }
 
-    private void handleTwoWaySyncAgenda(AgendaSync agendaSync, Builder responseBuilder, boolean fastSync) {
-        // TODO Auto-generated method stub
+    private void handleSyncAgendaTwoWay(AgendaSync agendaSync, Builder responseBuilder, boolean fastSync) {
+        Slog.d("handleSyncAgendaTwoWay E, fastSync = " + fastSync);
+
+        List<EventInfo> eventInfos;
+        if (fastSync) {
+            eventInfos = FastSyncUtils.findChangedEvents(mContext);
+        } else {
+            eventInfos = CalendarUtil.queryEvents(mContext);
+        }
         
+        AgendaSync.Builder agendaSyncBuilder = AgendaSync.newBuilder();
+        agendaSyncBuilder.setType(agendaSync.getType());
+        agendaSyncBuilder.setSubType(agendaSync.getSubType());
+        if (agendaSync.hasSyncConflictPloy()) {
+            agendaSyncBuilder.setSyncConflictPloy(agendaSync.getSyncConflictPloy());
+        }
+        
+        AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
+
+        for (EventInfo eventInfo : eventInfos) {
+            eventInfoToAgendaRecord(agendaRecordBuilder, eventInfo);
+
+            agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
+
+            agendaRecordBuilder.clear();
+        }
+
+        
+        responseBuilder.setAgendaSync(agendaSyncBuilder);
+        
+        setResultOK(responseBuilder);
+        
+        Slog.d("handleSyncAgendaTwoWay X, fastSync = " + fastSync);
     }
     
-    private void handleTwoWaySyncAgendaSecond(AgendaSync agendaSync, Builder responseBuilder) {
-        // TODO Auto-generated method stub
+    private void handleSyncAgendaTwoWaySecond(AgendaSync agendaSync, Builder responseBuilder) {
+        Slog.d("handleSyncAgendaTwoWaySecond E");
         
+        AgendaSync.Builder agendaSyncBuilder = AgendaSync.newBuilder();
+        
+        agendaSyncBuilder.setType(agendaSync.getType());
+        agendaSyncBuilder.setSubType(agendaSync.getSubType());
+        
+        if (agendaSync.hasSyncConflictPloy()) {
+            SyncConflictPloy syncConflictPloy = agendaSync.getSyncConflictPloy();
+
+            Slog.d("SyncConflictPloy = " + syncConflictPloy);
+            
+            agendaSyncBuilder.setSyncConflictPloy(agendaSync.getSyncConflictPloy());
+        }
+        
+        AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
+        
+        boolean success = true;
+        
+        for (AgendaRecord agendaRecord : agendaSync.getAgendaRecordList()) {
+            final SyncResult syncResult = agendaRecord.getSyncResult();
+            final String pcId = agendaRecord.getPcId();
+            Slog.d("SyncResult = " + syncResult + ", pcId = " + pcId);
+            
+            switch (syncResult) {
+                case PC_ADD: {
+                    EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
+                    
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
+                    if (eventInfoId > 0) {
+                        long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
+                        
+                        Slog.d("CalendarUtil.addEvent OK, eventInfoId = " + eventInfoId + ", eventVersion = " + eventVersion);
+                        
+                        agendaRecordBuilder.setId(eventInfoId);
+                        agendaRecordBuilder.setVersion(eventVersion);
+                        agendaRecordBuilder.setPcId(pcId);
+                        agendaRecordBuilder.setSyncResult(syncResult);
+                        
+                        agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
+                        
+                        agendaRecordBuilder.clear();
+                    } else {
+                        Slog.e("Error CalendarUtil.addEvent, eventInfoId = " + eventInfoId);
+                        success = false;
+                    }
+                    break;
+                }
+                
+                case PC_MODIFY:
+                case BOTH_MODIFY: {
+                    EventInfo eventInfo = agendaRecordToEventInfoForUpdate(agendaRecord);
+                    
+                    final long eventId = eventInfo.id;
+                    if (CalendarUtil.updateEvent(mContext, eventInfo)) {
+                        long eventVersion = CalendarUtil.queryEventVersion(mContext, eventId);
+                        
+                        Slog.d("CalendarUtil.updateEvent OK, eventId = " + eventId + ", eventVersion = " + eventVersion);
+                        
+                        agendaRecordBuilder.setId(eventId);
+                        agendaRecordBuilder.setVersion(eventVersion);
+                        agendaRecordBuilder.setSyncResult(syncResult);
+                        
+                        agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
+                        
+                        agendaRecordBuilder.clear();
+                    } else {
+                        Slog.e("Error CalendarUtil.updateEvent, eventId = " + eventId);
+                        success = false;
+                    }
+                    
+                    break;
+                }
+                
+                case PC_DEL: {
+                    final long eventInfoId = agendaRecord.getId();
+                    
+                    if (CalendarUtil.deleteEvent(mContext, eventInfoId)) {
+                        Slog.d("CalendarUtil.deleteEvent OK, eventInfoId = " + eventInfoId);
+                        
+                        agendaRecordBuilder.setId(eventInfoId);
+                        agendaRecordBuilder.setSyncResult(syncResult);
+                        
+                        agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
+                        
+                        agendaRecordBuilder.clear();
+                        
+                    } else {
+                        Slog.e("Error CalendarUtil.deleteEvent, eventInfoId = " + eventInfoId);
+                        success = false;
+                    }
+                    break;
+                }
+                
+                default: {
+                    Slog.e("Error invalid sync result = " + syncResult);
+                    success = false;
+                    break;
+                }
+            }
+        }
+        
+        if (success) {
+            responseBuilder.setAgendaSync(agendaSyncBuilder);
+            
+            setResultOK(responseBuilder);
+        } else {
+            setResultErrorInternal(responseBuilder, "add, update, delete Event");
+        }
+        
+        FastSyncUtils.notifyUpdateEventVersionDB(mContext);
+        
+        Slog.d("handleSyncAgendaTwoWaySecond X");
     }
 
     // ------------------------------------------------------------------------
@@ -1200,9 +1357,10 @@ public class HandlerFacade {
 
         contact.shouldUpdatePhoto = contactRecord.getPhotoModifyTag();
 
-        AccountRecord accountRecord = contactRecord.getAccountInfo();
-
-        contact.setAccountInfo(accountRecord.getName(), accountRecord.getType());
+        if (contactRecord.hasAccountInfo()) {
+            AccountRecord accountRecord = contactRecord.getAccountInfo();
+            contact.setAccountInfo(accountRecord.getName(), accountRecord.getType());
+        }
 
         // group
         for (GroupRecord groupRecord : contactRecord.getGroupList()) {
@@ -1334,7 +1492,7 @@ public class HandlerFacade {
     public CmdResponse syncContactWithOutlook(CmdRequest cmdRequest) {
         Slog.d("syncContactWithOutlook E");
         
-        if (DUMP_CMD_REQUEST) {
+        if (DUMP_PARAM) {
             Slog.d(">>>>> dump CmdRequest >>>>>");
             Slog.d(cmdRequest.toString());
             Slog.d("<<<<< dump CmdRequest <<<<<");
@@ -1373,19 +1531,19 @@ public class HandlerFacade {
         
         switch (contactsSync.getSubType()) {
             case TWO_WAY_SLOW_SYNC: {
-                handleTwoWaySyncContact(contactsSync, responseBuilder, /* fastSync */ false);
+                handleSyncContactTwoWay(contactsSync, responseBuilder, /* fastSync */ false);
                 break;
             }
             case TWO_WAY_FAST_SYNC: {
-                handleTwoWaySyncContact(contactsSync, responseBuilder, /* fastSync */ true);
+                handleSyncContactTwoWay(contactsSync, responseBuilder, /* fastSync */ true);
                 break;
             }
             case TWO_WAY_SLOW_SYNC_SECOND: {
-                handleTwoWaySyncContactSecond(contactsSync, responseBuilder);
+                handleSyncContactTwoWaySecond(contactsSync, responseBuilder);
                 break;
             }
             case TWO_WAY_FAST_SYNC_SECOND: {
-                handleTwoWaySyncContactSecond(contactsSync, responseBuilder);
+                handleSyncContactTwoWaySecond(contactsSync, responseBuilder);
                 break;
             }
 
@@ -1397,8 +1555,8 @@ public class HandlerFacade {
         Slog.d("handleSyncContactWithOutlook X");
     }
 
-    private void handleTwoWaySyncContact(ContactsSync contactsSync, Builder responseBuilder, boolean fastSync) {
-        Slog.d("handleTwoWaySync E, fastSync = " + fastSync);
+    private void handleSyncContactTwoWay(ContactsSync contactsSync, Builder responseBuilder, boolean fastSync) {
+        Slog.d("handleSyncContactTwoWay E, fastSync = " + fastSync);
         
         List<Contact> contactList = null;
         if (fastSync) {
@@ -1442,13 +1600,13 @@ public class HandlerFacade {
         
         setResultOK(responseBuilder);
         
-        Slog.d("handleTwoWaySync X, fastSync = " + fastSync);
+        Slog.d("handleSyncContactTwoWay X, fastSync = " + fastSync);
     }
     
     
     
-    private void handleTwoWaySyncContactSecond(ContactsSync contactsSync, Builder responseBuilder) {
-        Slog.d("handleTwoWaySyncSecond E");
+    private void handleSyncContactTwoWaySecond(ContactsSync contactsSync, Builder responseBuilder) {
+        Slog.d("handleSyncContactTwoWaySecond E");
         
         ContactsSync.Builder contactSyncBuilder = ContactsSync.newBuilder();
         
@@ -1480,7 +1638,7 @@ public class HandlerFacade {
                     if (contactId > 0) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
-                        Slog.d("ContactUtilFast.addContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        Slog.d("ContactUtil.addContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setVersion(contactVersion);
@@ -1491,13 +1649,32 @@ public class HandlerFacade {
                         
                         contactRecordBuilder.clear();
                     } else {
-                        Slog.e("Error ContactUtilFast.addContact, contactId = " + contactId);
+                        Slog.e("Error ContactUtil.addContact, contactId = " + contactId);
                         success = false;
                     }
                     break;
                 }
                 
                 case PC_MODIFY: {
+                    Contact contact = contactRecordToContactForUpdate(contactRecord);
+                    
+                    final long contactId = contact.id;
+                    if (ContactUtil.updateContactForce(mContext, contact)) {
+                        int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
+                        
+                        Slog.d("ContactUtil.updateContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        
+                        contactRecordBuilder.setId(contactId);
+                        contactRecordBuilder.setVersion(contactVersion);
+                        contactRecordBuilder.setSyncResult(syncResult);
+                        
+                        contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
+                        
+                        contactRecordBuilder.clear();
+                    } else {
+                        Slog.e("Error ContactUtil.updateContact, contactId = " + contactId);
+                        success = false;
+                    }
                     
                     break;
                 }
@@ -1508,7 +1685,7 @@ public class HandlerFacade {
                     if (ContactUtil.updateContact(mContext, contact)) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
-                        Slog.d("ContactUtilFast.updateContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        Slog.d("ContactUtil.updateContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setVersion(contactVersion);
@@ -1518,7 +1695,7 @@ public class HandlerFacade {
                         
                         contactRecordBuilder.clear();
                     } else {
-                        Slog.e("Error ContactUtilFast.updateContact, contactId = " + contactId);
+                        Slog.e("Error ContactUtil.updateContact, contactId = " + contactId);
                         success = false;
                     }
                     
@@ -1529,7 +1706,7 @@ public class HandlerFacade {
                     final long contactId = contactRecord.getId();
                     
                     if (ContactUtil.deleteContactById(mContext, contactId)) {
-                        Slog.d("ContactUtilFast.deleteContactById OK, contactId = " + contactId);
+                        Slog.d("ContactUtil.deleteContactById OK, contactId = " + contactId);
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setSyncResult(syncResult);
@@ -1539,7 +1716,7 @@ public class HandlerFacade {
                         contactRecordBuilder.clear();
                         
                     } else {
-                        Slog.e("Error ContactUtilFast.deleteContactById, contactId = " + contactId);
+                        Slog.e("Error ContactUtil.deleteContactById, contactId = " + contactId);
                         success = false;
                     }
                     break;
@@ -1563,7 +1740,7 @@ public class HandlerFacade {
         
         FastSyncUtils.notifyUpdateContactVersionDB(mContext);
         
-        Slog.d("handleTwoWaySyncSecond X");
+        Slog.d("handleSyncContactTwoWaySecond X");
     }
     
 

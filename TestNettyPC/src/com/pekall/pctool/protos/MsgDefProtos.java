@@ -14598,9 +14598,9 @@ public final class MsgDefProtos {
     boolean hasNote();
     String getNote();
     
-    // optional int32 version = 10;
+    // optional int64 version = 10;
     boolean hasVersion();
-    int getVersion();
+    long getVersion();
     
     // optional .pekall.pcsuite.SyncResult sync_result = 11;
     boolean hasSyncResult();
@@ -14817,13 +14817,13 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional int32 version = 10;
+    // optional int64 version = 10;
     public static final int VERSION_FIELD_NUMBER = 10;
-    private int version_;
+    private long version_;
     public boolean hasVersion() {
       return ((bitField0_ & 0x00000200) == 0x00000200);
     }
-    public int getVersion() {
+    public long getVersion() {
       return version_;
     }
     
@@ -14879,7 +14879,7 @@ public final class MsgDefProtos {
       repeatRule_ = "";
       alertTime_ = 0;
       note_ = "";
-      version_ = 0;
+      version_ = 0L;
       syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
       pcId_ = "";
     }
@@ -14923,7 +14923,7 @@ public final class MsgDefProtos {
         output.writeBytes(9, getNoteBytes());
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        output.writeInt32(10, version_);
+        output.writeInt64(10, version_);
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         output.writeEnum(11, syncResult_.getNumber());
@@ -14978,7 +14978,7 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(10, version_);
+          .computeInt64Size(10, version_);
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
@@ -15130,7 +15130,7 @@ public final class MsgDefProtos {
         bitField0_ = (bitField0_ & ~0x00000080);
         note_ = "";
         bitField0_ = (bitField0_ & ~0x00000100);
-        version_ = 0;
+        version_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000200);
         syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
         bitField0_ = (bitField0_ & ~0x00000400);
@@ -15352,7 +15352,7 @@ public final class MsgDefProtos {
             }
             case 80: {
               bitField0_ |= 0x00000200;
-              version_ = input.readInt32();
+              version_ = input.readInt64();
               break;
             }
             case 88: {
@@ -15626,15 +15626,15 @@ public final class MsgDefProtos {
         onChanged();
       }
       
-      // optional int32 version = 10;
-      private int version_ ;
+      // optional int64 version = 10;
+      private long version_ ;
       public boolean hasVersion() {
         return ((bitField0_ & 0x00000200) == 0x00000200);
       }
-      public int getVersion() {
+      public long getVersion() {
         return version_;
       }
-      public Builder setVersion(int value) {
+      public Builder setVersion(long value) {
         bitField0_ |= 0x00000200;
         version_ = value;
         onChanged();
@@ -15642,7 +15642,7 @@ public final class MsgDefProtos {
       }
       public Builder clearVersion() {
         bitField0_ = (bitField0_ & ~0x00000200);
-        version_ = 0;
+        version_ = 0L;
         onChanged();
         return this;
       }
@@ -21328,7 +21328,7 @@ public final class MsgDefProtos {
       "\010location\030\004 \001(\t\022\022\n\nstart_time\030\005 \001(\003\022\020\n\010e" +
       "nd_time\030\006 \001(\003\022\023\n\013repeat_rule\030\007 \001(\t\022\022\n\nal",
       "ert_time\030\010 \001(\005\022\014\n\004note\030\t \001(\t\022\017\n\007version\030" +
-      "\n \001(\005\022/\n\013sync_result\030\013 \001(\0162\032.pekall.pcsu" +
+      "\n \001(\003\022/\n\013sync_result\030\013 \001(\0162\032.pekall.pcsu" +
       "ite.SyncResult\022\r\n\005pc_id\030\014 \001(\t\"\326\001\n\nAgenda" +
       "Sync\022&\n\004type\030\001 \002(\0162\030.pekall.pcsuite.Sync" +
       "Type\022-\n\010sub_type\030\002 \002(\0162\033.pekall.pcsuite." +

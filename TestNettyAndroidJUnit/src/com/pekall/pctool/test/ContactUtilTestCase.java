@@ -6,6 +6,7 @@ import android.test.AndroidTestCase;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.Contact;
+import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.ContactUtil;
@@ -16,8 +17,12 @@ public class ContactUtilTestCase extends AndroidTestCase {
     
     private static final String CONTACT_NAME = "unit test";
     private static final String CONTACT_NICKNAME = "unit test nick";
+    
     private static final String PHONE_NUMBER_1 = "028-65478965";
     private static final int PHONE_TYPE_1 = CommonDataKinds.Phone.TYPE_HOME;
+    
+    private static final String IM_ACCOUNT_1 = "shaobin0604@gmail.com";
+    private static final int IM_TYPE_1 = CommonDataKinds.Im.TYPE_HOME;
     
     private static final int COUNT_OF_INITIAL_CONTACT = 1;
     
@@ -35,6 +40,13 @@ public class ContactUtilTestCase extends AndroidTestCase {
         phoneInfo.type = PHONE_TYPE_1;
         
         contact.addPhoneInfo(phoneInfo);
+        
+        ImInfo imInfo = new ImInfo();
+        imInfo.modifyFlag = ModifyTag.add;
+        imInfo.account = IM_ACCOUNT_1;
+        imInfo.type = IM_TYPE_1;
+        
+        contact.addImInfo(imInfo);
         
         mContactId = ContactUtil.addContact(getContext(), contact);
         
@@ -54,7 +66,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         
-        ContactUtil.deleteContactAll(getContext());
+//        ContactUtil.deleteContactAll(getContext());
     }
 
     public void testQueryContact() throws Exception {
@@ -123,5 +135,48 @@ public class ContactUtilTestCase extends AndroidTestCase {
         phoneInfos = contact.phoneInfos;
         
         assertEquals(2, phoneInfos.size());
+    }
+    
+    public void testUpdateContactForcePhone1() throws Exception {
+        Contact contact = ContactUtil.getContactById(getContext(), mContactId);
+        List<PhoneInfo> phoneInfos = contact.phoneInfos;
+        
+        // remove all phones
+        phoneInfos.clear();
+        
+        // add one phone
+        PhoneInfo phoneInfo = new PhoneInfo();
+        
+        phoneInfo.type = CommonDataKinds.Phone.TYPE_HOME;
+        final String newPhoneNumber = "0832-3993098";
+        phoneInfo.number = newPhoneNumber;
+        
+        phoneInfos.add(phoneInfo);
+        
+        List<ImInfo> imInfos = contact.imInfos;
+        
+        ImInfo imInfo = new ImInfo();
+        imInfo.type = CommonDataKinds.Im.TYPE_HOME;
+        final String newImAccount = "shaobin0604@hotmail.com";
+        imInfo.account = newImAccount;
+        
+        imInfos.add(imInfo);
+        
+        boolean success = ContactUtil.updateContactForce(getContext(), contact);
+        
+        assertTrue(success);
+        
+        contact = ContactUtil.getContactById(getContext(), mContactId);
+        phoneInfos = contact.phoneInfos;
+        
+        assertEquals(1, phoneInfos.size());
+        
+        phoneInfo = phoneInfos.get(0);
+        
+        assertEquals(newPhoneNumber, phoneInfo.number);
+        
+        imInfos = contact.imInfos;
+        
+        assertEquals(2, imInfos.size());
     }
 }

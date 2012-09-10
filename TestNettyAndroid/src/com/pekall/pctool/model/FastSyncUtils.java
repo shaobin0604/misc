@@ -35,6 +35,8 @@ public class FastSyncUtils {
     }
     
     public static List<Contact> findChangedContacts(Context context) {
+        Slog.d("findChangedContacts E");
+        
         DatabaseHelper databaseHelper = new DatabaseHelper(context);
         
         databaseHelper.open();
@@ -67,8 +69,13 @@ public class FastSyncUtils {
             }
             contact.modifyTag = contactVersion.modifyTag;
             
+            Slog.d(contact.toString());
+            
             changedContacts.add(contact);
         }
+        
+        
+        Slog.d("findChangedContacts X");
         return changedContacts;
     }
     
@@ -85,7 +92,7 @@ public class FastSyncUtils {
                 
                 changes.add(contactVersion);
             } else {
-                if (lastSyncVersion != contactVersion.version) {
+                if (lastSyncVersion.intValue() != contactVersion.version) {
                     // version changed, treat as update
                     contactVersion.modifyTag = ModifyTag.edit;
                     

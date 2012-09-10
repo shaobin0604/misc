@@ -34,7 +34,7 @@ public class EventInfo implements Serializable {
     transient private boolean hasChecksum;
     transient public int modifyTag;     // event change flag(no change, add, update, delete) since last sync
     
-    private static final Adler32 sChecksum = new Adler32();
+    transient private static final Adler32 sChecksum = new Adler32();
     
     /**
      * Get checksum of this event info

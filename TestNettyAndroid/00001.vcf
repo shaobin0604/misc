@@ -1,0 +1,7 @@
+BEGIN:VCARD
+VERSION:2.1
+N:test;unit;;;
+FN:unit test
+X-ANDROID-CUSTOM:vnd.android.cursor.item/nickname;unit test nick;;;;;;;;;;;;;;
+TEL;HOME:083-239-93098
+END:VCARD

@@ -354,7 +354,7 @@ message AgendaRecord
 	optional string repeat_rule = 7; 	//重复规则
 	optional int32	alert_time = 8;		//提醒间隔，单位秒
 	optional string	note = 9;
-	optional int32			version = 10;
+	optional int64			version = 10;
 	optional SyncResult 	sync_result = 11;
 	optional string			pc_id = 12; //pc方的唯一标识
 }
