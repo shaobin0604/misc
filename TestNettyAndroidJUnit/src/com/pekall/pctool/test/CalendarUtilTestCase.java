@@ -1,7 +1,6 @@
 
 package com.pekall.pctool.test;
 
-import android.net.Uri;
 import android.test.AndroidTestCase;
 
 import com.pekall.pctool.model.calendar.CalendarInfo;
@@ -18,11 +17,11 @@ public class CalendarUtilTestCase extends AndroidTestCase {
     public void testAddCalendar() throws Exception {
         CalendarInfo calendarInfo = new CalendarInfo();
 
-        calendarInfo.name = "test calendar";
+        calendarInfo.name = "test add calendar 2";
 
-        Uri uri = CalendarUtil.addCalendar(getContext(), calendarInfo);
+        long calendarId = CalendarUtil.addCalendar(getContext(), calendarInfo);
 
-        assertNotNull(uri);
+        assertTrue(calendarId > 0);
     }
 
     public void testAddEvent() throws Exception {

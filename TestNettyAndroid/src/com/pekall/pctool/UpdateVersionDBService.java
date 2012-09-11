@@ -54,7 +54,7 @@ public class UpdateVersionDBService extends IntentService {
                 Slog.e("Error update contact version");
             }
         } else if (FastSyncUtils.ACTION_UPDATE_EVENT_VERSION.equals(action)) {
-            List<EventVersion> eventVersions = CalendarUtil.queryEventVersions(this);
+            List<EventVersion> eventVersions = CalendarUtil.getEventVersions(this);
             boolean success = mDatabaseHelper.updateEventVersions(eventVersions);
             if (success) {
                 Slog.d("update event version OK");

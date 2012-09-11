@@ -154,6 +154,21 @@ public class Contact {
         public static final int add  = 1;   //增加
         public static final int del  = 2;   //删除
         public static final int edit = 3;   //修改
+        
+        public static String toString(int modifyTag) {
+            switch (modifyTag) {
+                case same:
+                    return "same";
+                case add:
+                    return "add";
+                case del:
+                    return "delete";
+                case edit:
+                    return "edit";
+                default:
+                    throw new IllegalArgumentException("unknown modifyTag: " + modifyTag);
+            }
+        }
     }
 
     public static class RawContact {

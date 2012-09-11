@@ -4,6 +4,7 @@ package com.pekall.pctool.model.calendar;
 import android.provider.BaseColumns;
 
 import com.pekall.pctool.Slog;
+import com.pekall.pctool.model.contact.Contact.ModifyTag;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class EventInfo implements Serializable {
     
     transient private long checksum;    // the cached checksum
     transient private boolean hasChecksum;
-    transient public int modifyTag;     // event change flag(no change, add, update, delete) since last sync
+    transient public int modifyTag = ModifyTag.same;     // event change flag(no change, add, update, delete) since last sync
     
     transient private static final Adler32 sChecksum = new Adler32();
     

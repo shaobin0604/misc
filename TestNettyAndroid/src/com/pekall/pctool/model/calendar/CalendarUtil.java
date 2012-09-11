@@ -14,7 +14,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.provider.ContactsContract;
 import android.provider.CalendarContract.Calendars;
 import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Reminders;
@@ -65,6 +64,21 @@ public class CalendarUtil {
      */
     private static final int PROJECTION_REMINDER_ID_INDEX = 0;
     private static final int PROJECTION_REMINDER_MINUTES_INDEX = 1;
+    
+    public static long getDefaultCalendarId(Context context) {
+        List<CalendarInfo> calendarInfos = queryCalendarAll(context);
+        if (calendarInfos.size() > 0) {
+            // get the first calendar as default calendar for outlook sync 
+            CalendarInfo calendarInfo = calendarInfos.get(0);
+            return calendarInfo.caId;
+        } else {
+            // add a calendar as default calendar for outlook sync
+            CalendarInfo calendarInfo = new CalendarInfo();
+            calendarInfo.name = CALENDAR_DEFAULT_NAME;
+            
+            return addCalendar(context, calendarInfo);
+        }
+    }
 
     /**
      * 查询所有日历(所有账户的日历)
@@ -79,10 +93,12 @@ public class CalendarUtil {
         }, null, null, null);
         while (cur.moveToNext()) {
             CalendarInfo ci = new CalendarInfo();
+            
             ci.caId = cur.getLong(PROJECTION_CALENDAR_ID_INDEX);
             ci.name = cur.getString(PROJECTION_CALENDAR_NAME_INDEX);
             ci.accountInfo.accountName = cur.getString(PROJECTION_ACCOUNT_NAME_INDEX);
             ci.accountInfo.accountType = cur.getString(PROJECTION_ACCOUNT_TYPE_INDEX);
+            
             calendarInfoList.add(ci);
         }
         cur.close();
@@ -256,6 +272,31 @@ public class CalendarUtil {
         }
     }
 
+    public static int deleteEventAll(Context context) {
+        long[] eventIds = queryEventIds(context);
+        
+        if (eventIds == null || eventIds.length == 0) {
+            return 0;
+        }
+        
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+        for (long id : eventIds) {
+            ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Events.CONTENT_URI, id)).build());
+        }
+        
+        ContentProviderResult[] results;
+        try {
+            results = context.getContentResolver().applyBatch(CalendarContract.AUTHORITY, ops);
+            return results.length;
+        } catch (RemoteException e) {
+            Slog.e("Error when batch delete Event", e);
+            return 0;
+        } catch (OperationApplicationException e) {
+            Slog.e("Error when batch delete Event", e);
+            return 0;
+        }
+    }
+    
     /**
      * 删除一个事件
      */
@@ -283,7 +324,7 @@ public class CalendarUtil {
 
     public static int[] getReminderTime(Context context, long eventId) {
         ContentResolver cr = context.getContentResolver();
-        String selection = Reminders.EVENT_ID + " = ? ";
+        String selection = Reminders.EVENT_ID + " = ?";
         String[] selectionArgs = new String[] {
                 String.valueOf(eventId)
         };
@@ -296,10 +337,11 @@ public class CalendarUtil {
             alertTime[i] = cur.getInt(PROJECTION_REMINDER_MINUTES_INDEX);
             i++;
         }
+        cur.close();
         return alertTime;
     }
 
-    public static List<EventVersion> queryEventVersions(Context context) {
+    public static List<EventVersion> getEventVersions(Context context) {
         List<EventInfo> eventInfos = queryEvents(context);
 
         List<EventVersion> eventVersions = new ArrayList<EventInfo.EventVersion>();
@@ -313,6 +355,26 @@ public class CalendarUtil {
             eventVersions.add(eventVersion);
         }
         return eventVersions;
+    }
+    
+    public static long[] queryEventIds(Context context) {
+        String projection[] = new String[] {
+                Events._ID, 
+        };
+
+        Cursor cursor = context.getContentResolver().query(Events.CONTENT_URI, projection, null, null, null);
+        
+        long[] ids = new long[0];
+        if (cursor != null) {
+            ids = new long[cursor.getCount()];
+            int i = 0;
+            while (cursor.moveToNext()) {
+                ids[i] = cursor.getLong(0);
+                i++;
+            }
+            cursor.close();
+        }
+        return ids;
     }
 
     public static List<EventInfo> queryEvents(Context context) {
@@ -431,7 +493,7 @@ public class CalendarUtil {
      * @param calendarInfo
      * @return
      */
-    public static Uri addCalendar(Context context, CalendarInfo calendarInfo) {
+    public static long addCalendar(Context context, CalendarInfo calendarInfo) {
         ContentValues values = new ContentValues();
         AccountManager accountManager = (AccountManager) context
                 .getSystemService(Context.ACCOUNT_SERVICE);
@@ -462,7 +524,14 @@ public class CalendarUtil {
                 .appendQueryParameter(Calendars.ACCOUNT_NAME, name)
                 .appendQueryParameter(Calendars.ACCOUNT_TYPE, type)
                 .build();
-        return context.getContentResolver().insert(calendarUri, values);
+        
+        Slog.d("calendarUri = " + calendarUri);
+        
+        Uri newCalendarUri = context.getContentResolver().insert(calendarUri, values);
+        
+        Slog.d("newCalendarUri = " + newCalendarUri);
+        
+        return ContentUris.parseId(newCalendarUri);
     }
 
 }

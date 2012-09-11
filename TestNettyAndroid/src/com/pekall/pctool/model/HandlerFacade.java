@@ -64,6 +64,7 @@ import com.pekall.pctool.protos.MsgDefProtos.SMSRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy;
 import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
+import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -514,6 +515,8 @@ public class HandlerFacade {
         agendaRecordBuilder.setRepeatRule(normalizeStr(eventInfo.rrule));
         agendaRecordBuilder.setAlertTime(eventInfo.alertTime);
         agendaRecordBuilder.setNote(normalizeStr(eventInfo.note));
+        
+        agendaRecordBuilder.setSyncResult(modifyTagToSyncResult(eventInfo.modifyTag));
     }
 
     public CmdResponse addAgenda(CmdRequest request) {
@@ -672,7 +675,8 @@ public class HandlerFacade {
     private void handleSyncAgendaWithOutlook(AgendaSync agendaSync, Builder responseBuilder) {
         Slog.d("handleSyncAgendaWithOutlook E");
         
-        switch (agendaSync.getSubType()) {
+        final SyncSubType subSyncType = agendaSync.getSubType();
+        switch (subSyncType) {
             case TWO_WAY_SLOW_SYNC: {
                 handleSyncAgendaTwoWay(agendaSync, responseBuilder, /* fastSync */ false);
                 break;
@@ -689,12 +693,149 @@ public class HandlerFacade {
                 handleSyncAgendaTwoWaySecond(agendaSync, responseBuilder);
                 break;
             }
+            case PHONE_REFRESH_SYNC: {
+                handleSyncAgendaPhoneRefresh(agendaSync, responseBuilder);
+                break;
+            }
+            case PC_REFRESH_SYNC: {
+                handleSyncAgendaPcRefresh(agendaSync, responseBuilder);
+                break;
+            }
 
             default:
+                Slog.e("unsupported subSyncType: " + subSyncType);
                 break;
         }
         
         Slog.d("handleSyncAgendaWithOutlook X");        
+    }
+
+    /**
+     * Overwrite phone's events with outlook's events
+     * 
+     * @param agendaSync
+     * @param responseBuilder
+     */
+    private void handleSyncAgendaPcRefresh(AgendaSync agendaSync, Builder responseBuilder) {
+        Slog.d("handleSyncAgendaPcRefresh E");
+        
+        AgendaSync.Builder agendaSyncBuilder = AgendaSync.newBuilder();
+        agendaSyncBuilder.setType(agendaSync.getType());
+        agendaSyncBuilder.setSubType(agendaSync.getSubType());
+        if (agendaSync.hasSyncConflictPloy()) {
+            agendaSyncBuilder.setSyncConflictPloy(agendaSync.getSyncConflictPloy());
+        }
+        
+        //
+        // 1. delete all events
+        //
+        final int count = CalendarUtil.deleteEventAll(mContext);
+        Slog.d("delete count = " + count);
+        
+        //
+        // 2. add event from outlook
+        //
+        AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
+        
+        boolean success = true;
+        
+        final List<AgendaRecord> agendaRecordList = agendaSync.getAgendaRecordList();
+        
+        Slog.d("agendaRecordList size = " + agendaRecordList.size());
+        
+        for (AgendaRecord agendaRecord : agendaRecordList) {
+            final SyncResult syncResult = agendaRecord.getSyncResult();
+            final String pcId = agendaRecord.getPcId();
+            Slog.d("syncResult = " + syncResult + ", pcId = " + pcId);
+            
+            switch (syncResult) {
+                case PC_ADD: {
+                    EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
+                    
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
+                    if (eventInfoId > 0) {
+                        long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
+                        
+                        Slog.d("CalendarUtil.addEvent OK, eventInfoId = " + eventInfoId + ", eventVersion = " + eventVersion);
+                        
+                        agendaRecordBuilder.setId(eventInfoId);
+                        agendaRecordBuilder.setVersion(eventVersion);
+                        agendaRecordBuilder.setPcId(pcId);
+                        agendaRecordBuilder.setSyncResult(syncResult);
+                        
+                        agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
+                        
+                        agendaRecordBuilder.clear();
+                    } else {
+                        Slog.e("Error CalendarUtil.addEvent, eventInfoId = " + eventInfoId);
+                        success = false;
+                    }
+                    break;
+                }
+                
+                default: {
+                    Slog.e("Error invalid syncResult = " + syncResult);
+                    break;
+                }
+            }
+        }
+        
+        if (success) {
+            responseBuilder.setAgendaSync(agendaSyncBuilder);
+            
+            setResultOK(responseBuilder);
+        } else {
+            setResultErrorInternal(responseBuilder, "CalendarUtil.addEvent");
+        }
+        
+        FastSyncUtils.notifyUpdateEventVersionDB(mContext);
+        
+        Slog.d("handleSyncAgendaPcRefresh X");
+    }
+
+    /**
+     * Overwrite outlook's events with phone's events
+     * 
+     * @param agendaSync
+     * @param responseBuilder
+     */
+    private void handleSyncAgendaPhoneRefresh(AgendaSync agendaSync, Builder responseBuilder) {
+        Slog.d("handleSyncAgendaPhoneRefresh E");
+        
+        AgendaSync.Builder agendaSyncBuilder = AgendaSync.newBuilder();
+        agendaSyncBuilder.setType(agendaSync.getType());
+        agendaSyncBuilder.setSubType(agendaSync.getSubType());
+        if (agendaSync.hasSyncConflictPloy()) {
+            agendaSyncBuilder.setSyncConflictPloy(agendaSync.getSyncConflictPloy());
+        }
+        
+        AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
+        
+        List<EventInfo> eventInfos = CalendarUtil.queryEvents(mContext);
+        
+        Slog.d("eventInfos count = " + eventInfos.size());
+
+        for (EventInfo eventInfo : eventInfos) {
+            eventInfoToAgendaRecord(agendaRecordBuilder, eventInfo);
+
+            //
+            // We use phone's event to overwrite outlook's event, so mark as PHONE_ADD
+            //
+            agendaRecordBuilder.setSyncResult(SyncResult.PHONE_ADD);
+            
+            agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
+
+            agendaRecordBuilder.clear();
+        }
+
+        responseBuilder.setAgendaSync(agendaSyncBuilder);
+
+        setResultOK(responseBuilder);
+        
+        FastSyncUtils.notifyUpdateEventVersionDB(mContext);
+        
+        Slog.d("handleSyncAgendaPhoneRefresh X");
+        
     }
 
     private void handleSyncAgendaTwoWay(AgendaSync agendaSync, Builder responseBuilder, boolean fastSync) {
@@ -716,6 +857,8 @@ public class HandlerFacade {
         
         AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
 
+        Slog.d("eventInfos size = " + eventInfos.size());
+        
         for (EventInfo eventInfo : eventInfos) {
             eventInfoToAgendaRecord(agendaRecordBuilder, eventInfo);
 
@@ -752,7 +895,11 @@ public class HandlerFacade {
         
         boolean success = true;
         
-        for (AgendaRecord agendaRecord : agendaSync.getAgendaRecordList()) {
+        final List<AgendaRecord> agendaRecordList = agendaSync.getAgendaRecordList();
+        
+        Slog.d("agendaRecordList size = " + agendaRecordList.size());
+        
+        for (AgendaRecord agendaRecord : agendaRecordList) {
             final SyncResult syncResult = agendaRecord.getSyncResult();
             final String pcId = agendaRecord.getPcId();
             Slog.d("SyncResult = " + syncResult + ", pcId = " + pcId);
@@ -794,6 +941,7 @@ public class HandlerFacade {
                         
                         agendaRecordBuilder.setId(eventId);
                         agendaRecordBuilder.setVersion(eventVersion);
+                        agendaRecordBuilder.setPcId(pcId);
                         agendaRecordBuilder.setSyncResult(syncResult);
                         
                         agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
@@ -814,6 +962,7 @@ public class HandlerFacade {
                         Slog.d("CalendarUtil.deleteEvent OK, eventInfoId = " + eventInfoId);
                         
                         agendaRecordBuilder.setId(eventInfoId);
+                        agendaRecordBuilder.setPcId(pcId);
                         agendaRecordBuilder.setSyncResult(syncResult);
                         
                         agendaSyncBuilder.addAgendaRecord(agendaRecordBuilder.build());
@@ -1176,6 +1325,7 @@ public class HandlerFacade {
     }
     
     private static SyncResult modifyTagToSyncResult(int modifyTag) {
+        Slog.d("modifyTag = " + com.pekall.pctool.model.contact.Contact.ModifyTag.toString(modifyTag));
         switch (modifyTag) {
             case com.pekall.pctool.model.contact.Contact.ModifyTag.add:
                 return SyncResult.PHONE_ADD;
@@ -1546,6 +1696,14 @@ public class HandlerFacade {
                 handleSyncContactTwoWaySecond(contactsSync, responseBuilder);
                 break;
             }
+            case PHONE_REFRESH_SYNC: {
+                handleSyncContactPhoneRefresh(contactsSync, responseBuilder);
+                break;
+            }
+            case PC_REFRESH_SYNC: {
+                handleSyncContactPcRefresh(contactsSync, responseBuilder);
+                break;
+            }
 
             default:
                 Slog.e("Error");
@@ -1553,6 +1711,144 @@ public class HandlerFacade {
         }
         
         Slog.d("handleSyncContactWithOutlook X");
+    }
+
+    /**
+     * Overwrite phone's all contacts with outlook's contacts
+     * 
+     * @param contactsSync
+     * @param responseBuilder
+     */
+    private void handleSyncContactPcRefresh(ContactsSync contactsSync, Builder responseBuilder) {
+        Slog.d("handleSyncContactPcRefresh E");
+        
+        ContactsSync.Builder contactSyncBuilder = ContactsSync.newBuilder();
+        
+        contactSyncBuilder.setType(contactsSync.getType());
+        contactSyncBuilder.setSubType(contactsSync.getSubType());
+        
+        if (contactsSync.hasSyncConflictPloy()) {
+            contactSyncBuilder.setSyncConflictPloy(contactsSync.getSyncConflictPloy());
+        }
+        
+        //
+        // 1. delete all contacts
+        //
+        final int count = ContactUtil.deleteContactAll(mContext);
+        Slog.d("delete count = " + count);
+        
+        //
+        // 2. add contact from outlook
+        //
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+        boolean success = true;
+        
+        
+        final List<ContactRecord> contactRecordList = contactsSync.getContactRecordList();
+        
+        Slog.d("contactRecordList size = " + contactRecordList.size());
+        for (ContactRecord contactRecord : contactRecordList) {
+            String pcId = contactRecord.getPcId();
+            SyncResult syncResult = contactRecord.getSyncResult();
+            
+            switch (syncResult) {
+                case PC_ADD: {
+                    Contact contact = contactRecordToContactForAdd(contactRecord);
+                    
+                    final long contactId = ContactUtil.addContact(mContext, contact);
+                    if (contactId > 0) {
+                        int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
+                        
+                        Slog.d("ContactUtil.addContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        
+                        contactRecordBuilder.setId(contactId);
+                        contactRecordBuilder.setVersion(contactVersion);
+                        contactRecordBuilder.setPcId(pcId);
+                        contactRecordBuilder.setSyncResult(syncResult);
+                        
+                        contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
+                        
+                        contactRecordBuilder.clear();
+                    } else {
+                        Slog.e("Error ContactUtil.addContact, contactId = " + contactId);
+                        success = false;
+                    }
+                    break;
+                }
+
+                default: {
+                    Slog.e("Error invalid syncResult: " + syncResult);
+                    break;
+                }
+            }
+        }
+        
+        if (success) {
+            responseBuilder.setContactsSync(contactSyncBuilder);
+            
+            setResultOK(responseBuilder);
+        } else {
+            setResultErrorInternal(responseBuilder, "ContactUtil.addContact");
+        }
+        
+        FastSyncUtils.notifyUpdateContactVersionDB(mContext);
+        
+        Slog.d("handleSyncContactPcRefresh X");
+    }
+
+    /**
+     * Overwrite outlook's contacts with phone's contacts
+     * 
+     * @param contactsSync
+     * @param responseBuilder
+     */
+    private void handleSyncContactPhoneRefresh(ContactsSync contactsSync, Builder responseBuilder) {
+        Slog.d("handleSyncContactPhoneRefresh E");
+        
+        List<Contact> contactList = ContactUtil.getAllContacts(mContext);
+
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+        AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+        GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
+        PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
+        EmailRecord.Builder emailRecordBuilder = EmailRecord.newBuilder();
+        IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
+        AddressRecord.Builder addressRecordBuilder = AddressRecord.newBuilder();
+        OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
+        
+        ContactsSync.Builder contactSyncBuilder = ContactsSync.newBuilder();
+        
+        contactSyncBuilder.setType(contactsSync.getType());
+        contactSyncBuilder.setSubType(contactsSync.getSubType());
+        
+        if (contactsSync.hasSyncConflictPloy()) {
+            contactSyncBuilder.setSyncConflictPloy(contactsSync.getSyncConflictPloy());
+        }
+        
+        Slog.d("Contacts number: " + contactList.size());
+        
+        for (Contact contact : contactList) {
+            contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
+                    emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
+
+            // 
+            // We use phone's contacts to overwrite outlook's contacts, so mark as PHONE_ADD
+            //
+            contactRecordBuilder.setSyncResult(SyncResult.PHONE_ADD);
+            
+            contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
+
+            accountRecordBuilder.clear();
+            contactRecordBuilder.clear();
+        }
+        
+        responseBuilder.setContactsSync(contactSyncBuilder);
+        
+        setResultOK(responseBuilder);
+        
+        FastSyncUtils.notifyUpdateContactVersionDB(mContext);
+        
+        Slog.d("handleSyncContactPhoneRefresh X");
     }
 
     private void handleSyncContactTwoWay(ContactsSync contactsSync, Builder responseBuilder, boolean fastSync) {
@@ -1625,7 +1921,11 @@ public class HandlerFacade {
         
         boolean success = true;
         
-        for (ContactRecord contactRecord : contactsSync.getContactRecordList()) {
+        final List<ContactRecord> contactRecordList = contactsSync.getContactRecordList();
+        
+        Slog.d("contactRecordList size = " + contactRecordList.size());
+        
+        for (ContactRecord contactRecord : contactRecordList) {
             final SyncResult syncResult = contactRecord.getSyncResult();
             final String pcId = contactRecord.getPcId();
             Slog.d("SyncResult = " + syncResult + ", pcId = " + pcId);
@@ -1666,6 +1966,7 @@ public class HandlerFacade {
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setVersion(contactVersion);
+                        contactRecordBuilder.setPcId(pcId);
                         contactRecordBuilder.setSyncResult(syncResult);
                         
                         contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
@@ -1689,6 +1990,7 @@ public class HandlerFacade {
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setVersion(contactVersion);
+                        contactRecordBuilder.setPcId(pcId);
                         contactRecordBuilder.setSyncResult(syncResult);
                         
                         contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
@@ -1710,6 +2012,7 @@ public class HandlerFacade {
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setSyncResult(syncResult);
+                        contactRecordBuilder.setPcId(pcId);
                         
                         contactSyncBuilder.addContactRecord(contactRecordBuilder.build());
                         

@@ -887,6 +887,7 @@ public class ContactUtil {
     public static long addContact(Context context, Contact contact) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
         
+        // if the contact's account info is empty, we add the contact to default account
         if (TextUtils.isEmpty(contact.accountInfo.accountName)) {
             contact.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
             contact.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;

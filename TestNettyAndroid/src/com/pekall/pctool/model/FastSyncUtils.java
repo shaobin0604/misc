@@ -128,7 +128,7 @@ public class FastSyncUtils {
         Map<Long, Long> lastSyncVersions = databaseHelper.getLastSyncEventVersions();
         databaseHelper.close();
 
-        List<EventVersion> currentVersions = CalendarUtil.queryEventVersions(context);
+        List<EventVersion> currentVersions = CalendarUtil.getEventVersions(context);
         
         List<EventVersion> changedVersions = calculateEventChanges(currentVersions, lastSyncVersions);
         
