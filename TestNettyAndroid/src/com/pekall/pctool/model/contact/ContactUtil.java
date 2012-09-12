@@ -57,9 +57,6 @@ public class ContactUtil {
     public static final String SIM2_ACCOUNT_NAME = "contacts.account.name.sim2";
     public static final String SIM2_ACCOUNT_TYPE = "contacts.account.type.sim";
 
-    /********* Data *********************************/
-    public static final int USER_DEFINED = 99;
-
     /******* Flag ******************************/
     private static final int DELETE_FLAG = 1;
     public static final int CONTACTS_COLLECT_FLAG = 1;
@@ -566,7 +563,7 @@ public class ContactUtil {
                         .newInsert(Data.CONTENT_URI)
                         .withValue(Data.RAW_CONTACT_ID, contact.id)
                         .withValue(Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
-                        .withValue(Organization.COMPANY, or.org)
+                        .withValue(Organization.COMPANY, or.company)
                         .withValue(Organization.TYPE, or.type)
                         .withValue(Organization.DATA3, or.customName).build());
             }
@@ -800,7 +797,7 @@ public class ContactUtil {
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
                         .withValue(ContactsContract.Data.MIMETYPE, Organization.CONTENT_ITEM_TYPE)
-                        .withValue(Organization.COMPANY, or.org).withValue(Organization.TYPE, or.type)
+                        .withValue(Organization.COMPANY, or.company).withValue(Organization.TYPE, or.type)
                         .withValue(Organization.DATA3, or.customName).build());
             } else if (or.modifyFlag == ModifyTag.del) {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, or.id)).build());
@@ -808,7 +805,7 @@ public class ContactUtil {
                 ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                         .withSelection(Data._ID + "=?", new String[] {
                                 String.valueOf(or.id)
-                        }).withValue(Organization.COMPANY, or.org).withValue(Organization.TYPE, or.type)
+                        }).withValue(Organization.COMPANY, or.company).withValue(Organization.TYPE, or.type)
                         .withValue(Organization.DATA3, or.customName).build());
             }
         }
@@ -885,6 +882,14 @@ public class ContactUtil {
      * @return the id of the new created contact, or -1 if failed
      */
     public static long addContact(Context context, Contact contact) {
+        if (DUMP_PARAMS) {
+            Slog.d("+++++ DUMP CONTACT +++++");
+            
+            Slog.d(contact.toString());
+            
+            Slog.d("----- DUMP CONTACT -----");
+        }
+        
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
         
         // if the contact's account info is empty, we add the contact to default account
@@ -939,7 +944,7 @@ public class ContactUtil {
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, or.org)
+                        .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, or.company)
                         .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, or.type)
                         .withValue(ContactsContract.CommonDataKinds.Organization.DATA3, or.customName).build());
             }
@@ -1328,7 +1333,7 @@ public class ContactUtil {
                         pr.id = d.dataId;
                         pr.type = d.data2;
                         pr.number = d.data1;
-                        if (pr.type == USER_DEFINED) {
+                        if (pr.type == Phone.TYPE_CUSTOM) {
                             pr.customName = d.data3;
                         }
                         c.phoneInfos.add(pr);
@@ -1337,7 +1342,7 @@ public class ContactUtil {
                         er.id = d.dataId;
                         er.type = d.data2;
                         er.email = d.data1;
-                        if (er.type == USER_DEFINED) {
+                        if (er.type == Email.TYPE_CUSTOM) {
                             er.customName = d.data3;
                         }
                         c.emailInfos.add(er);
@@ -1346,7 +1351,7 @@ public class ContactUtil {
                         ir.id = d.dataId;
                         ir.type = d.data5;
                         ir.account = d.data1;
-                        if (ir.type == USER_DEFINED) {
+                        if (ir.type == Im.TYPE_CUSTOM) {
                             ir.customName = d.data3;
                         }
                         c.imInfos.add(ir);
@@ -1359,13 +1364,16 @@ public class ContactUtil {
                         ar.postcode = d.data9;
                         ar.province = d.data8;
                         ar.type = d.data2;
-                        ar.customName = d.data3;
+                        if (ar.type == StructuredPostal.TYPE_CUSTOM) {
+                            ar.customName = d.data3;
+                        }
+                        c.addressInfos.add(ar);
                     } else if (minetype.equals(Organization.CONTENT_ITEM_TYPE)) {
                         OrgInfo or = new OrgInfo();
                         or.id = d.dataId;
                         or.type = d.data2;
-                        or.org = convertToString(d.data1);
-                        if (or.type == USER_DEFINED) {
+                        or.company = convertToString(d.data1);
+                        if (or.type == Organization.TYPE_CUSTOM) {
                             or.customName = d.data3;
                         }
                         c.orgInfos.add(or);
@@ -1389,11 +1397,11 @@ public class ContactUtil {
      * @param rawId
      * @return
      */
-    public static List<DataModel> convertToDataModels(Context context, List<GroupInfo> li, long rId) {
+    public static List<DataModel> convertToDataModels(Context context, List<GroupInfo> li, long rawContactId) {
         List<DataModel> ld = new ArrayList<DataModel>();
         Cursor cursorOfContacts = context.getContentResolver().query(Data.CONTENT_URI, null,
                 Data.RAW_CONTACT_ID + "=?", new String[] {
-                    String.valueOf(rId)
+                    String.valueOf(rawContactId)
                 }, Data.RAW_CONTACT_ID);
         if (cursorOfContacts == null)
             return ld;
@@ -1427,28 +1435,28 @@ public class ContactUtil {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data2 = cursorOfContacts.getInt(DATA2);
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data2 == USER_DEFINED) {
+                    if (dm.data2 == Phone.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
                 } else if (minetype.equals(Email.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data2 = cursorOfContacts.getInt(DATA2);
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data2 == USER_DEFINED) {
+                    if (dm.data2 == Email.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
                 } else if (minetype.equals(Im.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data5 = cursorOfContacts.getInt(DATA5);
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data5 == USER_DEFINED) {
+                    if (dm.data5 == Im.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
                 } else if (minetype.equals(Organization.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data2 = cursorOfContacts.getInt(DATA2);
-                    dm.data1 = convertToString(cursorOfContacts.getLong(DATA1));
-                    if (dm.data2 == USER_DEFINED) {
+                    dm.data1 = cursorOfContacts.getString(DATA1);
+                    if (dm.data2 == Organization.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
                 } else if (minetype.equals(Photo.CONTENT_ITEM_TYPE)) {
@@ -1462,7 +1470,9 @@ public class ContactUtil {
                     dm.data9 = cursorOfContacts.getString(DATA9); // postcode
                     dm.data10 = cursorOfContacts.getString(DATA10);// country
                     dm.data2 = cursorOfContacts.getInt(DATA2); // type
-                    dm.data3 = cursorOfContacts.getString(DATA3); // customName
+                    if (dm.data2 == StructuredPostal.TYPE_CUSTOM) {
+                        dm.data3 = cursorOfContacts.getString(DATA3); // customName
+                    }
                 } else if (minetype.equals(GroupMembership.CONTENT_ITEM_TYPE)) {
                     GroupInfo gr = new GroupInfo();
                     gr.grId = cursorOfContacts.getLong(DATA1);
@@ -1500,6 +1510,7 @@ public class ContactUtil {
         if (li == null)
             li = new ArrayList<GroupInfo>();
         if (cursorOfContacts.moveToFirst()) {
+            
             final int DATA_MIMETYPE = cursorOfContacts.getColumnIndex(Data.MIMETYPE);
             final int DATA_RAW_ID = cursorOfContacts.getColumnIndex(Data.RAW_CONTACT_ID);
             final int DATA1 = cursorOfContacts.getColumnIndex(Data.DATA1);
@@ -1508,47 +1519,69 @@ public class ContactUtil {
             final int DATA3 = cursorOfContacts.getColumnIndex(Data.DATA3);
             final int DATA5 = cursorOfContacts.getColumnIndex(Data.DATA5);
             final int DATA15 = cursorOfContacts.getColumnIndex(Data.DATA15);
+            final int DATA4 = cursorOfContacts.getColumnIndex(Data.DATA4);
+            final int DATA7 = cursorOfContacts.getColumnIndex(Data.DATA7);
+            final int DATA8 = cursorOfContacts.getColumnIndex(Data.DATA8);
+            final int DATA9 = cursorOfContacts.getColumnIndex(Data.DATA9);
+            final int DATA10 = cursorOfContacts.getColumnIndex(Data.DATA10);
+            
             do {
                 DataModel dm = new DataModel();
-                String minetype = cursorOfContacts.getString(DATA_MIMETYPE);
+                String mimetype = cursorOfContacts.getString(DATA_MIMETYPE);
                 long rawId = cursorOfContacts.getLong(DATA_RAW_ID);
-                dm.mimeType = minetype;
+                dm.mimeType = mimetype;
                 dm.rawId = rawId;
-                if (minetype.equals(StructuredName.CONTENT_ITEM_TYPE)) {
+                if (mimetype.equals(StructuredName.CONTENT_ITEM_TYPE)) {
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                } else if (minetype.equals(Nickname.CONTENT_ITEM_TYPE)) {
+                } else if (mimetype.equals(Nickname.CONTENT_ITEM_TYPE)) {
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                } else if (minetype.equals(Phone.CONTENT_ITEM_TYPE)) {
+                } else if (mimetype.equals(Phone.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data2 = cursorOfContacts.getInt(DATA2);
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data2 == USER_DEFINED) {
+                    if (dm.data2 == Phone.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
-                } else if (minetype.equals(Email.CONTENT_ITEM_TYPE)) {
+                } else if (mimetype.equals(Email.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data2 = cursorOfContacts.getInt(DATA2);
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data2 == USER_DEFINED) {
+                    if (dm.data2 == Email.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
-                } else if (minetype.equals(Im.CONTENT_ITEM_TYPE)) {
+                } else if (mimetype.equals(Im.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data5 = cursorOfContacts.getInt(DATA5);
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data5 == USER_DEFINED) {
+                    if (dm.data5 == Im.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
-                } else if (minetype.equals(Organization.CONTENT_ITEM_TYPE)) {
+                } else if (mimetype.equals(Organization.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data2 = cursorOfContacts.getInt(DATA2);
-                    dm.data1 = convertToString(cursorOfContacts.getLong(DATA1));
-                    if (dm.data2 == USER_DEFINED) {
+                    dm.data1 = cursorOfContacts.getString(DATA1);
+                    if (cursorOfContacts.isNull(DATA2)) {
+                        dm.data2 = Organization.TYPE_WORK;
+                    } else {
+                        dm.data2 = cursorOfContacts.getInt(DATA2);
+                    }
+                    if (dm.data2 == Organization.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
-                } else if (minetype.equals(Photo.CONTENT_ITEM_TYPE)) {
+                } else if (mimetype.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
+                    dm.dataId = cursorOfContacts.getLong(DATA_ID);
+                    dm.data1 = cursorOfContacts.getString(DATA1);
+                    dm.data4 = cursorOfContacts.getString(DATA4); // street
+                    dm.data7 = cursorOfContacts.getString(DATA7); // city
+                    dm.data8 = cursorOfContacts.getString(DATA8); // region
+                    dm.data9 = cursorOfContacts.getString(DATA9); // postcode
+                    dm.data10 = cursorOfContacts.getString(DATA10);// country
+                    dm.data2 = cursorOfContacts.getInt(DATA2); // type
+                    if (dm.data2 == StructuredPostal.TYPE_CUSTOM) {
+                        dm.data3 = cursorOfContacts.getString(DATA3); // customName
+                    }
+                } else if (mimetype.equals(Photo.CONTENT_ITEM_TYPE)) {
                     dm.data15 = cursorOfContacts.getBlob(DATA15);
-                } else if (minetype.equals(GroupMembership.CONTENT_ITEM_TYPE)) {
+                } else if (mimetype.equals(GroupMembership.CONTENT_ITEM_TYPE)) {
                     GroupInfo gr = new GroupInfo();
                     gr.grId = cursorOfContacts.getLong(DATA1);
                     gr.dataId = cursorOfContacts.getLong(DATA_ID);

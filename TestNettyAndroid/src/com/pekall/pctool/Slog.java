@@ -14,15 +14,17 @@ public final class Slog {
 
 	private static boolean USE_DETAIL_LOG = true;	
 	private static boolean USE_IS_LOGGABLE = false;
+	private static boolean USE_THREAD_ID = false;
 	
 	public static void setTag(String tag) {
 		TAG = tag;
 	}
 	
-	public static void initLog(String tag, boolean useDetailLog, boolean useIsLoggable) {
+	public static void initLog(String tag, boolean useDetailLog, boolean useIsLoggable, boolean useThreadId) {
 		TAG = tag;
 		USE_DETAIL_LOG = useDetailLog;
 		USE_IS_LOGGABLE = useIsLoggable;
+		USE_THREAD_ID = useThreadId;
 	}
 
 	@SuppressWarnings(value="all")
@@ -40,8 +42,11 @@ public final class Slog {
 			final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[4];
 			
 			buffer.append("[ ");
-			buffer.append(Thread.currentThread().getName());
-			buffer.append(": ");
+			
+			if (USE_THREAD_ID) {
+			    buffer.append(Thread.currentThread().getName());
+			    buffer.append(": ");
+			}
 			buffer.append(stackTraceElement.getFileName());
 			buffer.append(": ");
 			buffer.append(stackTraceElement.getLineNumber());

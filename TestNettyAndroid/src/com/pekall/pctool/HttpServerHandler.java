@@ -121,7 +121,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             }
             case IMPORT_APP: {
                 if (HttpMethod.POST.equals(method)) {
-
+                    // TODO: do app upload
                 }
                 break;
             }
@@ -148,162 +148,15 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
 
         try {
             CmdRequest cmdRequest = CmdRequest.parseFrom(cbis);
+            
+            CmdResponse cmdResponse = mHandlerFacade.handleCmdRequest(cmdRequest);
+            
+            ChannelBuffer buffer = new DynamicChannelBuffer(2048);
+            buffer.writeBytes(cmdResponse.toByteArray());
 
-            if (cmdRequest.hasCmdType()) {
-                CmdType cmdType = cmdRequest.getCmdType();
-                CmdResponse cmdResponse;
-                Slog.d("cmdType = " + cmdType);
-                switch (cmdType) {
-                    //
-                    // HEARTBEAT related methods
-                    //
-                    case CMD_HEART_BEAT: {
-                        cmdResponse = mHandlerFacade.heartbeat(cmdRequest);
-                    }
-                    
-                    //
-                    // APP related methods
-                    //
-                    case CMD_QUERY_APP: {
-                        cmdResponse = mHandlerFacade.queryApp(cmdRequest);
-                        break;
-                    }
-
-                    //
-                    // SMS related methods
-                    //
-                    case CMD_QUERY_SMS: {
-                        cmdResponse = mHandlerFacade.querySms(cmdRequest);
-                        break;
-                    }
-
-                    case CMD_DELETE_SMS: {
-                        cmdResponse = mHandlerFacade.deleteSms(cmdRequest);
-                        break;
-                    }
-
-                    case CMD_IMPORT_SMS: {
-                        cmdResponse = mHandlerFacade.importSms(cmdRequest);
-                        break;
-                    }
-                    
-                    //
-                    // MMS related methods
-                    //
-                    case CMD_QUERY_MMS: {
-                        cmdResponse = mHandlerFacade.queryMms(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_DELETE_MMS: {
-                        cmdResponse = mHandlerFacade.deleteMms(cmdRequest);
-                        break;
-                    }
-
-                    //
-                    // Calendar related methods
-                    //
-                    case CMD_QUERY_CALENDAR: {
-                        cmdResponse = mHandlerFacade.queryCalendar(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_QUERY_AGENDAS: {
-                        cmdResponse = mHandlerFacade.queryAgenda(cmdRequest);
-                        break;
-                    }
-
-                    case CMD_ADD_AGENDA: {
-                        cmdResponse = mHandlerFacade.addAgenda(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_EDIT_AGENDA: {
-                        cmdResponse = mHandlerFacade.updateAgenda(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_DELETE_AGENDA: {
-                        cmdResponse = mHandlerFacade.deleteAgenda(cmdRequest);
-                        break;
-                    }
-                    
-                    //
-                    // Contact related methods
-                    //
-                    case CMD_GET_ALL_ACCOUNTS: {
-                        cmdResponse = mHandlerFacade.queryAccount(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_GET_ALL_GROUPS: {
-                        cmdResponse = mHandlerFacade.queryGroup(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_ADD_GROUP: {
-                        cmdResponse = mHandlerFacade.addGroup(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_EDIT_GROUP: {
-                        cmdResponse = mHandlerFacade.updateGroup(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_DELETE_GROUP: {
-                        cmdResponse = mHandlerFacade.deleteGroup(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_QUERY_CONTACTS: {
-                        cmdResponse = mHandlerFacade.queryContact(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_ADD_CONTACT: {
-                        cmdResponse = mHandlerFacade.addContact(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_EDIT_CONTACT: {
-                        cmdResponse = mHandlerFacade.updateContact(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_DELETE_CONTACT: {
-                        cmdResponse = mHandlerFacade.deleteContact(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_SYNC_CONTACTS: {
-                        cmdResponse = mHandlerFacade.syncContactWithOutlook(cmdRequest);
-                        break;
-                    }
-                    
-                    case CMD_SYNC_AGENDAS: {
-                        cmdResponse = mHandlerFacade.syncAgendaWithOutlook(cmdRequest);
-                        break;
-                    }
-                    
-                    default: {
-                        // should not goes here
-                        cmdResponse = mHandlerFacade.unknownCmdResponse(cmdRequest);
-                        break;
-                    }
-                }
-                ChannelBuffer buffer = new DynamicChannelBuffer(2048);
-                buffer.writeBytes(cmdResponse.toByteArray());
-
-                response.setContent(buffer);
-                response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-                response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
-            } else {
-                Slog.e("Error insufficient params: cmdType");
-                
-                response.setStatus(BAD_REQUEST);
-                response.setHeader(CONTENT_LENGTH, 0);
-            }
+            response.setContent(buffer);
+            response.setHeader(CONTENT_TYPE, "application/x-protobuf");
+            response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
         } catch (IOException e) {
             Slog.e("Error when handleRPC, send 500 internal server error", e);
 
@@ -311,6 +164,8 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             response.setHeader(CONTENT_LENGTH, 0);
         }
     }
+
+    
 
     private void handleExportApp(final String packageName, MessageEvent event) {
         Slog.d("packageName = " + packageName);

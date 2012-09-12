@@ -382,7 +382,7 @@ public class ContactUtilOld {
                         .getColumnIndex(Data._ID));
                 or.type = cursorOfOrganization.getInt(cursorOfOrganization
                         .getColumnIndex(Organization.TYPE));
-                or.org = convertToString(cursorOfOrganization
+                or.company = convertToString(cursorOfOrganization
                         .getString(cursorOfOrganization
                                 .getColumnIndex(Organization.COMPANY)));
                 if (or.type == USER_DEFINED) {
@@ -820,7 +820,7 @@ public class ContactUtilOld {
                                 contact.id)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 Organization.CONTENT_ITEM_TYPE)
-                        .withValue(Organization.COMPANY, or.org)
+                        .withValue(Organization.COMPANY, or.company)
                         .withValue(Organization.TYPE, or.type)
                         .withValue(Organization.DATA3, or.customName).build());
             } else if (or.modifyFlag == ModifyTag.del) {
@@ -834,7 +834,7 @@ public class ContactUtilOld {
                                 new String[] {
                                     String.valueOf(or.id)
                                 })
-                        .withValue(Organization.COMPANY, or.org)
+                        .withValue(Organization.COMPANY, or.company)
                         .withValue(Organization.TYPE, or.type)
                         .withValue(Organization.DATA3, or.customName).build());
             }
@@ -1001,7 +1001,7 @@ public class ContactUtilOld {
                                 ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)
                         .withValue(
                                 ContactsContract.CommonDataKinds.Organization.COMPANY,
-                                or.org)
+                                or.company)
                         .withValue(
                                 ContactsContract.CommonDataKinds.Organization.TYPE,
                                 or.type)

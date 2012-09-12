@@ -71,19 +71,193 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HandlerFacade {
+    private static final boolean DUMP_CMD_REQUEST = true;
+    private static final boolean DUMP_CMD_RESPONSE = true;
+    
+    private static void dumpCmdRequestIfNeeded(CmdRequest cmdRequest) {
+        if (DUMP_CMD_REQUEST) {
+            Slog.d("++++++++++ DUMP_CMD_REQUEST ++++++++++");
+            Slog.d(cmdRequest.toString());
+            Slog.d("---------- DUMP_CMD_REQUEST ----------");
+        }
+    }
+    
+    private static void dumpCmdResponseIfNeeded(CmdResponse cmdResponse) {
+        if (DUMP_CMD_RESPONSE) {
+            Slog.d("++++++++++ DUMP_CMD_RESPONSE ++++++++++");
+            Slog.d(cmdResponse.toString());
+            Slog.d("---------- DUMP_CMD_RESPONSE ----------");
+        }
+    }
+    
     private static final int RESULT_CODE_OK = 0;
     private static final int RESULT_CODE_ERR_INSUFFICIENT_PARAMS = 100;
     private static final int RESULT_CODE_ERR_ILLEGAL_PARAMS = 101;
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
 
     private static final String RESULT_MSG_OK = "OK";
-    
-    private static final boolean DUMP_PARAM = true;
 
     private Context mContext;
 
     public HandlerFacade(Context context) {
         this.mContext = context;
+    }
+    
+    public CmdResponse handleCmdRequest(CmdRequest cmdRequest) {
+        dumpCmdRequestIfNeeded(cmdRequest);
+
+        CmdResponse cmdResponse;
+        if (cmdRequest.hasCmdType()) {
+            CmdType cmdType = cmdRequest.getCmdType();
+            Slog.d("cmdType = " + cmdType);
+            switch (cmdType) {
+                //
+                // HEARTBEAT related methods
+                //
+                case CMD_HEART_BEAT: {
+                    cmdResponse = heartbeat(cmdRequest);
+                    break;
+                }
+                
+                //
+                // APP related methods
+                //
+                case CMD_QUERY_APP: {
+                    cmdResponse = queryApp(cmdRequest);
+                    break;
+                }
+
+                //
+                // SMS related methods
+                //
+                case CMD_QUERY_SMS: {
+                    cmdResponse = querySms(cmdRequest);
+                    break;
+                }
+
+                case CMD_DELETE_SMS: {
+                    cmdResponse = deleteSms(cmdRequest);
+                    break;
+                }
+
+                case CMD_IMPORT_SMS: {
+                    cmdResponse = importSms(cmdRequest);
+                    break;
+                }
+                
+                //
+                // MMS related methods
+                //
+                case CMD_QUERY_MMS: {
+                    cmdResponse = queryMms(cmdRequest);
+                    break;
+                }
+                
+                case CMD_DELETE_MMS: {
+                    cmdResponse = deleteMms(cmdRequest);
+                    break;
+                }
+
+                //
+                // Calendar related methods
+                //
+                case CMD_QUERY_CALENDAR: {
+                    cmdResponse = queryCalendar(cmdRequest);
+                    break;
+                }
+                
+                case CMD_QUERY_AGENDAS: {
+                    cmdResponse = queryAgenda(cmdRequest);
+                    break;
+                }
+
+                case CMD_ADD_AGENDA: {
+                    cmdResponse = addAgenda(cmdRequest);
+                    break;
+                }
+                
+                case CMD_EDIT_AGENDA: {
+                    cmdResponse = updateAgenda(cmdRequest);
+                    break;
+                }
+                
+                case CMD_DELETE_AGENDA: {
+                    cmdResponse = deleteAgenda(cmdRequest);
+                    break;
+                }
+                
+                //
+                // Contact related methods
+                //
+                case CMD_GET_ALL_ACCOUNTS: {
+                    cmdResponse = queryAccount(cmdRequest);
+                    break;
+                }
+                
+                case CMD_GET_ALL_GROUPS: {
+                    cmdResponse = queryGroup(cmdRequest);
+                    break;
+                }
+                
+                case CMD_ADD_GROUP: {
+                    cmdResponse = addGroup(cmdRequest);
+                    break;
+                }
+                
+                case CMD_EDIT_GROUP: {
+                    cmdResponse = updateGroup(cmdRequest);
+                    break;
+                }
+                
+                case CMD_DELETE_GROUP: {
+                    cmdResponse = deleteGroup(cmdRequest);
+                    break;
+                }
+                
+                case CMD_QUERY_CONTACTS: {
+                    cmdResponse = queryContact(cmdRequest);
+                    break;
+                }
+                
+                case CMD_ADD_CONTACT: {
+                    cmdResponse = addContact(cmdRequest);
+                    break;
+                }
+                
+                case CMD_EDIT_CONTACT: {
+                    cmdResponse = updateContact(cmdRequest);
+                    break;
+                }
+                
+                case CMD_DELETE_CONTACT: {
+                    cmdResponse = deleteContact(cmdRequest);
+                    break;
+                }
+                
+                case CMD_SYNC_CONTACTS: {
+                    cmdResponse = syncContactWithOutlook(cmdRequest);
+                    break;
+                }
+                
+                case CMD_SYNC_AGENDAS: {
+                    cmdResponse = syncAgendaWithOutlook(cmdRequest);
+                    break;
+                }
+                
+                default: {
+                    // should not goes here
+                    cmdResponse = unknownCmdResponse(cmdRequest);
+                    break;
+                }
+            }
+        } else {
+            Slog.e("Error CmdType must be provided");
+            cmdResponse = unknownCmdResponse(cmdRequest);
+        }
+        
+        dumpCmdResponseIfNeeded(cmdResponse);
+        
+        return cmdResponse;
     }
 
     /**
@@ -527,12 +701,6 @@ public class HandlerFacade {
 
         if (request.hasAgendaParams()) {
             AgendaRecord agendaRecord = request.getAgendaParams();
-            
-            if (DUMP_PARAM) {
-                Slog.d(">>>>> dump agendaRecord >>>>>");
-                Slog.d(agendaRecord.toString());
-                Slog.d("<<<<< dump agendaRecord <<<<<");
-            }
 
             EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
 
@@ -637,12 +805,6 @@ public class HandlerFacade {
     
     public CmdResponse syncAgendaWithOutlook(CmdRequest cmdRequest) {
         Slog.d("syncAgendaWithOutlook E");
-
-        if (DUMP_PARAM) {
-            Slog.d(">>>>> dump CmdRequest >>>>>");
-            Slog.d(cmdRequest.toString());
-            Slog.d("<<<<< dump CmdRequest <<<<<");
-        }
         
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_SYNC_AGENDAS);
@@ -1200,6 +1362,10 @@ public class HandlerFacade {
         OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
         
         for (Contact contact : contactList) {
+            Slog.d("++++++++++ DUMP CONTACT ++++++++++");
+            Slog.d(contact.toString());
+            Slog.d("---------- DUMP CONTACT ----------");
+            
             contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
                     emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
         
@@ -1313,7 +1479,7 @@ public class HandlerFacade {
         for (OrgInfo orgInfo : contact.orgInfos) {
             orgRecordBuilder.setId(orgInfo.id);
             orgRecordBuilder.setType(toOrgType(orgInfo.type));
-            orgRecordBuilder.setName(normalizeStr(orgInfo.org));
+            orgRecordBuilder.setOrgName(normalizeStr(orgInfo.company));
             orgRecordBuilder.setName(normalizeStr(orgInfo.customName));
 
             orgRecordBuilder.setModifyTag(ModifyTag.SAME);
@@ -1353,7 +1519,30 @@ public class HandlerFacade {
 
             if (contactRecord != null) {
                 Contact contact = contactRecordToContactForAdd(contactRecord);
-                if (ContactUtil.addContact(mContext, contact) > 0) {
+                final long newContactId = ContactUtil.addContact(mContext, contact);
+                if (newContactId > 0) {
+                    
+                    // return the new created contact
+
+                    contact = ContactUtil.getContactById(mContext, newContactId);
+                    
+                    ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+                    AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+                    GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
+                    PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
+                    EmailRecord.Builder emailRecordBuilder = EmailRecord.newBuilder();
+                    IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
+                    AddressRecord.Builder addressRecordBuilder = AddressRecord.newBuilder();
+                    OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
+                    
+                    contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
+                            emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
+                
+                    responseBuilder.addContactRecord(contactRecordBuilder.build());
+                    
+                    accountRecordBuilder.clear();
+                    contactRecordBuilder.clear();
+                    
                     setResultOK(responseBuilder);
                 } else {
                     setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.addContact");
@@ -1451,7 +1640,7 @@ public class HandlerFacade {
             OrgInfo orgInfo = new OrgInfo();
 
             orgInfo.type = toCommonDataKindsOrganizationType(orgRecord.getType());
-            orgInfo.org = orgRecord.getOrgName();
+            orgInfo.company = orgRecord.getOrgName();
             orgInfo.customName = orgRecord.getName();
 
             contact.addOrgInfo(orgInfo);
@@ -1604,7 +1793,7 @@ public class HandlerFacade {
                 orgInfo.id = orgRecord.getId();
             }
             orgInfo.type = toCommonDataKindsOrganizationType(orgRecord.getType());
-            orgInfo.org = orgRecord.getOrgName();
+            orgInfo.company = orgRecord.getOrgName();
             orgInfo.customName = orgRecord.getName();
 
             orgInfo.modifyFlag = toModelModifyTag(orgRecord.getModifyTag());
@@ -1641,12 +1830,6 @@ public class HandlerFacade {
     //
     public CmdResponse syncContactWithOutlook(CmdRequest cmdRequest) {
         Slog.d("syncContactWithOutlook E");
-        
-        if (DUMP_PARAM) {
-            Slog.d(">>>>> dump CmdRequest >>>>>");
-            Slog.d(cmdRequest.toString());
-            Slog.d("<<<<< dump CmdRequest <<<<<");
-        }
         
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_SYNC_CONTACTS);

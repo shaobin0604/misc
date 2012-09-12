@@ -33,7 +33,6 @@ public class CalendarUtilTestCase extends AndroidTestCase {
         er.calendarId = 1;
         er.startTime = new Date().getTime();
         er.endTime = er.startTime + 30 * 60 * 1000;
-        er.rrule = "FREQ=DAILY;WKST=SU";
         boolean success = CalendarUtil.addEvent(mContext, er) > 0;
         System.out.println("------>flag" + success);
         Assert.assertTrue(success);

@@ -138,12 +138,12 @@ public class Contact {
     public static class OrgInfo {
         public long id;
         public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Organization.html
-        public String org;
+        public String company;
         public String customName;
         public int    modifyFlag;   // default same
         @Override
         public String toString() {
-            return "OrgInfo [id=" + id + ", type=" + type + ", org=" + org + ", customName=" + customName
+            return "OrgInfo [id=" + id + ", type=" + type + ", company=" + company + ", customName=" + customName
                     + ", modifyFlag=" + modifyFlag + "]";
         }
         
