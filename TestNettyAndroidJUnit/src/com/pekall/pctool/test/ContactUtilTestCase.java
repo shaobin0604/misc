@@ -65,8 +65,6 @@ public class ContactUtilTestCase extends AndroidTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        
-//        ContactUtil.deleteContactAll(getContext());
     }
 
     public void testQueryContact() throws Exception {
@@ -75,6 +73,21 @@ public class ContactUtilTestCase extends AndroidTestCase {
             Slog.d(contact.toString());
         }
         assertEquals(COUNT_OF_INITIAL_CONTACT, contacts.size());
+    }
+    
+    public void testUpdateContactNameEmpty() throws Exception {
+        final String expectedName = "";
+        
+        Contact contact = ContactUtil.getContactById(getContext(), mContactId);
+        contact.name = expectedName;
+        
+        boolean success = ContactUtil.updateContact(getContext(), contact);
+        
+        assertTrue(success);
+        
+        contact = ContactUtil.getContactById(getContext(), mContactId);
+        assertEquals(expectedName, contact.name);
+        
     }
     
     /**

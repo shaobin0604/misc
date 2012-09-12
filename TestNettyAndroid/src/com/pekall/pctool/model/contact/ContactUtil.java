@@ -1037,7 +1037,7 @@ public class ContactUtil {
     }
 
     /**
-     * get all group's detail infomation to one account
+     * get all group's detail information to one account
      * 
      * @param context
      */
@@ -1273,7 +1273,6 @@ public class ContactUtil {
      * @return
      */
     public static boolean hasField(Context context, String filed, long rawId) {
-        boolean flag = false;
         Uri dataUri = Data.CONTENT_URI;
         String where = Data.MIMETYPE + "=? and " + Data.RAW_CONTACT_ID + "=?";
         String whereargs[] = null;
@@ -1293,9 +1292,7 @@ public class ContactUtil {
                 Data._ID
         };
         Cursor cursor = context.getContentResolver().query(dataUri, projection, where, whereargs, null);
-        if (cursor.getCount() > 0) {
-            flag = true;
-        }
+        boolean flag = (cursor.getCount() > 0);
         cursor.close();
         return flag;
     }

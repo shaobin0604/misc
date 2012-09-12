@@ -2145,7 +2145,7 @@ public class HandlerFacade {
                     if (ContactUtil.updateContactForce(mContext, contact)) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
-                        Slog.d("ContactUtil.updateContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        Slog.d("ContactUtil.updateContactForce OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setVersion(contactVersion);
@@ -2169,7 +2169,7 @@ public class HandlerFacade {
                     if (ContactUtil.updateContact(mContext, contact)) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
-                        Slog.d("ContactUtil.updateContact OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
+                        Slog.d("ContactUtil.updateContactForce OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
                         
                         contactRecordBuilder.setId(contactId);
                         contactRecordBuilder.setVersion(contactVersion);

@@ -86,6 +86,7 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         assertEquals("NICK testAddContact", contactRecord.getNickname());
     }
     
+    
     public void testQuerySms() throws Exception {
         CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
         
@@ -141,6 +142,9 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         }
     }
     
+    //
+    // Sync contacts
+    //
     public void testSyncContactWithOutlookTwoWaySlowSync() throws Exception {
         CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
         ContactsSync.Builder contactsSyncBuilder = ContactsSync.newBuilder();
@@ -263,6 +267,10 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         
         Slog.d(cmdResponse.toString());
     }
+    
+    // 
+    // Sync Agenda
+    //
     
     public void testSyncAgendaWithOutlookTwoWaySlowSync() throws Exception {
         CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
