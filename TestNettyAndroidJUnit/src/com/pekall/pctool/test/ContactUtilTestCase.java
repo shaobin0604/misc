@@ -44,7 +44,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
         ImInfo imInfo = new ImInfo();
         imInfo.modifyFlag = ModifyTag.add;
         imInfo.account = IM_ACCOUNT_1;
-        imInfo.type = IM_TYPE_1;
+        imInfo.protocol = IM_TYPE_1;
         
         contact.addImInfo(imInfo);
         
@@ -169,7 +169,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
         List<ImInfo> imInfos = contact.imInfos;
         
         ImInfo imInfo = new ImInfo();
-        imInfo.type = CommonDataKinds.Im.TYPE_HOME;
+        imInfo.protocol = CommonDataKinds.Im.TYPE_HOME;
         final String newImAccount = "shaobin0604@hotmail.com";
         imInfo.account = newImAccount;
         

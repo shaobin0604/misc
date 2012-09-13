@@ -59,7 +59,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
         ImInfo imInfo = new ImInfo();
         imInfo.modifyFlag = ModifyTag.add;
         imInfo.account = IM_ACCOUNT_1;
-        imInfo.type = IM_TYPE_1;
+        imInfo.protocol = IM_TYPE_1;
         
         contact.addImInfo(imInfo);
         
@@ -82,7 +82,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
         imInfo = new ImInfo();
         imInfo.modifyFlag = ModifyTag.add;
         imInfo.account = IM_ACCOUNT_2;
-        imInfo.type = IM_TYPE_2;
+        imInfo.protocol = IM_TYPE_2;
         
         contact.addImInfo(imInfo);
         

@@ -15,20 +15,21 @@ public class HttpServerService extends Service {
     @Override
     public void onCreate() {
         Slog.d("onCreate E");
+        
         super.onCreate();
+        
         mHttpServer = new HttpServer(this);
         mHttpServer.start();
-        Slog.d("onCreate X");
-        
-        mUsbUnPlugReceiver = new UsbUnPlugEventReceiver();
-        mUsbUnPlugFilter = new IntentFilter(Intent.ACTION_POWER_DISCONNECTED);
         
         startListenUsbUnPlugEvent();
+        
+        Slog.d("onCreate X");
     }
     
     @Override
     public void onDestroy() {
         Slog.d("onDestroy E");
+        
         super.onDestroy();
         
         if (mHttpServer != null) {
@@ -40,6 +41,7 @@ public class HttpServerService extends Service {
         
         Slog.d("onDestroy X");
     }
+    
     
     private boolean isServerRunning() {
         if (mHttpServer != null) {
@@ -57,6 +59,8 @@ public class HttpServerService extends Service {
 
     private void startListenUsbUnPlugEvent() {
         Slog.d("startListenUsbUnPlugEvent E");
+        mUsbUnPlugReceiver = new UsbUnPlugEventReceiver();
+        mUsbUnPlugFilter = new IntentFilter(Intent.ACTION_POWER_DISCONNECTED);
         registerReceiver(mUsbUnPlugReceiver, mUsbUnPlugFilter);
         Slog.d("startListenUsbUnPlugEvent X");
     }

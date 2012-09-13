@@ -208,13 +208,13 @@ public class ContactUtil {
                 GroupInfo gi = new GroupInfo();
 
                 gi.grId = cursorOfGroup.getLong(GROUP_ID);
+                gi.dataId = gi.grId;
                 gi.name = cursorOfGroup.getString(GROUP_TITLE);
                 gi.note = cursorOfGroup.getString(GROUP_NOTES);
                 gi.accountInfo.accountType = cursorOfGroup.getString(GROUP_ACCOUNT_TYPE);
                 gi.accountInfo.accountName = cursorOfGroup.getString(GROUP_ACCOUNT_NAME);
 
                 li.add(gi);
-
             } while (cursorOfGroup.moveToNext());
         }
         cursorOfGroup.close();
@@ -409,6 +409,8 @@ public class ContactUtil {
         
         // update Name
         if (hasField(context, "name", contact.id)) {
+            Slog.d("has name");
+            
             ops.add(ContentProviderOperation
                     .newUpdate(Data.CONTENT_URI)
                     .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + " = ?",
@@ -416,6 +418,7 @@ public class ContactUtil {
                                     String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
                             }).withValue(StructuredName.DISPLAY_NAME, contact.name).build());
         } else {
+            Slog.d("does not has name");
             ops.add(ContentProviderOperation
                     .newInsert(Data.CONTENT_URI)
                     .withValue(Data.RAW_CONTACT_ID, contact.id)
@@ -611,8 +614,8 @@ public class ContactUtil {
                         .withValue(Data.RAW_CONTACT_ID, contact.id)
                         .withValue(Data.MIMETYPE, Im.CONTENT_ITEM_TYPE)
                         .withValue(Im.DATA1, ir.account)
-                        .withValue(Im.TYPE, ir.type)
-                        .withValue(Data.DATA3, ir.customName).build());
+                        .withValue(Im.PROTOCOL, ir.protocol)
+                        .withValue(Data.DATA3, ir.customProtocol).build());
             }
         }
 
@@ -838,7 +841,7 @@ public class ContactUtil {
                         .build());
             }
         }
-        // update InfoM
+        // update IM
         for (Iterator<ImInfo> iter = contact.imInfos.iterator(); iter.hasNext();) {
             ImInfo ir = iter.next();
             if (ir.modifyFlag == ModifyTag.add) {
@@ -846,15 +849,16 @@ public class ContactUtil {
                         .withValue(ContactsContract.Data.RAW_CONTACT_ID, contact.id)
                         .withValue(ContactsContract.Data.MIMETYPE, Im.CONTENT_ITEM_TYPE)
                         .withValue(Im.DATA1, ir.account)
-                        .withValue(Im.TYPE, ir.type).withValue(Data.DATA3, ir.customName).build());
+                        .withValue(Im.PROTOCOL, ir.protocol).withValue(Data.DATA3, ir.customProtocol).build());
             } else if (ir.modifyFlag == ModifyTag.del) {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ir.id)).build());
             } else if (ir.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                         .withSelection(Data._ID + "=?", new String[] {
                                 String.valueOf(ir.id)
-                        }).withValue(Im.DATA1, ir.account).withValue(Im.TYPE, ir.type)
-                        .withValue(Im.DATA3, ir.customName)
+                        }).withValue(Im.DATA1, ir.account)
+                        .withValue(Im.PROTOCOL, ir.protocol)
+                        .withValue(Im.DATA3, ir.customProtocol)
                         .build());
             }
         }
@@ -1006,8 +1010,8 @@ public class ContactUtil {
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE)
                         .withValue(ContactsContract.CommonDataKinds.Im.DATA1, ir.account)
-                        .withValue(ContactsContract.CommonDataKinds.Im.PROTOCOL, ir.type)
-                        .withValue(ContactsContract.CommonDataKinds.Im.DATA3, ir.customName).build());
+                        .withValue(ContactsContract.CommonDataKinds.Im.PROTOCOL, ir.protocol)
+                        .withValue(ContactsContract.CommonDataKinds.Im.DATA3, ir.customProtocol).build());
             }
         }
 
@@ -1346,10 +1350,10 @@ public class ContactUtil {
                     } else if (minetype.equals(Im.CONTENT_ITEM_TYPE)) {
                         ImInfo ir = new ImInfo();
                         ir.id = d.dataId;
-                        ir.type = d.data5;
+                        ir.protocol = d.data5;
                         ir.account = d.data1;
-                        if (ir.type == Im.TYPE_CUSTOM) {
-                            ir.customName = d.data3;
+                        if (ir.protocol == Im.TYPE_CUSTOM) {
+                            ir.customProtocol = d.data3;
                         }
                         c.imInfos.add(ir);
                     } else if (minetype.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
@@ -1703,28 +1707,28 @@ public class ContactUtil {
 
         for (int i = 0; i < c.imInfos.size(); i++) {
             ImInfo im = c.imInfos.get(i);
-            if (im.type == Im.PROTOCOL_AIM) {
+            if (im.protocol == Im.PROTOCOL_AIM) {
                 System.out.print("通讯工具类型" + "AIM");
             }
-            if (im.type == Im.PROTOCOL_GOOGLE_TALK) {
+            if (im.protocol == Im.PROTOCOL_GOOGLE_TALK) {
                 System.out.print("通讯工具类型" + "PROTOCOL_GOOGLE_TALK");
             }
-            if (im.type == Im.PROTOCOL_JABBER) {
+            if (im.protocol == Im.PROTOCOL_JABBER) {
                 System.out.print("通讯工具类型" + "PROTOCOL_JABBER");
             }
-            if (im.type == Im.PROTOCOL_QQ) {
+            if (im.protocol == Im.PROTOCOL_QQ) {
                 System.out.print("通讯工具类型" + "QQ");
             }
-            if (im.type == Im.PROTOCOL_MSN) {
+            if (im.protocol == Im.PROTOCOL_MSN) {
                 System.out.print("通讯工具类型" + "MSN");
             }
-            if (im.type == Im.PROTOCOL_YAHOO) {
+            if (im.protocol == Im.PROTOCOL_YAHOO) {
                 System.out.print("通讯工具类型" + "PROTOCOL_YAHOO");
             }
-            if (im.type == Im.PROTOCOL_ICQ) {
+            if (im.protocol == Im.PROTOCOL_ICQ) {
                 System.out.print("通讯工具类型" + "PROTOCOL_ICQ");
             }
-            if (im.type == Im.PROTOCOL_SKYPE) {
+            if (im.protocol == Im.PROTOCOL_SKYPE) {
                 System.out.print("通讯工具类型" + "PROTOCOL_SKYPE");
             }
             System.out.println("通讯工具号码" + im.account);

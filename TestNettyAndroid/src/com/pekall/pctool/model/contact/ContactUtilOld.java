@@ -289,12 +289,12 @@ public class ContactUtilOld {
                 ImInfo ir = new ImInfo();
 
                 ir.id = cursorOfIm.getLong(cursorOfIm.getColumnIndex(Data._ID));
-                ir.type = cursorOfIm.getInt(cursorOfIm
+                ir.protocol = cursorOfIm.getInt(cursorOfIm
                         .getColumnIndex(Im.PROTOCOL));
                 ir.account = cursorOfIm.getString(cursorOfIm
                         .getColumnIndex(Data.DATA1));
-                if (ir.type == USER_DEFINED) {
-                    ir.customName = cursorOfIm.getString(cursorOfIm
+                if (ir.protocol == USER_DEFINED) {
+                    ir.customProtocol = cursorOfIm.getString(cursorOfIm
                             .getColumnIndex(Data.DATA3));
                 }
 
@@ -892,8 +892,8 @@ public class ContactUtilOld {
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 Im.CONTENT_ITEM_TYPE)
                         .withValue(Im.DATA1, ir.account)
-                        .withValue(Im.TYPE, ir.type)
-                        .withValue(Data.DATA3, ir.customName).build());
+                        .withValue(Im.TYPE, ir.protocol)
+                        .withValue(Data.DATA3, ir.customProtocol).build());
             } else if (ir.modifyFlag == ModifyTag.del) {
                 ops.add(ContentProviderOperation.newDelete(
                         ContentUris.withAppendedId(Data.CONTENT_URI, ir.id))
@@ -906,8 +906,8 @@ public class ContactUtilOld {
                                     String.valueOf(ir.id)
                                 })
                         .withValue(Im.DATA1, ir.account)
-                        .withValue(Im.TYPE, ir.type)
-                        .withValue(Im.DATA3, ir.customName).build());
+                        .withValue(Im.TYPE, ir.protocol)
+                        .withValue(Im.DATA3, ir.customProtocol).build());
             }
         }
         try {
@@ -1106,9 +1106,9 @@ public class ContactUtilOld {
                                 ir.account)
                         .withValue(
                                 ContactsContract.CommonDataKinds.Im.PROTOCOL,
-                                ir.type)
+                                ir.protocol)
                         .withValue(ContactsContract.CommonDataKinds.Im.DATA3,
-                                ir.customName).build());
+                                ir.customProtocol).build());
             }
         }
 

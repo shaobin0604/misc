@@ -3,6 +3,7 @@ package com.pekall.pctool.test;
 
 import android.test.AndroidTestCase;
 
+import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.calendar.CalendarInfo;
 import com.pekall.pctool.model.calendar.CalendarUtil;
 import com.pekall.pctool.model.calendar.EventInfo;
@@ -10,6 +11,7 @@ import com.pekall.pctool.model.calendar.EventInfo;
 import junit.framework.Assert;
 
 import java.util.Date;
+import java.util.List;
 
 
 public class CalendarUtilTestCase extends AndroidTestCase {
@@ -36,5 +38,12 @@ public class CalendarUtilTestCase extends AndroidTestCase {
         boolean success = CalendarUtil.addEvent(mContext, er) > 0;
         System.out.println("------>flag" + success);
         Assert.assertTrue(success);
+    }
+    
+    public void testQueryEvents() throws Exception {
+        List<EventInfo> eventInfos = CalendarUtil.queryEvents(getContext());
+        for (EventInfo eventInfo : eventInfos) {
+            Slog.d(eventInfo.toString());
+        }
     }
 }

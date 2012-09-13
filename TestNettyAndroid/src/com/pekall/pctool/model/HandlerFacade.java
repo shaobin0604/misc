@@ -1446,9 +1446,9 @@ public class HandlerFacade {
         // im
         for (ImInfo imInfo : contact.imInfos) {
             imRecordBuilder.setId(imInfo.id);
-            imRecordBuilder.setType(toImType(imInfo.type));
+            imRecordBuilder.setType(toImType(imInfo.protocol));
             imRecordBuilder.setAccount(normalizeStr(imInfo.account));
-            imRecordBuilder.setName(normalizeStr(imInfo.customName));
+            imRecordBuilder.setName(normalizeStr(imInfo.customProtocol));
 
             imRecordBuilder.setModifyTag(ModifyTag.SAME);
 
@@ -1612,9 +1612,9 @@ public class HandlerFacade {
         for (IMRecord imRecord : contactRecord.getImList()) {
             ImInfo imInfo = new ImInfo();
 
-            imInfo.type = toCommonDataKindsImType(imRecord.getType());
+            imInfo.protocol = toCommonDataKindsImType(imRecord.getType());
             imInfo.account = imRecord.getAccount();
-            imInfo.customName = imRecord.getName();
+            imInfo.customProtocol = imRecord.getName();
 
             contact.addImInfo(imInfo);
         }
@@ -1755,9 +1755,9 @@ public class HandlerFacade {
             if (imRecord.hasId()) {
                 imInfo.id = imRecord.getId();
             }
-            imInfo.type = toCommonDataKindsImType(imRecord.getType());
+            imInfo.protocol = toCommonDataKindsImType(imRecord.getType());
             imInfo.account = imRecord.getAccount();
-            imInfo.customName = imRecord.getName();
+            imInfo.customProtocol = imRecord.getName();
 
             imInfo.modifyFlag = toModelModifyTag(imRecord.getModifyTag());
 

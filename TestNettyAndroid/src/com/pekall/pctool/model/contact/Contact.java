@@ -103,13 +103,13 @@ public class Contact {
 
     public static class ImInfo {
         public long id;
-        public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Im.html
+        public int protocol;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Im.html
         public String account;
-        public String customName;
+        public String customProtocol;
         public int    modifyFlag;   // default same
         @Override
         public String toString() {
-            return "ImInfo [id=" + id + ", type=" + type + ", account=" + account + ", customName=" + customName
+            return "ImInfo [id=" + id + ", protocol=" + protocol + ", account=" + account + ", customName=" + customProtocol
                     + ", modifyFlag=" + modifyFlag + "]";
         }
         
