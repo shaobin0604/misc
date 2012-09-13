@@ -1352,8 +1352,8 @@ public class ContactUtil {
                         ir.id = d.dataId;
                         ir.protocol = d.data5;
                         ir.account = d.data1;
-                        if (ir.protocol == Im.TYPE_CUSTOM) {
-                            ir.customProtocol = d.data3;
+                        if (ir.protocol == Im.PROTOCOL_CUSTOM) {
+                            ir.customProtocol = d.data6;
                         }
                         c.imInfos.add(ir);
                     } else if (minetype.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
@@ -1411,12 +1411,13 @@ public class ContactUtil {
         if (cursorOfContacts.moveToFirst()) {
             final int DATA_MIMETYPE = cursorOfContacts.getColumnIndex(Data.MIMETYPE);
             final int DATA_RAW_ID = cursorOfContacts.getColumnIndex(Data.RAW_CONTACT_ID);
-            final int DATA1 = cursorOfContacts.getColumnIndex(Data.DATA1);
             final int DATA_ID = cursorOfContacts.getColumnIndex(Data._ID);
+            final int DATA1 = cursorOfContacts.getColumnIndex(Data.DATA1);
             final int DATA2 = cursorOfContacts.getColumnIndex(Data.DATA2);
             final int DATA3 = cursorOfContacts.getColumnIndex(Data.DATA3);
             final int DATA4 = cursorOfContacts.getColumnIndex(Data.DATA4);
             final int DATA5 = cursorOfContacts.getColumnIndex(Data.DATA5);
+            final int DATA6 = cursorOfContacts.getColumnIndex(Data.DATA6);
             final int DATA7 = cursorOfContacts.getColumnIndex(Data.DATA7);
             final int DATA8 = cursorOfContacts.getColumnIndex(Data.DATA8);
             final int DATA9 = cursorOfContacts.getColumnIndex(Data.DATA9);
@@ -1434,29 +1435,29 @@ public class ContactUtil {
                     dm.data1 = cursorOfContacts.getString(DATA1);
                 } else if (minetype.equals(Phone.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data2 = cursorOfContacts.getInt(DATA2);
                     dm.data1 = cursorOfContacts.getString(DATA1);
+                    dm.data2 = cursorOfContacts.getInt(DATA2);
                     if (dm.data2 == Phone.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
                 } else if (minetype.equals(Email.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data2 = cursorOfContacts.getInt(DATA2);
                     dm.data1 = cursorOfContacts.getString(DATA1);
+                    dm.data2 = cursorOfContacts.getInt(DATA2);
                     if (dm.data2 == Email.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
                 } else if (minetype.equals(Im.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data5 = cursorOfContacts.getInt(DATA5);
                     dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data5 == Im.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);
+                    dm.data5 = cursorOfContacts.getInt(DATA5);
+                    if (dm.data5 == Im.PROTOCOL_CUSTOM) {
+                        dm.data6 = cursorOfContacts.getString(DATA6);
                     }
                 } else if (minetype.equals(Organization.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data2 = cursorOfContacts.getInt(DATA2);
                     dm.data1 = cursorOfContacts.getString(DATA1);
+                    dm.data2 = cursorOfContacts.getInt(DATA2);
                     if (dm.data2 == Organization.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3);
                     }
@@ -1514,17 +1515,18 @@ public class ContactUtil {
             
             final int DATA_MIMETYPE = cursorOfContacts.getColumnIndex(Data.MIMETYPE);
             final int DATA_RAW_ID = cursorOfContacts.getColumnIndex(Data.RAW_CONTACT_ID);
-            final int DATA1 = cursorOfContacts.getColumnIndex(Data.DATA1);
             final int DATA_ID = cursorOfContacts.getColumnIndex(Data._ID);
+            final int DATA1 = cursorOfContacts.getColumnIndex(Data.DATA1);
             final int DATA2 = cursorOfContacts.getColumnIndex(Data.DATA2);
             final int DATA3 = cursorOfContacts.getColumnIndex(Data.DATA3);
-            final int DATA5 = cursorOfContacts.getColumnIndex(Data.DATA5);
-            final int DATA15 = cursorOfContacts.getColumnIndex(Data.DATA15);
             final int DATA4 = cursorOfContacts.getColumnIndex(Data.DATA4);
+            final int DATA5 = cursorOfContacts.getColumnIndex(Data.DATA5);
+            final int DATA6 = cursorOfContacts.getColumnIndex(Data.DATA6);
             final int DATA7 = cursorOfContacts.getColumnIndex(Data.DATA7);
             final int DATA8 = cursorOfContacts.getColumnIndex(Data.DATA8);
             final int DATA9 = cursorOfContacts.getColumnIndex(Data.DATA9);
             final int DATA10 = cursorOfContacts.getColumnIndex(Data.DATA10);
+            final int DATA15 = cursorOfContacts.getColumnIndex(Data.DATA15);
             
             do {
                 DataModel dm = new DataModel();
@@ -1538,47 +1540,48 @@ public class ContactUtil {
                     dm.data1 = cursorOfContacts.getString(DATA1);
                 } else if (mimetype.equals(Phone.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data2 = cursorOfContacts.getInt(DATA2);
-                    dm.data1 = cursorOfContacts.getString(DATA1);
+                    dm.data1 = cursorOfContacts.getString(DATA1);	// number
+                    dm.data2 = cursorOfContacts.getInt(DATA2);		// type
                     if (dm.data2 == Phone.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);
+                        dm.data3 = cursorOfContacts.getString(DATA3);	// label
                     }
                 } else if (mimetype.equals(Email.CONTENT_ITEM_TYPE)) {
-                    dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data2 = cursorOfContacts.getInt(DATA2);
-                    dm.data1 = cursorOfContacts.getString(DATA1);
+                    dm.dataId = cursorOfContacts.getLong(DATA_ID);	
+                    dm.data1 = cursorOfContacts.getString(DATA1);	// address
+                    dm.data2 = cursorOfContacts.getInt(DATA2);		// type
                     if (dm.data2 == Email.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);
+                        dm.data3 = cursorOfContacts.getString(DATA3);	// label
                     }
                 } else if (mimetype.equals(Im.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data5 = cursorOfContacts.getInt(DATA5);
-                    dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (dm.data5 == Im.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);
+                    dm.data1 = cursorOfContacts.getString(DATA1);	// data
+                    dm.data5 = cursorOfContacts.getInt(DATA5);		// protocol
+                    if (dm.data5 == Im.PROTOCOL_CUSTOM) {
+                        dm.data6 = cursorOfContacts.getString(DATA6);	// custom protocol
                     }
                 } else if (mimetype.equals(Organization.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data1 = cursorOfContacts.getString(DATA1);
-                    if (cursorOfContacts.isNull(DATA2)) {
+                    dm.data1 = cursorOfContacts.getString(DATA1);	// company
+                    if (cursorOfContacts.isNull(DATA2)) {			// type
                         dm.data2 = Organization.TYPE_WORK;
                     } else {
                         dm.data2 = cursorOfContacts.getInt(DATA2);
                     }
                     if (dm.data2 == Organization.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);
+                        dm.data3 = cursorOfContacts.getString(DATA3);	// label
                     }
                 } else if (mimetype.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
                     dm.data1 = cursorOfContacts.getString(DATA1);
+                    dm.data2 = cursorOfContacts.getInt(DATA2); // type
                     dm.data4 = cursorOfContacts.getString(DATA4); // street
                     dm.data7 = cursorOfContacts.getString(DATA7); // city
                     dm.data8 = cursorOfContacts.getString(DATA8); // region
                     dm.data9 = cursorOfContacts.getString(DATA9); // postcode
                     dm.data10 = cursorOfContacts.getString(DATA10);// country
-                    dm.data2 = cursorOfContacts.getInt(DATA2); // type
+                    
                     if (dm.data2 == StructuredPostal.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3); // customName
+                        dm.data3 = cursorOfContacts.getString(DATA3); // label
                     }
                 } else if (mimetype.equals(Photo.CONTENT_ITEM_TYPE)) {
                     dm.data15 = cursorOfContacts.getBlob(DATA15);
@@ -1603,10 +1606,10 @@ public class ContactUtil {
     }
 
     /**
-     * getallrawcontacts
+     * Get all {@link RawContacts}
      * 
      * @param context
-     * @return
+     * @return 
      */
     public static List<RawContact> getAllRawContacts(Context context) {
         List<RawContact> lr = new ArrayList<RawContact>();
