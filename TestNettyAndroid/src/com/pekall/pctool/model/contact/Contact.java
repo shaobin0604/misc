@@ -175,7 +175,6 @@ public class Contact {
         public long rawId;
         public int version;
         public AccountInfo accountInfo = new AccountInfo();
-        public boolean modifyFlag;
     }
 
     public static class DataModel {

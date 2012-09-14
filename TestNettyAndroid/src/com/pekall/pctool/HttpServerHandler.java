@@ -53,8 +53,10 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
     // server error code
 
     private static final int RPC_END_POINT = 1;
+    
     private static final int APPS = 2;
     private static final int TEST = 3;
+    
     private static final int EXPORT_APP = 4;
     private static final int IMPORT_APP = 5;
 

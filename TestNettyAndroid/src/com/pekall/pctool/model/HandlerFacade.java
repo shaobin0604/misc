@@ -689,6 +689,7 @@ public class HandlerFacade {
         agendaRecordBuilder.setRepeatRule(normalizeStr(eventInfo.rrule));
         agendaRecordBuilder.setAlertTime(eventInfo.alertTime);
         agendaRecordBuilder.setNote(normalizeStr(eventInfo.note));
+        agendaRecordBuilder.setVersion(eventInfo.getChecksum());
         
         agendaRecordBuilder.setSyncResult(modifyTagToSyncResult(eventInfo.modifyTag));
     }
@@ -1118,12 +1119,12 @@ public class HandlerFacade {
                 }
                 
                 case PC_DEL: {
-                    final long eventInfoId = agendaRecord.getId();
+                    final long eventId = agendaRecord.getId();
                     
-                    if (CalendarUtil.deleteEvent(mContext, eventInfoId)) {
-                        Slog.d("CalendarUtil.deleteEvent OK, eventInfoId = " + eventInfoId);
+                    if (CalendarUtil.deleteEvent(mContext, eventId)) {
+                        Slog.d("CalendarUtil.deleteEvent OK, eventInfoId = " + eventId);
                         
-                        agendaRecordBuilder.setId(eventInfoId);
+                        agendaRecordBuilder.setId(eventId);
                         agendaRecordBuilder.setPcId(pcId);
                         agendaRecordBuilder.setSyncResult(syncResult);
                         
@@ -1132,7 +1133,7 @@ public class HandlerFacade {
                         agendaRecordBuilder.clear();
                         
                     } else {
-                        Slog.e("Error CalendarUtil.deleteEvent, eventInfoId = " + eventInfoId);
+                        Slog.e("Error CalendarUtil.deleteEvent, eventInfoId = " + eventId);
                         success = false;
                     }
                     break;
@@ -1348,7 +1349,7 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
 
-        List<Contact> contactList = ContactUtil.getAllContacts(mContext);
+        List<Contact> contactList = ContactUtil.getContactsAll(mContext);
         
         Slog.d("Contacts number: " + contactList.size());
         
@@ -1665,6 +1666,29 @@ public class HandlerFacade {
                 Slog.d("contact: " + contact);
                 
                 if (ContactUtil.updateContact(mContext, contact)) {
+                    
+                    // return the new updated contact
+                    final long contactId = contact.id;
+
+                    contact = ContactUtil.getContactById(mContext, contactId);
+                    
+                    ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
+                    AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
+                    GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
+                    PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
+                    EmailRecord.Builder emailRecordBuilder = EmailRecord.newBuilder();
+                    IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
+                    AddressRecord.Builder addressRecordBuilder = AddressRecord.newBuilder();
+                    OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
+                    
+                    contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
+                            emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
+                
+                    responseBuilder.addContactRecord(contactRecordBuilder.build());
+                    
+                    accountRecordBuilder.clear();
+                    contactRecordBuilder.clear();
+                    
                     setResultOK(responseBuilder);
                 } else {
                     setResultErrorInternal(responseBuilder, "ContactUtilSuperFast.updateContact");
@@ -1988,7 +2012,7 @@ public class HandlerFacade {
     private void handleSyncContactPhoneRefresh(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleSyncContactPhoneRefresh E");
         
-        List<Contact> contactList = ContactUtil.getAllContacts(mContext);
+        List<Contact> contactList = ContactUtil.getContactsAll(mContext);
 
         ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
@@ -2041,7 +2065,7 @@ public class HandlerFacade {
         if (fastSync) {
             contactList = FastSyncUtils.findChangedContacts(mContext);
         } else {
-            contactList = ContactUtil.getAllContacts(mContext);
+            contactList = ContactUtil.getContactsAll(mContext);
         }
         
         Slog.d("Contacts number: " + contactList.size());
@@ -2581,7 +2605,4 @@ public class HandlerFacade {
 
         return response.build();
     }
-
-    
-
 }

@@ -68,7 +68,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
     }
 
     public void testQueryContact() throws Exception {
-        List<Contact> contacts = ContactUtil.getAllContacts(getContext());
+        List<Contact> contacts = ContactUtil.getContactsAll(getContext());
         for (Contact contact : contacts) {
             Slog.d(contact.toString());
         }

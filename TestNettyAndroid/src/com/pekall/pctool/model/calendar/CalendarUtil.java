@@ -38,33 +38,9 @@ public class CalendarUtil {
     /**
      * account
      */
-    private static final int PROJECTION_ACCOUNT_NAME_INDEX = 2;
-    private static final int PROJECTION_ACCOUNT_TYPE_INDEX = 3;
     private static final String CALENDAR_ACCOUNT_TYPE = "com.android.calendar.AccountType";
     private static final String CALENDAR_DEFAULT_NAME = "local calendar";
 
-    /**
-     * Events
-     */
-    private static final int PROJECTION_EVENTS_ID_INDEX = 0;
-    private static final int PROJECTION_EVENTS_TITLE_INDEX = 1;
-    private static final int PROJECTION_EVENTS_DESCRIPTION_INDEX = 2;
-    private static final int PROJECTION_EVENTS_DTSTART_INDEX = 3;
-    private static final int PROJECTION_EVENTS_DTEND_INDEX = 4;
-    private static final int PROJECTION_EVENTS_RRULE_INDEX = 5;
-    private static final int PROJECTION_EVENTS_LOCATION_INDEX = 6;
-    private static final int PROJECTION_EVENTS_CALENDAR_ID_INDEX = 7;
-    /**
-     * Calendar
-     */
-    private static final int PROJECTION_CALENDAR_ID_INDEX = 0;
-    private static final int PROJECTION_CALENDAR_NAME_INDEX = 1;
-    /**
-     * Reminder
-     */
-    private static final int PROJECTION_REMINDER_ID_INDEX = 0;
-    private static final int PROJECTION_REMINDER_MINUTES_INDEX = 1;
-    
     public static long getDefaultCalendarId(Context context) {
         List<CalendarInfo> calendarInfos = queryCalendarAll(context);
         if (calendarInfos.size() > 0) {
@@ -85,23 +61,34 @@ public class CalendarUtil {
      */
     public static List<CalendarInfo> queryCalendarAll(Context context) {
         List<CalendarInfo> calendarInfoList = new ArrayList<CalendarInfo>();
-        Cursor cur = null;
-        ContentResolver cr = context.getContentResolver();
-        Uri uri = Calendars.CONTENT_URI;
-        cur = cr.query(uri, new String[] {
+        
+        Cursor cursor = context.getContentResolver().query(Calendars.CONTENT_URI, new String[] {
                 Calendars._ID, Calendars.CALENDAR_DISPLAY_NAME, Calendars.ACCOUNT_NAME, Calendars.ACCOUNT_TYPE
         }, null, null, null);
-        while (cur.moveToNext()) {
-            CalendarInfo ci = new CalendarInfo();
-            
-            ci.caId = cur.getLong(PROJECTION_CALENDAR_ID_INDEX);
-            ci.name = cur.getString(PROJECTION_CALENDAR_NAME_INDEX);
-            ci.accountInfo.accountName = cur.getString(PROJECTION_ACCOUNT_NAME_INDEX);
-            ci.accountInfo.accountType = cur.getString(PROJECTION_ACCOUNT_TYPE_INDEX);
-            
-            calendarInfoList.add(ci);
+        
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    final int PROJECTION_CALENDAR_ID_INDEX = cursor.getColumnIndex(Calendars._ID);
+                    final int PROJECTION_CALENDAR_NAME_INDEX = cursor.getColumnIndex(Calendars.CALENDAR_DISPLAY_NAME);
+                    final int PROJECTION_ACCOUNT_NAME_INDEX = cursor.getColumnIndex(Calendars.ACCOUNT_NAME);
+                    final int PROJECTION_ACCOUNT_TYPE_INDEX = cursor.getColumnIndex(Calendars.ACCOUNT_TYPE);
+                    
+                    do {
+                        CalendarInfo ci = new CalendarInfo();
+                        
+                        ci.caId = cursor.getLong(PROJECTION_CALENDAR_ID_INDEX);
+                        ci.name = cursor.getString(PROJECTION_CALENDAR_NAME_INDEX);
+                        ci.accountInfo.accountName = cursor.getString(PROJECTION_ACCOUNT_NAME_INDEX);
+                        ci.accountInfo.accountType = cursor.getString(PROJECTION_ACCOUNT_TYPE_INDEX);
+                        
+                        calendarInfoList.add(ci);
+                    } while (cursor.moveToNext());
+                }
+            } finally {
+                cursor.close();
+            }
         }
-        cur.close();
         return calendarInfoList;
     }
 
@@ -110,25 +97,37 @@ public class CalendarUtil {
      */
     public static List<CalendarInfo> queryCalendarByAccount(Context context, AccountInfo account) {
         List<CalendarInfo> calendarInfoList = new ArrayList<CalendarInfo>();
-        Cursor cur = null;
-        ContentResolver cr = context.getContentResolver();
-        Uri uri = Calendars.CONTENT_URI;
+        String[] projection = {
+                Calendars._ID, 
+                Calendars.NAME};
         String selection = "((" + Calendars.ACCOUNT_NAME + " = ?) AND (" + Calendars.ACCOUNT_TYPE + " = ?) AND ("
                 + Calendars.OWNER_ACCOUNT + " = ?))";
-        String[] selectionArgs = new String[] {
+        String[] selectionArgs = {
                 account.accountName, account.accountType, account.accountName
         };
-        cur = cr.query(uri, null, selection, selectionArgs, null);
-        while (cur.moveToNext()) {
-            long caId = cur.getLong(PROJECTION_CALENDAR_ID_INDEX);
-            String name = cur.getString(PROJECTION_CALENDAR_NAME_INDEX);
-            CalendarInfo ci = new CalendarInfo();
-            ci.caId = caId;
-            ci.name = name;
-            ci.accountInfo = account;
-            calendarInfoList.add(ci);
+        Cursor cursor = context.getContentResolver().query(Calendars.CONTENT_URI, projection, selection, selectionArgs, null);
+        
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    final int idxForId = cursor.getColumnIndex(Calendars._ID);
+                    final int idxForName = cursor.getColumnIndex(Calendars.NAME);
+                    do {
+                        CalendarInfo ci = new CalendarInfo();
+                        
+                        ci.caId = cursor.getLong(idxForId);
+                        ci.name = cursor.getString(idxForName);
+                        ci.accountInfo.accountName = account.accountName;
+                        ci.accountInfo.accountType = account.accountType;
+                        
+                        calendarInfoList.add(ci);
+                        
+                    } while (cursor.moveToNext());
+                }
+            } finally {
+                cursor.close();
+            }
         }
-        cur.close();
         return calendarInfoList;
     }
 
@@ -180,18 +179,22 @@ public class CalendarUtil {
         // - 1) / DateUtils.DAY_IN_MILLIS)
         // if allday==1 timezone must use TIMEZONE_UTC
 
-        if (!TextUtils.isEmpty(eventInfo.rrule)) {
+        if (TextUtils.isEmpty(eventInfo.rrule)) {
+            // non-recurring
+            Slog.d("rrule is empty");
+            eventValues.put(Events.DTEND, eventInfo.endTime);
+        } else {
+            // recurring
             Slog.d("rrule is not empty");
             if (eventInfo.endTime - eventInfo.startTime > 0) {
                 String duration = "P" + ((eventInfo.endTime - eventInfo.startTime) / DateUtils.SECOND_IN_MILLIS) + "S";
                 eventValues.put(Events.DURATION, duration);
             } else {
-                Slog.e("Error endTime must gt startTime");
+                Slog.e("Error endTime must > startTime");
             }
-        } else {
-            Slog.d("rrule is empty");
-            eventValues.put(Events.DTEND, eventInfo.endTime);
         }
+        
+        Slog.d(eventValues.toString());
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -235,13 +238,20 @@ public class CalendarUtil {
         eventValues.put(Events.EVENT_LOCATION, eventInfo.place);
         eventValues.put(Events.RRULE, eventInfo.rrule);
         eventValues.put(Events.DTSTART, eventInfo.startTime);
-        if (!TextUtils.isEmpty(eventInfo.rrule)) {
-            String duration = "P" + (eventInfo.endTime - eventInfo.startTime) + "S";
-            eventValues.put(Events.DURATION, duration);
-            eventValues.put(Events.DTEND, "");
-        } else {
+        if (TextUtils.isEmpty(eventInfo.rrule)) {
+            // non-recurring
             eventValues.put(Events.DTEND, eventInfo.endTime);
+        } else {
+            // recurring
+            if (eventInfo.endTime - eventInfo.startTime > 0) {
+                String duration = "P" + ((eventInfo.endTime - eventInfo.startTime) / DateUtils.SECOND_IN_MILLIS) + "S";
+                eventValues.put(Events.DURATION, duration);
+            } else {
+                Slog.e("Error endTime must > startTime");
+            }
         }
+        
+        Slog.d(eventValues.toString());
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -304,10 +314,18 @@ public class CalendarUtil {
         return deleteEvent(context, eventInfo.id);
     }
 
-    public static boolean deleteEvent(Context context, long eventInfoId) {
+    /**
+     * Delete one event
+     * 
+     * @param context
+     * @param eventId
+     * @return
+     */
+    public static boolean deleteEvent(Context context, long eventId) {
         ContentResolver cr = context.getContentResolver();
-        Uri deleteUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventInfoId);
+        Uri deleteUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
         int rows = cr.delete(deleteUri, null, null);
+        Slog.d("delete uri: " + deleteUri + ", affect rows: " + rows);
         if (rows > 0) {
             return true;
         } else {
@@ -323,21 +341,20 @@ public class CalendarUtil {
     }
 
     public static int[] getReminderTime(Context context, long eventId) {
-        ContentResolver cr = context.getContentResolver();
         String selection = Reminders.EVENT_ID + " = ?";
-        String[] selectionArgs = new String[] {
+        String[] selectionArgs = {
                 String.valueOf(eventId)
         };
-        Cursor cur = cr.query(Reminders.CONTENT_URI, new String[] {
-                Reminders._ID, Reminders.MINUTES
+        Cursor cursor = context.getContentResolver().query(Reminders.CONTENT_URI, new String[] {
+                Reminders.MINUTES
         }, selection, selectionArgs, null);
-        int[] alertTime = new int[cur.getCount()];
+        int[] alertTime = new int[cursor.getCount()];
         int i = 0;
-        while (cur.moveToNext()) {
-            alertTime[i] = cur.getInt(PROJECTION_REMINDER_MINUTES_INDEX);
+        while (cursor.moveToNext()) {
+            alertTime[i] = cursor.getInt(0);
             i++;
         }
-        cur.close();
+        cursor.close();
         return alertTime;
     }
 
@@ -391,10 +408,10 @@ public class CalendarUtil {
      * @return
      */
     public static List<EventInfo> queryEventsByCalendarId(Context context, long calendarId) {
-        List<EventInfo> er = new ArrayList<EventInfo>();
+        
         String projection[] = new String[] {
                 Events._ID, Events.TITLE, Events.DESCRIPTION, Events.DTSTART, Events.DTEND, Events.RRULE,
-                Events.EVENT_LOCATION, Events.CALENDAR_ID,
+                Events.EVENT_LOCATION, Events.CALENDAR_ID, Events.DURATION,
         };
 
         String selection = null;
@@ -406,30 +423,64 @@ public class CalendarUtil {
                 String.valueOf(calendarId)
             };
         }
+        Cursor cursor = context.getContentResolver().query(Events.CONTENT_URI, projection, selection, selectionArgs, null);
+        return cursorToEventInfos(context, cursor);
+    }
 
-        Cursor cur = context.getContentResolver().query(Events.CONTENT_URI, projection, selection, selectionArgs, null);
-        if (cur != null) {
-            while (cur.moveToNext()) {
-                EventInfo evr = new EventInfo();
+    private static List<EventInfo> cursorToEventInfos(Context context, Cursor cursor) {
+        List<EventInfo> eventInfos = new ArrayList<EventInfo>();
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    final int PROJECTION_EVENTS_ID_INDEX = cursor.getColumnIndex(Events._ID);
+                    final int PROJECTION_EVENTS_TITLE_INDEX = cursor.getColumnIndex(Events.TITLE);
+                    final int PROJECTION_EVENTS_DESCRIPTION_INDEX = cursor.getColumnIndex(Events.DESCRIPTION);
+                    final int PROJECTION_EVENTS_DTSTART_INDEX = cursor.getColumnIndex(Events.DTSTART);
+                    final int PROJECTION_EVENTS_DTEND_INDEX = cursor.getColumnIndex(Events.DTEND);
+                    final int PROJECTION_EVENTS_RRULE_INDEX = cursor.getColumnIndex(Events.RRULE);
+                    final int PROJECTION_EVENTS_LOCATION_INDEX = cursor.getColumnIndex(Events.EVENT_LOCATION);
+                    final int PROJECTION_EVENTS_CALENDAR_ID_INDEX = cursor.getColumnIndex(Events.CALENDAR_ID);
+                    final int PROJECTION_EVENTS_DURATION_INDEX = cursor.getColumnIndex(Events.DURATION);
+                    
+                    do {
+                        EventInfo eventInfo = new EventInfo();
 
-                evr.id = cur.getLong(PROJECTION_EVENTS_ID_INDEX);
-                evr.title = cur.getString(PROJECTION_EVENTS_TITLE_INDEX);
-                evr.note = cur.getString(PROJECTION_EVENTS_DESCRIPTION_INDEX);
-                evr.startTime = cur.getLong(PROJECTION_EVENTS_DTSTART_INDEX);
-                evr.endTime = cur.getLong(PROJECTION_EVENTS_DTEND_INDEX);
-                evr.rrule = cur.getString(PROJECTION_EVENTS_RRULE_INDEX);
-                evr.place = cur.getString(PROJECTION_EVENTS_LOCATION_INDEX);
-                evr.calendarId = cur.getLong(PROJECTION_EVENTS_CALENDAR_ID_INDEX);
-                int[] reminds = getReminderTime(context, evr);
-                if (reminds.length > 0) {
-                    evr.alertTime = reminds[0];
+                        eventInfo.id = cursor.getLong(PROJECTION_EVENTS_ID_INDEX);
+                        eventInfo.title = cursor.getString(PROJECTION_EVENTS_TITLE_INDEX);
+                        eventInfo.note = cursor.getString(PROJECTION_EVENTS_DESCRIPTION_INDEX);
+                        eventInfo.startTime = cursor.getLong(PROJECTION_EVENTS_DTSTART_INDEX);
+                        eventInfo.rrule = cursor.getString(PROJECTION_EVENTS_RRULE_INDEX);
+                        eventInfo.place = cursor.getString(PROJECTION_EVENTS_LOCATION_INDEX);
+                        eventInfo.calendarId = cursor.getLong(PROJECTION_EVENTS_CALENDAR_ID_INDEX);
+
+                        String durationText = cursor.getString(PROJECTION_EVENTS_DURATION_INDEX);
+
+                        if (!TextUtils.isEmpty(durationText)) {
+                            long durationInMillis = 0;
+                            if (durationText.endsWith("S")) {
+                                durationInMillis = DateUtils.SECOND_IN_MILLIS
+                                        * Long.valueOf(durationText.substring(1, durationText.length() - 1));
+                            } else if (durationText.endsWith("D")) {
+                                durationInMillis = DateUtils.DAY_IN_MILLIS
+                                        * Long.valueOf(durationText.substring(1, durationText.length() - 1));
+                            }
+                            eventInfo.endTime = eventInfo.startTime + durationInMillis;
+                        } else {
+                            eventInfo.endTime = cursor.getLong(PROJECTION_EVENTS_DTEND_INDEX);
+                        }
+
+                        int[] reminds = getReminderTime(context, eventInfo);
+                        if (reminds.length > 0) {
+                            eventInfo.alertTime = reminds[0];
+                        }
+                        eventInfos.add(eventInfo);
+                    } while (cursor.moveToNext());
                 }
-
-                er.add(evr);
+            } finally {
+                cursor.close();
             }
-            cur.close();
         }
-        return er;
+        return eventInfos;
     }
 
     public static long queryEventVersion(Context context, long id) {
@@ -441,10 +492,9 @@ public class CalendarUtil {
      * 查询到某一个事件
      */
     public static EventInfo queryEventById(Context context, long id) {
-        EventInfo evr = null;
         String projection[] = new String[] {
                 Events._ID, Events.TITLE, Events.DESCRIPTION, Events.DTSTART, Events.DTEND, Events.RRULE,
-                Events.EVENT_LOCATION
+                Events.EVENT_LOCATION, Events.CALENDAR_ID, Events.DURATION
         };
         String selection = Events._ID + "=?";
         String selectionArgs[] = {
@@ -452,25 +502,12 @@ public class CalendarUtil {
         };
         Cursor cursor = context.getContentResolver().query(Events.CONTENT_URI, projection, selection, selectionArgs,
                 null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                evr = new EventInfo();
-
-                evr.id = cursor.getLong(PROJECTION_EVENTS_ID_INDEX);
-                evr.title = cursor.getString(PROJECTION_EVENTS_TITLE_INDEX);
-                evr.note = cursor.getString(PROJECTION_EVENTS_DESCRIPTION_INDEX);
-                evr.startTime = cursor.getLong(PROJECTION_EVENTS_DTSTART_INDEX);
-                evr.endTime = cursor.getLong(PROJECTION_EVENTS_DTEND_INDEX);
-                evr.rrule = cursor.getString(PROJECTION_EVENTS_RRULE_INDEX);
-                evr.place = cursor.getString(PROJECTION_EVENTS_LOCATION_INDEX);
-                int[] reminds = getReminderTime(context, evr);
-                if (reminds.length > 0) {
-                    evr.alertTime = reminds[0];
-                }
-            }
-            cursor.close();
+        List<EventInfo> eventInfos = cursorToEventInfos(context, cursor);
+        if (eventInfos.size() > 0) {
+            return eventInfos.get(0);
+        } else {
+            return null;
         }
-        return evr;
     }
 
     /**
