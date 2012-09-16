@@ -1435,7 +1435,7 @@ public class HandlerFacade {
         for (EmailInfo emailInfo : contact.emailInfos) {
             emailRecordBuilder.setId(emailInfo.id);
             emailRecordBuilder.setType(toEmailType(emailInfo.type));
-            emailRecordBuilder.setEmail(normalizeStr(emailInfo.email));
+            emailRecordBuilder.setEmail(normalizeStr(emailInfo.address));
             emailRecordBuilder.setName(normalizeStr(emailInfo.customName));
 
             emailRecordBuilder.setModifyTag(ModifyTag.SAME);
@@ -1466,7 +1466,7 @@ public class HandlerFacade {
             addressRecordBuilder.setAddress(normalizeStr(addressInfo.address));
             addressRecordBuilder.setName(normalizeStr(addressInfo.customName));
             addressRecordBuilder.setCountry(normalizeStr(addressInfo.country));
-            addressRecordBuilder.setProvince(normalizeStr(addressInfo.province));
+            addressRecordBuilder.setProvince(normalizeStr(addressInfo.region));
             addressRecordBuilder.setCity(normalizeStr(addressInfo.city));
             addressRecordBuilder.setRoad(normalizeStr(addressInfo.street));
             addressRecordBuilder.setPostCode(normalizeStr(addressInfo.postcode));
@@ -1604,7 +1604,7 @@ public class HandlerFacade {
             EmailInfo emailInfo = new EmailInfo();
 
             emailInfo.type = toCommonDataKindsEmailType(emailRecord.getType());
-            emailInfo.email = emailRecord.getEmail();
+            emailInfo.address = emailRecord.getEmail();
             emailInfo.customName = emailRecord.getName();
 
             contact.addEmailInfo(emailInfo);
@@ -1629,7 +1629,7 @@ public class HandlerFacade {
             addressInfo.address = addressRecord.getAddress();
             addressInfo.customName = addressRecord.getName();
             addressInfo.country = addressRecord.getCountry();
-            addressInfo.province = addressRecord.getProvince();
+            addressInfo.region = addressRecord.getProvince();
             addressInfo.city = addressRecord.getCity();
             addressInfo.street = addressRecord.getRoad();
             addressInfo.postcode = addressRecord.getPostCode();
@@ -1811,7 +1811,7 @@ public class HandlerFacade {
                 emailInfo.id = emailRecord.getId();
             }
             emailInfo.type = toCommonDataKindsEmailType(emailRecord.getType());
-            emailInfo.email = emailRecord.getEmail();
+            emailInfo.address = emailRecord.getEmail();
             emailInfo.customName = emailRecord.getName();
 
             emailInfo.modifyFlag = toModelModifyTag(emailRecord.getModifyTag());
@@ -1846,7 +1846,7 @@ public class HandlerFacade {
             addressInfo.address = addressRecord.getAddress();
             addressInfo.customName = addressRecord.getName();
             addressInfo.country = addressRecord.getCountry();
-            addressInfo.province = addressRecord.getProvince();
+            addressInfo.region = addressRecord.getProvince();
             addressInfo.city = addressRecord.getCity();
             addressInfo.street = addressRecord.getRoad();
             addressInfo.postcode = addressRecord.getPostCode();

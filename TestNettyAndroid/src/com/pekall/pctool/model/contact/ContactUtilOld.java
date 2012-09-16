@@ -258,7 +258,7 @@ public class ContactUtilOld {
                         .getColumnIndex(Data._ID));
                 er.type = cursorOfEmail.getInt(cursorOfEmail
                         .getColumnIndex(Email.TYPE));
-                er.email = cursorOfEmail.getString(cursorOfEmail
+                er.address = cursorOfEmail.getString(cursorOfEmail
                         .getColumnIndex(Email.ADDRESS));
                 if (er.type == USER_DEFINED) {
                     er.customName = cursorOfEmail.getString(cursorOfEmail
@@ -347,7 +347,7 @@ public class ContactUtilOld {
                 ar.postcode = convertToString(cursorOfAddress
                         .getString(cursorOfAddress
                                 .getColumnIndex(StructuredPostal.POSTCODE)));
-                ar.province = convertToString(cursorOfAddress
+                ar.region = convertToString(cursorOfAddress
                         .getString(cursorOfAddress
                                 .getColumnIndex(StructuredPostal.REGION)));
                 if (ar.type == USER_DEFINED) {
@@ -791,7 +791,7 @@ public class ContactUtilOld {
                                 contact.id)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 Email.CONTENT_ITEM_TYPE)
-                        .withValue(Email.ADDRESS, er.email)
+                        .withValue(Email.ADDRESS, er.address)
                         .withValue(Email.TYPE, er.type)
                         .withValue(Email.DATA3, er.customName).build());
             } else if (er.modifyFlag == ModifyTag.del) {
@@ -805,7 +805,7 @@ public class ContactUtilOld {
                                 new String[] {
                                     String.valueOf(er.id)
                                 })
-                        .withValue(Email.ADDRESS, er.email)
+                        .withValue(Email.ADDRESS, er.address)
                         .withValue(Email.DATA3, er.customName)
                         .withValue(Email.TYPE, er.type).build());
             }
@@ -853,7 +853,7 @@ public class ContactUtilOld {
                         .withValue(StructuredPostal.CITY, ar.city)
                         .withValue(StructuredPostal.STREET, ar.street)
                         .withValue(StructuredPostal.POSTCODE, ar.postcode)
-                        .withValue(StructuredPostal.REGION, ar.province)
+                        .withValue(StructuredPostal.REGION, ar.region)
                         .withValue(StructuredPostal.FORMATTED_ADDRESS,
                                 ar.address)
                         .withValue(Data.DATA3, ar.customName)
@@ -877,7 +877,7 @@ public class ContactUtilOld {
                         .withValue(StructuredPostal.STREET, ar.street)
                         .withValue(StructuredPostal.POSTCODE, ar.postcode)
                         .withValue(StructuredPostal.DATA3, ar.customName)
-                        .withValue(StructuredPostal.REGION, ar.province)
+                        .withValue(StructuredPostal.REGION, ar.region)
                         .withValue(StructuredPostal.TYPE, ar.type).build());
             }
         }
@@ -1045,7 +1045,7 @@ public class ContactUtilOld {
                                 ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                         .withValue(ContactsContract.CommonDataKinds.Email.DATA,
-                                er.email)
+                                er.address)
                         .withValue(ContactsContract.CommonDataKinds.Email.TYPE,
                                 er.type)
                         .withValue(
@@ -1079,7 +1079,7 @@ public class ContactUtilOld {
                                 ar.street)
                         .withValue(
                                 ContactsContract.CommonDataKinds.StructuredPostal.REGION,
-                                ar.province)
+                                ar.region)
                         .withValue(
                                 ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE,
                                 ar.postcode)

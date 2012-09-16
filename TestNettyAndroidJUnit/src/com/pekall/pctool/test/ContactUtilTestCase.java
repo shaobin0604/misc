@@ -1,6 +1,7 @@
 
 package com.pekall.pctool.test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 
@@ -74,6 +75,23 @@ public class ContactUtilTestCase extends AndroidTestCase {
             Slog.d(contact.toString());
         }
         assertEquals(COUNT_OF_INITIAL_CONTACT, contacts.size());
+        
+        Slog.d("count = " + contacts.size());
+    }
+    
+    public void testQueryContactFast() throws Exception {
+        Collection<Contact> contacts = ContactUtil.getContactsAllFast(getContext());
+        for (Contact contact : contacts) {
+            Slog.d(contact.toString());
+        }
+        assertEquals(COUNT_OF_INITIAL_CONTACT, contacts.size());
+//      Slog.d("count = " + contacts.size());
+    }
+    
+    public void testQueryContactByIdFast() throws Exception {
+        Contact contact = ContactUtil.getContactByIdFast(getContext(), mContactId);
+        Slog.d(contact.toString());
+        assertEquals(CONTACT_NAME, contact.name);
     }
     
     public void testUpdateContactNameEmpty() throws Exception {
@@ -107,7 +125,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
         List<EmailInfo> emailInfos = contact.emailInfos;
         EmailInfo emailInfo = new EmailInfo();
         emailInfo.type = CommonDataKinds.Email.TYPE_HOME;
-        emailInfo.email = "shaobin0604@qq.com";
+        emailInfo.address = "shaobin0604@qq.com";
         emailInfo.modifyFlag = ModifyTag.add;
         emailInfos.add(emailInfo);
         

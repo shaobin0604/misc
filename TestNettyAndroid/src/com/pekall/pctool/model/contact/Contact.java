@@ -89,12 +89,12 @@ public class Contact {
     public static class EmailInfo {
         public long id;
         public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.Email.html
-        public String email;
+        public String address;
         public String customName;
         public int    modifyFlag;   // default same
         @Override
         public String toString() {
-            return "EmailInfo [id=" + id + ", type=" + type + ", email=" + email + ", customName=" + customName
+            return "EmailInfo [id=" + id + ", type=" + type + ", address=" + address + ", customName=" + customName
                     + ", modifyFlag=" + modifyFlag + "]";
         }
         
@@ -119,7 +119,7 @@ public class Contact {
         public long id;
         public int type;    // http://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds.StructuredPostal.html
         public String country;
-        public String province;
+        public String region;
         public String city;
         public String street;
         public String postcode;
@@ -128,7 +128,7 @@ public class Contact {
         public int    modifyFlag;   // default same
         @Override
         public String toString() {
-            return "AddressInfo [id=" + id + ", country=" + country + ", province=" + province + ", city=" + city
+            return "AddressInfo [id=" + id + ", country=" + country + ", region=" + region + ", city=" + city
                     + ", street=" + street + ", postcode=" + postcode + ", type=" + type + ", address=" + address
                     + ", customName=" + customName + ", modifyFlag=" + modifyFlag + "]";
         }

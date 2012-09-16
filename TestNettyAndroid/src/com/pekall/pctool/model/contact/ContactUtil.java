@@ -2,9 +2,12 @@
 package com.pekall.pctool.model.contact;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import android.accounts.Account;
@@ -33,6 +36,7 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.RawContacts;
+import android.provider.ContactsContract.RawContactsEntity;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 
@@ -69,9 +73,9 @@ public class ContactUtil {
      */
     private ContactUtil() {
     }
-    
+
     /**
-     * Get the {@link Contact} id by phone number 
+     * Get the {@link Contact} id by phone number
      * 
      * @param context
      * @param number
@@ -86,8 +90,10 @@ public class ContactUtil {
                     }, null, null, null);
             if (c != null && c.moveToFirst()) {
                 while (!c.isAfterLast()) {
-                    if (PhoneNumberUtils.compare(number, c.getString(/* Phone.NUMBER */ 1))) {
-                        return c.getLong(/* Phone.RAW_CONTACT_ID */ 0);
+                    if (PhoneNumberUtils.compare(number, c.getString(/*
+                                                                      * Phone.NUMBER
+                                                                      */1))) {
+                        return c.getLong(/* Phone.RAW_CONTACT_ID */0);
                     }
                     c.moveToNext();
                 }
@@ -410,7 +416,7 @@ public class ContactUtil {
         }
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        
+
         // update Name
         if (hasField(context, "name", contact.id)) {
             Slog.d("has name");
@@ -427,7 +433,7 @@ public class ContactUtil {
                         .withValue(StructuredName.MIDDLE_NAME, "");
             }
             ops.add(builder.build());
-            
+
         } else {
             Slog.d("does not has name");
             ops.add(ContentProviderOperation
@@ -439,7 +445,7 @@ public class ContactUtil {
                     .withValue(StructuredName.GIVEN_NAME, "")
                     .withValue(StructuredName.MIDDLE_NAME, "").build());
         }
-        
+
         // update nickname
         if (hasField(context, "nickname", contact.id)) {
             ops.add(ContentProviderOperation
@@ -454,7 +460,7 @@ public class ContactUtil {
                     .withValue(Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
                     .withValue(Nickname.NAME, contact.nickname).build());
         }
-        
+
         // update photo
         if (contact.shouldUpdatePhoto) {
             if (hasField(context, "photo", contact.id)) {
@@ -469,12 +475,17 @@ public class ContactUtil {
                             .withValue(Data.IS_SUPER_PRIMARY, 1).build());
                 } else {
                     long dataPhotoId = -1;
-                    
-                    final String[] projection = new String[] {Data._ID};
+
+                    final String[] projection = new String[] {
+                            Data._ID
+                    };
                     final String selection = Data.CONTENT_TYPE + "=? and" + Data.RAW_CONTACT_ID + "=?";
-                    final String[] selectionArgs = new String[] {Photo.CONTENT_ITEM_TYPE, String.valueOf(contact.id)};
-                    
-                    Cursor cursor = context.getContentResolver().query(Data.CONTENT_URI, projection, selection, selectionArgs, null);
+                    final String[] selectionArgs = new String[] {
+                            Photo.CONTENT_ITEM_TYPE, String.valueOf(contact.id)
+                    };
+
+                    Cursor cursor = context.getContentResolver().query(Data.CONTENT_URI, projection, selection,
+                            selectionArgs, null);
                     if (cursor.moveToFirst()) {
                         dataPhotoId = cursor.getLong(cursor.getColumnIndex(Data._ID));
                     }
@@ -494,10 +505,10 @@ public class ContactUtil {
                 }
             }
         }
-        
+
         // update Group
         if (contact.groupInfos != null) {
-            
+
             // first delete all groups
             ops.add(ContentProviderOperation
                     .newDelete(Data.CONTENT_URI)
@@ -519,8 +530,8 @@ public class ContactUtil {
         }
 
         // update Phone
-		if (contact.phoneInfos != null) {
-		    
+        if (contact.phoneInfos != null) {
+
             // first delete all phones
             ops.add(ContentProviderOperation
                     .newDelete(Data.CONTENT_URI)
@@ -529,17 +540,17 @@ public class ContactUtil {
                     })
                     .build());
 
-			for (PhoneInfo pr : contact.phoneInfos) {
-					ops.add(ContentProviderOperation
-							.newInsert(Data.CONTENT_URI)
-							.withValue(Data.RAW_CONTACT_ID, contact.id)
-							.withValue(Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
-							.withValue(Phone.NUMBER, pr.number)
-							.withValue(Phone.TYPE, pr.type)
-							.withValue(Phone.LABEL, pr.customName).build());
-				}
-		}
-    
+            for (PhoneInfo pr : contact.phoneInfos) {
+                ops.add(ContentProviderOperation
+                        .newInsert(Data.CONTENT_URI)
+                        .withValue(Data.RAW_CONTACT_ID, contact.id)
+                        .withValue(Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
+                        .withValue(Phone.NUMBER, pr.number)
+                        .withValue(Phone.TYPE, pr.type)
+                        .withValue(Phone.LABEL, pr.customName).build());
+            }
+        }
+
         // update Email
         if (contact.emailInfos != null) {
 
@@ -556,23 +567,23 @@ public class ContactUtil {
                         .newInsert(Data.CONTENT_URI)
                         .withValue(Data.RAW_CONTACT_ID, contact.id)
                         .withValue(Data.MIMETYPE, Email.CONTENT_ITEM_TYPE)
-                        .withValue(Email.ADDRESS, er.email)
+                        .withValue(Email.ADDRESS, er.address)
                         .withValue(Email.TYPE, er.type)
                         .withValue(Email.LABEL, er.customName).build());
             }
         }
 
         // update Organization
-		if (contact.orgInfos != null) {
-		    
-		 // first delete all organizations
+        if (contact.orgInfos != null) {
+
+            // first delete all organizations
             ops.add(ContentProviderOperation
                     .newDelete(Data.CONTENT_URI)
                     .withSelection(Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?", new String[] {
                             String.valueOf(contact.id), Organization.CONTENT_ITEM_TYPE
                     })
                     .build());
-		
+
             for (OrgInfo or : contact.orgInfos) {
                 ops.add(ContentProviderOperation
                         .newInsert(Data.CONTENT_URI)
@@ -582,8 +593,8 @@ public class ContactUtil {
                         .withValue(Organization.TYPE, or.type)
                         .withValue(Organization.LABEL, or.customName).build());
             }
-		}
-		
+        }
+
         // update Address
         if (contact.addressInfos != null) {
             // first delete all addresses
@@ -604,12 +615,12 @@ public class ContactUtil {
                         .withValue(StructuredPostal.CITY, ar.city)
                         .withValue(StructuredPostal.STREET, ar.street)
                         .withValue(StructuredPostal.POSTCODE, ar.postcode)
-                        .withValue(StructuredPostal.REGION, ar.province)
+                        .withValue(StructuredPostal.REGION, ar.region)
                         .withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address)
                         .withValue(StructuredPostal.TYPE, ar.type).build());
             }
         }
-        
+
         // update IM
         if (contact.imInfos != null) {
             // first delete all im
@@ -632,15 +643,15 @@ public class ContactUtil {
         }
 
         try {
-            
+
             if (DUMP_PARAMS) {
                 Slog.d(ops.toString());
             }
 
             context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-            
+
             Slog.d("updateContactForce X");
-            
+
             return true;
         } catch (RemoteException e) {
             Slog.e("Error updateContactForce", e);
@@ -672,7 +683,7 @@ public class ContactUtil {
         int newDataIdSkipCount = 0;
         Queue<Long> newDataIds = new LinkedList<Long>();
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        
+
         // update Name
         if (hasField(context, StructuredName.CONTENT_ITEM_TYPE, contact.id)) {
             final Builder builder = ContentProviderOperation
@@ -696,10 +707,10 @@ public class ContactUtil {
                     .withValue(StructuredName.FAMILY_NAME, "")
                     .withValue(StructuredName.GIVEN_NAME, "")
                     .withValue(StructuredName.MIDDLE_NAME, "").build());
-            
+
             newDataIdSkipCount++;
         }
-        
+
         // update nickname
         if (hasField(context, Nickname.CONTENT_ITEM_TYPE, contact.id)) {
             ops.add(ContentProviderOperation
@@ -713,10 +724,10 @@ public class ContactUtil {
                     .withValue(Data.RAW_CONTACT_ID, contact.id)
                     .withValue(Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
                     .withValue(Nickname.NAME, contact.nickname).build());
-            
+
             newDataIdSkipCount++;
         }
-        
+
         // update photo
         if (contact.shouldUpdatePhoto) {
             if (hasField(context, Photo.CONTENT_ITEM_TYPE, contact.id)) {
@@ -753,12 +764,12 @@ public class ContactUtil {
                             .withValue(Data.RAW_CONTACT_ID, contact.id)
                             .withValue(Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE)
                             .withValue(Photo.PHOTO, contact.photo).build());
-                    
+
                     newDataIdSkipCount++;
                 }
             }
         }
-        
+
         // update group
         for (GroupInfo gi : contact.groupInfos) {
             if (gi.modifyFlag == ModifyTag.add) {
@@ -771,7 +782,9 @@ public class ContactUtil {
                         .build());
             } else if (gi.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {String.valueOf(gi.dataId)})
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(gi.dataId)
+                        })
                         .withValue(GroupMembership.GROUP_ROW_ID, gi.grId).build());
             }
         }
@@ -789,28 +802,32 @@ public class ContactUtil {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, pr.id)).build());
             } else if (pr.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {String.valueOf(pr.id)})
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(pr.id)
+                        })
                         .withValue(Phone.NUMBER, pr.number)
                         .withValue(Phone.TYPE, pr.type)
                         .withValue(Phone.LABEL, pr.customName).build());
             }
         }
-        
+
         // update Email
         for (EmailInfo er : contact.emailInfos) {
             if (er.modifyFlag == ModifyTag.add) {
                 ops.add(ContentProviderOperation.newInsert(Data.CONTENT_URI)
                         .withValue(Data.RAW_CONTACT_ID, contact.id)
                         .withValue(Data.MIMETYPE, Email.CONTENT_ITEM_TYPE)
-                        .withValue(Email.ADDRESS, er.email)
+                        .withValue(Email.ADDRESS, er.address)
                         .withValue(Email.TYPE, er.type)
                         .withValue(Email.LABEL, er.customName).build());
             } else if (er.modifyFlag == ModifyTag.del) {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, er.id)).build());
             } else if (er.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {String.valueOf(er.id)})
-                        .withValue(Email.ADDRESS, er.email)
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(er.id)
+                        })
+                        .withValue(Email.ADDRESS, er.address)
                         .withValue(Email.TYPE, er.type)
                         .withValue(Email.LABEL, er.customName).build());
             }
@@ -829,13 +846,15 @@ public class ContactUtil {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, or.id)).build());
             } else if (or.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {String.valueOf(or.id)})
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(or.id)
+                        })
                         .withValue(Organization.COMPANY, or.company)
                         .withValue(Organization.TYPE, or.type)
                         .withValue(Organization.LABEL, or.customName).build());
             }
         }
-        
+
         // update Address
         for (AddressInfo ar : contact.addressInfos) {
             if (ar.modifyFlag == ModifyTag.add) {
@@ -846,7 +865,7 @@ public class ContactUtil {
                         .withValue(StructuredPostal.CITY, ar.city)
                         .withValue(StructuredPostal.STREET, ar.street)
                         .withValue(StructuredPostal.POSTCODE, ar.postcode)
-                        .withValue(StructuredPostal.REGION, ar.province)
+                        .withValue(StructuredPostal.REGION, ar.region)
                         .withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address)
                         .withValue(StructuredPostal.LABEL, ar.customName)
                         .withValue(StructuredPostal.TYPE, ar.type).build());
@@ -855,18 +874,20 @@ public class ContactUtil {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ar.id)).build());
             } else if (ar.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {String.valueOf(ar.id)})
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(ar.id)
+                        })
                         .withValue(StructuredPostal.FORMATTED_ADDRESS, ar.address)
                         .withValue(StructuredPostal.COUNTRY, ar.country)
                         .withValue(StructuredPostal.CITY, ar.city)
                         .withValue(StructuredPostal.STREET, ar.street)
                         .withValue(StructuredPostal.POSTCODE, ar.postcode)
                         .withValue(StructuredPostal.LABEL, ar.customName)
-                        .withValue(StructuredPostal.REGION, ar.province)
+                        .withValue(StructuredPostal.REGION, ar.region)
                         .withValue(StructuredPostal.TYPE, ar.type).build());
             }
         }
-        
+
         // update IM
         for (ImInfo ir : contact.imInfos) {
             if (ir.modifyFlag == ModifyTag.add) {
@@ -880,7 +901,9 @@ public class ContactUtil {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ir.id)).build());
             } else if (ir.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
-                        .withSelection(Data._ID + "=?", new String[] {String.valueOf(ir.id)})
+                        .withSelection(Data._ID + "=?", new String[] {
+                                String.valueOf(ir.id)
+                        })
                         .withValue(Im.DATA, ir.account)
                         .withValue(Im.PROTOCOL, ir.protocol)
                         .withValue(Im.CUSTOM_PROTOCOL, ir.customProtocol).build());
@@ -888,9 +911,9 @@ public class ContactUtil {
         }
 
         try {
-//            Slog.d(ops.toString());
+            // Slog.d(ops.toString());
             ContentProviderResult[] results = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-            
+
             for (ContentProviderResult result : results) {
                 if (result.uri != null) {
                     if (newDataIdSkipCount > 0) {
@@ -909,7 +932,7 @@ public class ContactUtil {
             Slog.e("Error updateContact", e);
             return null;
         }
-        
+
     }
 
     /**
@@ -923,20 +946,21 @@ public class ContactUtil {
     public static long addContact(Context context, Contact contact) {
         if (DUMP_PARAMS) {
             Slog.d("+++++ DUMP CONTACT +++++");
-            
+
             Slog.d(contact.toString());
-            
+
             Slog.d("----- DUMP CONTACT -----");
         }
-        
+
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        
-        // if the contact's account info is empty, we add the contact to default account
+
+        // if the contact's account info is empty, we add the contact to default
+        // account
         if (TextUtils.isEmpty(contact.accountInfo.accountName)) {
             contact.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
             contact.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
         }
-        
+
         // rawcontacts'account
         // don't give c._Id value because it is automatically increased
         ops.add(ContentProviderOperation
@@ -1011,7 +1035,7 @@ public class ContactUtil {
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Email.DATA, er.email)
+                        .withValue(ContactsContract.CommonDataKinds.Email.DATA, er.address)
                         .withValue(ContactsContract.CommonDataKinds.Email.TYPE, er.type)
                         .withValue(ContactsContract.CommonDataKinds.Email.DATA3, er.customName).build());
             }
@@ -1029,7 +1053,7 @@ public class ContactUtil {
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, ar.country)
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.CITY, ar.city)
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.STREET, ar.street)
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.REGION, ar.province)
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.REGION, ar.region)
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, ar.postcode)
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, ar.address)
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.DATA3, ar.customName).build());
@@ -1366,7 +1390,7 @@ public class ContactUtil {
                         EmailInfo er = new EmailInfo();
                         er.id = d.dataId;
                         er.type = d.data2;
-                        er.email = d.data1;
+                        er.address = d.data1;
                         if (er.type == Email.TYPE_CUSTOM) {
                             er.customName = d.data3;
                         }
@@ -1387,7 +1411,7 @@ public class ContactUtil {
                         ar.city = d.data7;
                         ar.country = d.data10;
                         ar.postcode = d.data9;
-                        ar.province = d.data8;
+                        ar.region = d.data8;
                         ar.type = d.data2;
                         if (ar.type == StructuredPostal.TYPE_CUSTOM) {
                             ar.customName = d.data3;
@@ -1536,7 +1560,7 @@ public class ContactUtil {
         if (li == null)
             li = new ArrayList<GroupInfo>();
         if (cursorOfContacts.moveToFirst()) {
-            
+
             final int DATA_MIMETYPE = cursorOfContacts.getColumnIndex(Data.MIMETYPE);
             final int DATA_RAW_ID = cursorOfContacts.getColumnIndex(Data.RAW_CONTACT_ID);
             final int DATA_ID = cursorOfContacts.getColumnIndex(Data._ID);
@@ -1551,7 +1575,7 @@ public class ContactUtil {
             final int DATA9 = cursorOfContacts.getColumnIndex(Data.DATA9);
             final int DATA10 = cursorOfContacts.getColumnIndex(Data.DATA10);
             final int DATA15 = cursorOfContacts.getColumnIndex(Data.DATA15);
-            
+
             do {
                 DataModel dm = new DataModel();
                 String mimetype = cursorOfContacts.getString(DATA_MIMETYPE);
@@ -1564,35 +1588,36 @@ public class ContactUtil {
                     dm.data1 = cursorOfContacts.getString(DATA1);
                 } else if (mimetype.equals(Phone.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data1 = cursorOfContacts.getString(DATA1);	// number
-                    dm.data2 = cursorOfContacts.getInt(DATA2);		// type
+                    dm.data1 = cursorOfContacts.getString(DATA1); // number
+                    dm.data2 = cursorOfContacts.getInt(DATA2); // type
                     if (dm.data2 == Phone.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);	// label
+                        dm.data3 = cursorOfContacts.getString(DATA3); // label
                     }
                 } else if (mimetype.equals(Email.CONTENT_ITEM_TYPE)) {
-                    dm.dataId = cursorOfContacts.getLong(DATA_ID);	
-                    dm.data1 = cursorOfContacts.getString(DATA1);	// address
-                    dm.data2 = cursorOfContacts.getInt(DATA2);		// type
+                    dm.dataId = cursorOfContacts.getLong(DATA_ID);
+                    dm.data1 = cursorOfContacts.getString(DATA1); // address
+                    dm.data2 = cursorOfContacts.getInt(DATA2); // type
                     if (dm.data2 == Email.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);	// label
+                        dm.data3 = cursorOfContacts.getString(DATA3); // label
                     }
                 } else if (mimetype.equals(Im.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data1 = cursorOfContacts.getString(DATA1);	// data
-                    dm.data5 = cursorOfContacts.getInt(DATA5);		// protocol
+                    dm.data1 = cursorOfContacts.getString(DATA1); // data
+                    dm.data5 = cursorOfContacts.getInt(DATA5); // protocol
                     if (dm.data5 == Im.PROTOCOL_CUSTOM) {
-                        dm.data6 = cursorOfContacts.getString(DATA6);	// custom protocol
+                        dm.data6 = cursorOfContacts.getString(DATA6); // custom
+                                                                      // protocol
                     }
                 } else if (mimetype.equals(Organization.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
-                    dm.data1 = cursorOfContacts.getString(DATA1);	// company
-                    if (cursorOfContacts.isNull(DATA2)) {			// type
+                    dm.data1 = cursorOfContacts.getString(DATA1); // company
+                    if (cursorOfContacts.isNull(DATA2)) { // type
                         dm.data2 = Organization.TYPE_WORK;
                     } else {
                         dm.data2 = cursorOfContacts.getInt(DATA2);
                     }
                     if (dm.data2 == Organization.TYPE_CUSTOM) {
-                        dm.data3 = cursorOfContacts.getString(DATA3);	// label
+                        dm.data3 = cursorOfContacts.getString(DATA3); // label
                     }
                 } else if (mimetype.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                     dm.dataId = cursorOfContacts.getLong(DATA_ID);
@@ -1603,7 +1628,7 @@ public class ContactUtil {
                     dm.data8 = cursorOfContacts.getString(DATA8); // region
                     dm.data9 = cursorOfContacts.getString(DATA9); // postcode
                     dm.data10 = cursorOfContacts.getString(DATA10);// country
-                    
+
                     if (dm.data2 == StructuredPostal.TYPE_CUSTOM) {
                         dm.data3 = cursorOfContacts.getString(DATA3); // label
                     }
@@ -1633,7 +1658,7 @@ public class ContactUtil {
      * Get all {@link RawContacts}
      * 
      * @param context
-     * @return 
+     * @return
      */
     public static List<RawContact> getAllRawContacts(Context context) {
         List<RawContact> lr = new ArrayList<RawContact>();
@@ -1669,19 +1694,19 @@ public class ContactUtil {
      * only for test get a contact by rawId
      * 
      * @param context
-     * @param rawId
+     * @param rawContactId
      * @return
      */
-    public static Contact getContactById(Context context, long rawId) {
+    public static Contact getContactById(Context context, long rawContactId) {
         List<RawContact> lr = new ArrayList<Contact.RawContact>();
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
         }, RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG + " and " + RawContacts._ID + "=?", new String[] {
-                String.valueOf(rawId)
+                String.valueOf(rawContactId)
         }, null);
         RawContact rw = new RawContact();
         if (cursor.moveToFirst()) {
-            rw.rawId = rawId;
+            rw.rawId = rawContactId;
             rw.accountInfo.accountName = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_NAME));
             rw.accountInfo.accountType = cursor.getString(cursor.getColumnIndex(RawContacts.ACCOUNT_TYPE));
             rw.version = cursor.getInt(cursor.getColumnIndex(RawContacts.VERSION));
@@ -1689,13 +1714,212 @@ public class ContactUtil {
         cursor.close();
         lr.add(rw);
         List<GroupInfo> groupInfos = getAllGroups(context);
-        List<DataModel> dataModels = convertToDataModels(context, groupInfos, rawId);
+        List<DataModel> dataModels = convertToDataModels(context, groupInfos, rawContactId);
         return convertToContacts(lr, dataModels).get(0);
     }
     
-    public static List<Contact> getContactsAllFast(Context context) {
+    public static Contact getContactByIdFast(Context context, long rawContactId) {
+        String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG + " and " + RawContacts._ID + "=?";
+        String[] selectionArgs = {String.valueOf(rawContactId)};
         
+        Collection<Contact> contacts = getContactsFast(context, selection, selectionArgs);
+        
+        for (Contact contact : contacts) {
+            return contact;
+        }
         return null;
+    }
+    
+    public static Collection<Contact> getContactsAllFast(Context context) {
+        String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG;
+        String[] selectionArgs = null;
+        
+        return getContactsFast(context, selection, selectionArgs);
+    }
+
+    private static Collection<Contact> getContactsFast(Context context, String selection, String[] selectionArgs) {
+        Map<Long, Contact> contactsMap = new HashMap<Long, Contact>();
+        
+        {
+            String[] projection = {
+                    RawContacts._ID, 
+                    RawContacts.ACCOUNT_NAME, 
+                    RawContacts.ACCOUNT_TYPE, 
+                    RawContacts.VERSION
+            };
+
+            Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, projection, 
+                    selection, selectionArgs, null);
+
+            if (cursor != null) {
+                try {
+                    if (cursor.moveToFirst()) {
+                        final int idxForId = cursor.getColumnIndex(RawContacts._ID);
+                        final int idxForAccountName = cursor.getColumnIndex(RawContacts.ACCOUNT_NAME);
+                        final int idxForAccountType = cursor.getColumnIndex(RawContacts.ACCOUNT_TYPE);
+                        final int idxForVersion = cursor.getColumnIndex(RawContacts.VERSION);
+
+                        do {
+                            Contact contact = new Contact();
+                            contact.id = cursor.getLong(idxForId);
+                            contact.accountInfo.accountName = cursor.getString(idxForAccountName);
+                            contact.accountInfo.accountType = cursor.getString(idxForAccountType);
+                            contact.version = cursor.getInt(idxForVersion);
+                            
+                            contactsMap.put(contact.id, contact);
+                        } while (cursor.moveToNext());
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+        }
+
+        {
+            String[] projection = {
+                   RawContactsEntity._ID,
+                   RawContactsEntity.DATA_ID,
+                   RawContactsEntity.MIMETYPE,
+                   RawContactsEntity.DATA1,
+                   RawContactsEntity.DATA2,
+                   RawContactsEntity.DATA3,
+                   RawContactsEntity.DATA4,
+                   RawContactsEntity.DATA5,
+                   RawContactsEntity.DATA6,
+                   RawContactsEntity.DATA7,
+                   RawContactsEntity.DATA8,
+                   RawContactsEntity.DATA9,
+                   RawContactsEntity.DATA10,
+                   RawContactsEntity.DATA11,
+                   RawContactsEntity.DATA12,
+                   RawContactsEntity.DATA13,
+                   RawContactsEntity.DATA14,
+                   RawContactsEntity.DATA15,
+            };
+            Cursor cursor = context.getContentResolver().query(RawContactsEntity.CONTENT_URI, projection,
+                    selection, selectionArgs, RawContactsEntity._ID);
+            if (cursor != null) {
+                try {
+                    if (cursor.moveToFirst()) {
+                        final int idxForRawContactId = cursor.getColumnIndex(RawContactsEntity._ID);
+                        final int idxForDataId = cursor.getColumnIndex(RawContactsEntity.DATA_ID);
+                        final int idxForMimeType = cursor.getColumnIndex(RawContactsEntity.MIMETYPE);
+                        final int idxForData1 = cursor.getColumnIndex(RawContactsEntity.DATA1);
+                        final int idxForData2 = cursor.getColumnIndex(RawContactsEntity.DATA2);
+                        final int idxForData3 = cursor.getColumnIndex(RawContactsEntity.DATA3);
+                        final int idxForData4 = cursor.getColumnIndex(RawContactsEntity.DATA4);
+                        final int idxForData5 = cursor.getColumnIndex(RawContactsEntity.DATA5);
+                        final int idxForData6 = cursor.getColumnIndex(RawContactsEntity.DATA6);
+                        final int idxForData7 = cursor.getColumnIndex(RawContactsEntity.DATA7);
+                        final int idxForData8 = cursor.getColumnIndex(RawContactsEntity.DATA8);
+                        final int idxForData9 = cursor.getColumnIndex(RawContactsEntity.DATA9);
+                        final int idxForData10 = cursor.getColumnIndex(RawContactsEntity.DATA10);
+                        final int idxForData11 = cursor.getColumnIndex(RawContactsEntity.DATA11);
+                        final int idxForData12 = cursor.getColumnIndex(RawContactsEntity.DATA12);
+                        final int idxForData13 = cursor.getColumnIndex(RawContactsEntity.DATA13);
+                        final int idxForData14 = cursor.getColumnIndex(RawContactsEntity.DATA14);
+                        final int idxForData15 = cursor.getColumnIndex(RawContactsEntity.DATA15);
+                        
+                        do {
+                            final long rawContactId = cursor.getLong(idxForRawContactId);
+                            Contact contact = contactsMap.get(rawContactId);
+                            if (contact != null) {
+                                String mimeType = cursor.getString(idxForMimeType);
+                                
+                                if (TextUtils.isEmpty(mimeType)) {
+                                    continue;
+                                }
+                                
+                                if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
+                                    contact.name = cursor.getString(idxForData1);
+                                } else if (mimeType.equals(Nickname.CONTENT_ITEM_TYPE)) {
+                                    contact.nickname = cursor.getString(idxForData1);
+                                } else if (mimeType.equals(Photo.CONTENT_ITEM_TYPE)) {
+                                    contact.photo = cursor.getBlob(idxForData15);
+                                } else if (mimeType.equals(GroupMembership.CONTENT_ITEM_TYPE)) {
+                                    GroupInfo groupInfo = new GroupInfo();
+                                    
+                                    groupInfo.grId = cursor.getLong(idxForData1);
+                                    groupInfo.dataId = cursor.getLong(idxForDataId);
+                                    
+                                    contact.addGroupInfo(groupInfo);
+                                } else if (mimeType.equals(Phone.CONTENT_ITEM_TYPE)) {
+                                    PhoneInfo phoneInfo = new PhoneInfo();
+                                    
+                                    phoneInfo.id = cursor.getLong(idxForDataId);
+                                    phoneInfo.number = cursor.getString(idxForData1);   // number
+                                    phoneInfo.type = cursor.getInt(idxForData2);        // type
+                                    if (phoneInfo.type == Phone.TYPE_CUSTOM) {
+                                        phoneInfo.customName = cursor.getString(idxForData3);   // label
+                                    }
+                                    
+                                    contact.addPhoneInfo(phoneInfo);
+                                } else if (mimeType.equals(Email.CONTENT_ITEM_TYPE)) {
+                                    EmailInfo emailInfo = new EmailInfo();
+                                    
+                                    emailInfo.id = cursor.getLong(idxForDataId);
+                                    emailInfo.address = cursor.getString(idxForData1);    // address
+                                    emailInfo.type = cursor.getInt(idxForData2);        // type
+                                    if (emailInfo.type == Email.TYPE_CUSTOM) {
+                                        emailInfo.customName = cursor.getString(idxForData3); // label
+                                    }
+                                    
+                                    contact.addEmailInfo(emailInfo);
+                                } else if (mimeType.equals(Im.CONTENT_ITEM_TYPE)) {
+                                    ImInfo imInfo = new ImInfo();
+                                    
+                                    imInfo.id = cursor.getLong(idxForDataId);
+                                    imInfo.account = cursor.getString(idxForData1); // data
+                                    imInfo.protocol = cursor.getInt(idxForData5);   // protocol
+                                    if (imInfo.protocol == Im.PROTOCOL_CUSTOM) {
+                                        imInfo.customProtocol = cursor.getString(idxForData6); // custom protocol
+                                    }
+                                    
+                                    contact.addImInfo(imInfo);
+                                } else if (mimeType.equals(Organization.CONTENT_ITEM_TYPE)) {
+                                    OrgInfo orgInfo = new OrgInfo();
+                                    
+                                    orgInfo.id = cursor.getLong(idxForDataId);
+                                    orgInfo.company = cursor.getString(idxForData1);    // company
+                                    if (cursor.isNull(idxForData2)) {                   // type
+                                        orgInfo.type = Organization.TYPE_WORK;
+                                    } else {
+                                        orgInfo.type = cursor.getInt(idxForData2);
+                                    }
+                                    if (orgInfo.type == Organization.TYPE_CUSTOM) {
+                                        orgInfo.customName = cursor.getString(idxForData3); // label
+                                    }
+                                    
+                                    contact.addOrgInfo(orgInfo);
+                                } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
+                                    AddressInfo addressInfo = new AddressInfo();
+                                    
+                                    addressInfo.id = cursor.getLong(idxForDataId);
+                                    addressInfo.address = cursor.getString(idxForData1);    // formated address
+                                    addressInfo.type = cursor.getInt(idxForData2); // type
+                                    addressInfo.street = cursor.getString(idxForData4); // street
+                                    addressInfo.city = cursor.getString(idxForData7); // city
+                                    addressInfo.region = cursor.getString(idxForData8); // region
+                                    addressInfo.postcode = cursor.getString(idxForData9); // postcode
+                                    addressInfo.country = cursor.getString(idxForData10);// country
+
+                                    if (addressInfo.type == StructuredPostal.TYPE_CUSTOM) {
+                                        addressInfo.customName = cursor.getString(idxForData3); // label
+                                    }
+                                    
+                                    contact.addAddressInfo(addressInfo);
+                                } 
+                            }
+                            
+                        } while (cursor.moveToNext());
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+        }
+        
+        return contactsMap.values();
     }
 
     /**
@@ -1734,7 +1958,7 @@ public class ContactUtil {
             if (er.type == Email.TYPE_WORK) {
                 System.out.print("邮件类型" + "工作邮箱");
             }
-            System.out.println("邮箱地址" + er.email);
+            System.out.println("邮箱地址" + er.address);
         }
 
         for (int i = 0; i < c.imInfos.size(); i++) {
