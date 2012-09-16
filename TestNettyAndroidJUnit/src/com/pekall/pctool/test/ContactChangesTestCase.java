@@ -129,7 +129,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
             
             contact.name = "update";
             
-            boolean success = ContactUtil.updateContact(getContext(), contact);
+            boolean success = ContactUtil.updateContact(getContext(), contact) != null;
          
             Slog.d("update success = " + success);
         }

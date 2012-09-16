@@ -1,10 +1,16 @@
 package com.pekall.pctool.test;
 
+import android.provider.ContactsContract.CommonDataKinds;
 import android.test.AndroidTestCase;
 import android.text.format.Time;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.HandlerFacade;
+import com.pekall.pctool.model.contact.Contact;
+import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.model.contact.Contact.ImInfo;
+import com.pekall.pctool.model.contact.Contact.ModifyTag;
+import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AgendaSync;
@@ -14,6 +20,8 @@ import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
 import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
 import com.pekall.pctool.protos.MsgDefProtos.ContactsSync;
+import com.pekall.pctool.protos.MsgDefProtos.EmailRecord;
+import com.pekall.pctool.protos.MsgDefProtos.EmailRecord.EmailType;
 import com.pekall.pctool.protos.MsgDefProtos.MMSRecord;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
@@ -29,6 +37,44 @@ import java.util.List;
 public class HandlerFacadeTestCase extends AndroidTestCase {
     
     private HandlerFacade mHandlerFacade;
+    
+    private static final String CONTACT_NAME = "unit test";
+    private static final String CONTACT_NICKNAME = "unit test nick";
+    
+    private static final String PHONE_NUMBER_1 = "028-65478965";
+    private static final int PHONE_TYPE_1 = CommonDataKinds.Phone.TYPE_HOME;
+    
+    private static final String IM_ACCOUNT_1 = "shaobin0604@gmail.com";
+    private static final int IM_TYPE_1 = CommonDataKinds.Im.TYPE_HOME;
+    
+    private static final int COUNT_OF_INITIAL_CONTACT = 1;
+    
+    private long mContactId;
+    
+    
+    private void populateContacts() {
+        Contact contact = new Contact();
+        contact.name = CONTACT_NAME;
+        
+        PhoneInfo phoneInfo = new PhoneInfo();
+        phoneInfo.modifyFlag = ModifyTag.add;
+        phoneInfo.number = PHONE_NUMBER_1;
+        phoneInfo.type = PHONE_TYPE_1;
+        
+        contact.addPhoneInfo(phoneInfo);
+        
+        ImInfo imInfo = new ImInfo();
+        imInfo.modifyFlag = ModifyTag.add;
+        imInfo.account = IM_ACCOUNT_1;
+        imInfo.protocol = IM_TYPE_1;
+        
+        contact.addImInfo(imInfo);
+        
+        mContactId = ContactUtil.addContact(getContext(), contact);
+        
+        assertTrue(mContactId > 0);
+    }
+    
 
     @Override
     protected void setUp() throws Exception {
@@ -36,6 +82,10 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         super.setUp();
         
         mHandlerFacade = new HandlerFacade(getContext());
+        
+        ContactUtil.deleteContactAll(getContext());
+        
+        populateContacts();
     }
 
     @Override
@@ -56,6 +106,8 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         CmdResponse cmdResponse = mHandlerFacade.queryContact(cmdRequestBuilder.build());
         
         Slog.d(cmdResponse.toString());
+        
+        assertEquals(1, cmdResponse.getContactRecordList().size());
     }
     
     public void testAddContact() throws Exception {
@@ -81,9 +133,33 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         cmdRequestBuilder.setContactParams(contactRecordBuilder);
         
         CmdResponse cmdResponse = mHandlerFacade.handleCmdRequest(cmdRequestBuilder.build());
+        
+        assertEquals(1, cmdResponse.getContactRecordList().size());
+    }
+    
+    public void testUpdateContact() throws Exception {
+        // query exist contact
+        CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+        cmdRequestBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
+        
+        CmdResponse cmdResponse = mHandlerFacade.queryContact(cmdRequestBuilder.build());
         ContactRecord contactRecord = cmdResponse.getContactRecord(0);
-        assertEquals("testAddContact", contactRecord.getName());
-        assertEquals("NICK testAddContact", contactRecord.getNickname());
+        
+        // update contact
+        ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder(contactRecord);
+        
+        EmailRecord.Builder emailRecordBuilder = EmailRecord.newBuilder();
+        emailRecordBuilder.setEmail("shaobin0604@qq.com");
+        emailRecordBuilder.setType(EmailType.HOME);
+        emailRecordBuilder.setModifyTag(com.pekall.pctool.protos.MsgDefProtos.ModifyTag.ADD);
+        
+        contactRecordBuilder.addEmail(emailRecordBuilder);
+        
+        cmdRequestBuilder = CmdRequest.newBuilder();
+        cmdRequestBuilder.setCmdType(CmdType.CMD_EDIT_CONTACT);
+        cmdRequestBuilder.setContactParams(contactRecordBuilder);
+        
+        cmdResponse = mHandlerFacade.handleCmdRequest(cmdRequestBuilder.build());
     }
     
     

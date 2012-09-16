@@ -1,6 +1,12 @@
 
 package com.pekall.pctool.model.contact;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentProviderOperation;
@@ -42,10 +48,6 @@ import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.Contact.RawContact;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 public class ContactUtil {
 
     private static final boolean DUMP_PARAMS = true;
@@ -59,8 +61,8 @@ public class ContactUtil {
     public static final String SIM2_ACCOUNT_TYPE = "contacts.account.type.sim";
 
     /******* Flag ******************************/
-    private static final int DELETE_FLAG = 1;
-    public static final int CONTACTS_COLLECT_FLAG = 1;
+    private static final int RAW_CONTACT_DELETE_FLAG = 1;
+    private static final int FAVORITE_CONTACT_FLAG = 1;
 
     /**
      * This utility class cannot be instantiated
@@ -112,7 +114,7 @@ public class ContactUtil {
         if (account == null)
             return lr;
         String where = RawContacts.ACCOUNT_NAME + "=?" + " and " + RawContacts.ACCOUNT_TYPE + "=?" + "and "
-                + RawContacts.DELETED + "!=" + DELETE_FLAG;
+                + RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG;
         String whereargs[] = new String[] {
                 account.accountName, account.accountType
         };
@@ -144,7 +146,7 @@ public class ContactUtil {
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts.VERSION
         }, RawContacts.DELETED + "!=? AND " + RawContacts._ID + "=?", new String[] {
-                String.valueOf(DELETE_FLAG), String.valueOf(id)
+                String.valueOf(RAW_CONTACT_DELETE_FLAG), String.valueOf(id)
         }, null);
 
         int version = -1;
@@ -169,7 +171,7 @@ public class ContactUtil {
 
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts._ID, RawContacts.VERSION
-        }, RawContacts.DELETED + "!=" + DELETE_FLAG, null, null);
+        }, RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG, null, null);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -658,7 +660,7 @@ public class ContactUtil {
      * @param contact
      * @return
      */
-    public static boolean updateContact(Context context, Contact contact) {
+    public static Queue<Long> updateContact(Context context, Contact contact) {
         Slog.d("updateContact E");
 
         if (DUMP_PARAMS) {
@@ -667,6 +669,8 @@ public class ContactUtil {
             Slog.d("<<<<< DUMP CONTACT <<<<<");
         }
 
+        int newDataIdSkipCount = 0;
+        Queue<Long> newDataIds = new LinkedList<Long>();
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
         
         // update Name
@@ -692,6 +696,8 @@ public class ContactUtil {
                     .withValue(StructuredName.FAMILY_NAME, "")
                     .withValue(StructuredName.GIVEN_NAME, "")
                     .withValue(StructuredName.MIDDLE_NAME, "").build());
+            
+            newDataIdSkipCount++;
         }
         
         // update nickname
@@ -707,6 +713,8 @@ public class ContactUtil {
                     .withValue(Data.RAW_CONTACT_ID, contact.id)
                     .withValue(Data.MIMETYPE, Nickname.CONTENT_ITEM_TYPE)
                     .withValue(Nickname.NAME, contact.nickname).build());
+            
+            newDataIdSkipCount++;
         }
         
         // update photo
@@ -745,11 +753,13 @@ public class ContactUtil {
                             .withValue(Data.RAW_CONTACT_ID, contact.id)
                             .withValue(Data.MIMETYPE, Photo.CONTENT_ITEM_TYPE)
                             .withValue(Photo.PHOTO, contact.photo).build());
+                    
+                    newDataIdSkipCount++;
                 }
             }
         }
         
-        // has group
+        // update group
         for (GroupInfo gi : contact.groupInfos) {
             if (gi.modifyFlag == ModifyTag.add) {
                 ops.add(ContentProviderOperation.newInsert(Data.CONTENT_URI)
@@ -856,6 +866,7 @@ public class ContactUtil {
                         .withValue(StructuredPostal.TYPE, ar.type).build());
             }
         }
+        
         // update IM
         for (ImInfo ir : contact.imInfos) {
             if (ir.modifyFlag == ModifyTag.add) {
@@ -877,17 +888,28 @@ public class ContactUtil {
         }
 
         try {
-            Slog.d(ops.toString());
-
-            context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-            return true;
+//            Slog.d(ops.toString());
+            ContentProviderResult[] results = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+            
+            for (ContentProviderResult result : results) {
+                if (result.uri != null) {
+                    if (newDataIdSkipCount > 0) {
+                        newDataIdSkipCount--;
+                    } else {
+                        long newDataId = ContentUris.parseId(result.uri);
+                        newDataIds.add(newDataId);
+                    }
+                }
+            }
+            return newDataIds;
         } catch (RemoteException e) {
             Slog.e("Error updateContact", e);
-            return false;
+            return null;
         } catch (OperationApplicationException e) {
             Slog.e("Error updateContact", e);
-            return false;
+            return null;
         }
+        
     }
 
     /**
@@ -1137,7 +1159,7 @@ public class ContactUtil {
         List<DataModel> ld = new ArrayList<Contact.DataModel>();
         String where = RawContacts.STARRED + "=?";
         String whereargs[] = new String[] {
-                String.valueOf(CONTACTS_COLLECT_FLAG)
+                String.valueOf(FAVORITE_CONTACT_FLAG)
         };
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts._ID, RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
@@ -1617,7 +1639,7 @@ public class ContactUtil {
         List<RawContact> lr = new ArrayList<RawContact>();
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts._ID, RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
-        }, RawContacts.DELETED + "!=" + DELETE_FLAG, null, null);
+        }, RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG, null, null);
         while (cursor.moveToNext()) {
             RawContact rw = new RawContact();
             rw.rawId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
@@ -1654,7 +1676,7 @@ public class ContactUtil {
         List<RawContact> lr = new ArrayList<Contact.RawContact>();
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts.ACCOUNT_NAME, RawContacts.ACCOUNT_TYPE, RawContacts.VERSION
-        }, RawContacts.DELETED + "!=" + DELETE_FLAG + " and " + RawContacts._ID + "=?", new String[] {
+        }, RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG + " and " + RawContacts._ID + "=?", new String[] {
                 String.valueOf(rawId)
         }, null);
         RawContact rw = new RawContact();

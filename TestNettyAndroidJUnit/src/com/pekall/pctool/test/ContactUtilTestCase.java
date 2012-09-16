@@ -1,17 +1,19 @@
 
 package com.pekall.pctool.test;
 
+import java.util.List;
+import java.util.Queue;
+
 import android.provider.ContactsContract.CommonDataKinds;
 import android.test.AndroidTestCase;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.Contact;
+import com.pekall.pctool.model.contact.Contact.EmailInfo;
 import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.ContactUtil;
-
-import java.util.List;
 
 public class ContactUtilTestCase extends AndroidTestCase {
     
@@ -32,7 +34,6 @@ public class ContactUtilTestCase extends AndroidTestCase {
     private void populateContacts() {
         Contact contact = new Contact();
         contact.name = CONTACT_NAME;
-        contact.nickname = CONTACT_NICKNAME;
         
         PhoneInfo phoneInfo = new PhoneInfo();
         phoneInfo.modifyFlag = ModifyTag.add;
@@ -81,13 +82,49 @@ public class ContactUtilTestCase extends AndroidTestCase {
         Contact contact = ContactUtil.getContactById(getContext(), mContactId);
         contact.name = expectedName;
         
-        boolean success = ContactUtil.updateContact(getContext(), contact);
+        boolean success = ContactUtil.updateContact(getContext(), contact) != null;
         
         assertTrue(success);
         
         contact = ContactUtil.getContactById(getContext(), mContactId);
         assertEquals(expectedName, contact.name);
         
+    }
+    
+    public void testUpdateContactRetrieveDataIds() throws Exception {
+        Contact contact = ContactUtil.getContactById(getContext(), mContactId);
+        
+        contact.nickname = CONTACT_NICKNAME;
+        
+        List<PhoneInfo> phoneInfos = contact.phoneInfos;
+        PhoneInfo phoneInfo = new PhoneInfo();
+        phoneInfo.type = CommonDataKinds.Phone.TYPE_HOME;
+        final String newPhoneNumber = "0832-3993098";
+        phoneInfo.number = newPhoneNumber;
+        phoneInfo.modifyFlag = ModifyTag.add;
+        phoneInfos.add(phoneInfo);
+        
+        List<EmailInfo> emailInfos = contact.emailInfos;
+        EmailInfo emailInfo = new EmailInfo();
+        emailInfo.type = CommonDataKinds.Email.TYPE_HOME;
+        emailInfo.email = "shaobin0604@qq.com";
+        emailInfo.modifyFlag = ModifyTag.add;
+        emailInfos.add(emailInfo);
+        
+        List<ImInfo> imInfos = contact.imInfos;
+        ImInfo imInfo = new ImInfo();
+        imInfo.protocol = CommonDataKinds.Im.PROTOCOL_QQ;
+        imInfo.account = "407403384";
+        imInfo.modifyFlag = ModifyTag.add;
+        imInfos.add(imInfo);
+        
+        Queue<Long> newDataIds = ContactUtil.updateContact(getContext(), contact);
+        
+        Slog.d(newDataIds.toString());
+        
+        contact = ContactUtil.getContactById(getContext(), mContactId);
+        
+        Slog.d(contact.toString());
     }
     
     /**
@@ -109,7 +146,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
         
         phoneInfos.add(phoneInfo);
         
-        boolean success = ContactUtil.updateContact(getContext(), contact);
+        boolean success = ContactUtil.updateContact(getContext(), contact) != null;
         
         assertTrue(success);
         
@@ -140,7 +177,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
         
         phoneInfos.add(phoneInfo);
         
-        boolean success = ContactUtil.updateContact(getContext(), contact);
+        boolean success = ContactUtil.updateContact(getContext(), contact) != null;
         
         assertTrue(success);
         

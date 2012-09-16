@@ -1,6 +1,11 @@
 
 package com.pekall.pctool.model;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+
 import android.content.Context;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Im;
@@ -65,10 +70,6 @@ import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy;
 import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
 import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HandlerFacade {
     private static final boolean DUMP_CMD_REQUEST = true;
@@ -1665,29 +1666,75 @@ public class HandlerFacade {
                 
                 Slog.d("contact: " + contact);
                 
-                if (ContactUtil.updateContact(mContext, contact)) {
-                    
-                    // return the new updated contact
-                    final long contactId = contact.id;
-
-                    contact = ContactUtil.getContactById(mContext, contactId);
-                    
-                    ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
-                    AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
-                    GroupRecord.Builder groupRecordBuilder = GroupRecord.newBuilder();
-                    PhoneRecord.Builder phoneRecordBuilder = PhoneRecord.newBuilder();
-                    EmailRecord.Builder emailRecordBuilder = EmailRecord.newBuilder();
-                    IMRecord.Builder imRecordBuilder = IMRecord.newBuilder();
-                    AddressRecord.Builder addressRecordBuilder = AddressRecord.newBuilder();
-                    OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
-                    
-                    contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
-                            emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
+                Queue<Long> newDataIds;
                 
+                if ((newDataIds = ContactUtil.updateContact(mContext, contact)) != null) {
+                    
+                    ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder(contactRecord);
+                    
+                    // groups
+                    for (int i = 0; i < contactRecord.getGroupCount(); i++) {
+                        GroupRecord groupRecord = contactRecord.getGroup(i);
+                        if (groupRecord.getModifyTag() == ModifyTag.ADD) {
+                            GroupRecord.Builder groupRecordBuilder = contactRecordBuilder.getGroupBuilder(i);
+                            long newDataId = newDataIds.remove();
+                            groupRecordBuilder.setDataId(newDataId);
+                        }
+                    }
+                    
+                    // phones
+                    for (int i = 0; i < contactRecord.getPhoneCount(); i++) {
+                        PhoneRecord phoneRecord = contactRecord.getPhone(i);
+                        if (phoneRecord.getModifyTag() == ModifyTag.ADD) {
+                            PhoneRecord.Builder phoneRecordBuilder = contactRecordBuilder.getPhoneBuilder(i);
+                            long newDataId = newDataIds.remove();
+                            phoneRecordBuilder.setId(newDataId);
+                        }
+                    }
+                    
+                    // emails
+                    for (int i = 0; i < contactRecord.getEmailCount(); i++) {
+                        EmailRecord emailRecord = contactRecord.getEmail(i);
+                        if (emailRecord.getModifyTag() == ModifyTag.ADD) {
+                            EmailRecord.Builder emailRecordBuilder = contactRecordBuilder.getEmailBuilder(i);
+                            long newDataId = newDataIds.remove();
+                            emailRecordBuilder.setId(newDataId);
+                        }
+                    }
+                    
+                    // Organizations
+                    for (int i = 0; i < contactRecord.getOrgCount(); i++) {
+                        OrgRecord orgRecord = contactRecord.getOrg(i);
+                        if (orgRecord.getModifyTag() == ModifyTag.ADD) {
+                            OrgRecord.Builder orgRecordBuilder = contactRecordBuilder.getOrgBuilder(i);
+                            long newDataId = newDataIds.remove();
+                            orgRecordBuilder.setId(newDataId);
+                        }
+                    }
+                    
+                    // Address
+                    for (int i = 0; i < contactRecord.getAddressCount(); i++) {
+                        AddressRecord addressRecord = contactRecord.getAddress(i);
+                        if (addressRecord.getModifyTag() == ModifyTag.ADD) {
+                            AddressRecord.Builder addressRecordBuilder = contactRecordBuilder.getAddressBuilder(i);
+                            long newDataId = newDataIds.remove();
+                            addressRecordBuilder.setId(newDataId);
+                        }
+                    }
+                    
+                    // Im
+                    for (int i = 0; i < contactRecord.getImCount(); i++) {
+                        IMRecord imRecord = contactRecord.getIm(i);
+                        if (imRecord.getModifyTag() == ModifyTag.ADD) {
+                            IMRecord.Builder imRecordBuilder = contactRecordBuilder.getImBuilder(i);
+                            long newDataId = newDataIds.remove();
+                            imRecordBuilder.setId(newDataId);
+                        }
+                    }
+                    
+                    
                     responseBuilder.addContactRecord(contactRecordBuilder.build());
                     
-                    accountRecordBuilder.clear();
-                    contactRecordBuilder.clear();
                     
                     setResultOK(responseBuilder);
                 } else {
@@ -2190,7 +2237,7 @@ public class HandlerFacade {
                     Contact contact = contactRecordToContactForUpdate(contactRecord);
                     
                     final long contactId = contact.id;
-                    if (ContactUtil.updateContact(mContext, contact)) {
+                    if (ContactUtil.updateContact(mContext, contact) != null) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
                         Slog.d("ContactUtil.updateContactForce OK, contactId = " + contactId + ", contactVersion = " + contactVersion);
