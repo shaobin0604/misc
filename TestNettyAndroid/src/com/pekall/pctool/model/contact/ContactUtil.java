@@ -217,7 +217,6 @@ public class ContactUtil {
                 GroupInfo gi = new GroupInfo();
 
                 gi.grId = cursorOfGroup.getLong(GROUP_ID);
-                gi.dataId = gi.grId;
                 gi.name = cursorOfGroup.getString(GROUP_TITLE);
                 gi.note = cursorOfGroup.getString(GROUP_NOTES);
                 gi.accountInfo.accountType = cursorOfGroup.getString(GROUP_ACCOUNT_TYPE);
@@ -418,7 +417,7 @@ public class ContactUtil {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         // update Name
-        if (hasField(context, "name", contact.id)) {
+        if (hasField(context, StructuredName.CONTENT_ITEM_TYPE, contact.id)) {
             Slog.d("has name");
 
             final Builder builder = ContentProviderOperation
@@ -447,7 +446,7 @@ public class ContactUtil {
         }
 
         // update nickname
-        if (hasField(context, "nickname", contact.id)) {
+        if (hasField(context, Nickname.CONTENT_ITEM_TYPE, contact.id)) {
             ops.add(ContentProviderOperation
                     .newUpdate(Data.CONTENT_URI)
                     .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + " = ?",
@@ -463,7 +462,7 @@ public class ContactUtil {
 
         // update photo
         if (contact.shouldUpdatePhoto) {
-            if (hasField(context, "photo", contact.id)) {
+            if (hasField(context, Photo.CONTENT_ITEM_TYPE, contact.id)) {
                 if (contact.photo != null) {
                     ops.add(ContentProviderOperation
                             .newUpdate(Data.CONTENT_URI)

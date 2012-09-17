@@ -51,6 +51,8 @@ import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse.Builder;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
+import com.pekall.pctool.protos.MsgDefProtos.ConnectParam;
+import com.pekall.pctool.protos.MsgDefProtos.ConnectParam.ConnectType;
 import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
 import com.pekall.pctool.protos.MsgDefProtos.ContactsSync;
 import com.pekall.pctool.protos.MsgDefProtos.EmailRecord;
@@ -117,6 +119,14 @@ public class HandlerFacade {
                 //
                 case CMD_HEART_BEAT: {
                     cmdResponse = heartbeat(cmdRequest);
+                    break;
+                }
+                
+                //
+                // CONNECT related methods
+                //
+                case CMD_CONNECT: {
+                    cmdResponse = connect(cmdRequest);
                     break;
                 }
                 
@@ -259,6 +269,38 @@ public class HandlerFacade {
         dumpCmdResponseIfNeeded(cmdResponse);
         
         return cmdResponse;
+    }
+
+    private CmdResponse connect(CmdRequest cmdRequest) {
+        Slog.d("connect E");
+
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(cmdRequest.getCmdType());
+        
+        if (cmdRequest.hasConnectParam()) {
+            ConnectParam connectParam = cmdRequest.getConnectParam();
+            final ConnectType connectType = connectParam.getConnectType();
+            switch (connectType) {
+                case USB: {
+                    setResultOK(responseBuilder);
+                    break;
+                }
+                case WIFI: {
+                    
+                    break;
+                }
+                default: {
+                    setResultErrorIllegalParams(responseBuilder, "connectType: " + connectType);
+                    break;
+                }
+            }
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "connect");
+        }
+
+        Slog.d("connect X");
+
+        return responseBuilder.build();
     }
 
     /**

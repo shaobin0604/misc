@@ -5,29 +5,29 @@ import android.content.Intent;
 
 import org.swiftp.FTPServerService;
 
-class ServerController {
+public class ServerController {
     
     private ServerController() {
         
     }
     
-    static void startFTPServer(Context context) {
+    public static void startFTPServer(Context context) {
         Intent serverService = new Intent(context, FTPServerService.class);
         if (!FTPServerService.isRunning()) {
             context.startService(serverService);
         }
     }
 
-    static void stopFTPServer(Context context) {
+    public static void stopFTPServer(Context context) {
         Intent serverService = new Intent(context, FTPServerService.class);
         context.stopService(serverService);
     }
 
-    static void stopHttpServer(Context context) {
+    public static void stopHttpServer(Context context) {
         context.stopService(new Intent(context, HttpServerService.class));
     }
 
-    static void startHttpServer(Context context) {
+    public static void startHttpServer(Context context) {
         context.startService(new Intent(context, HttpServerService.class));
     }
 }
