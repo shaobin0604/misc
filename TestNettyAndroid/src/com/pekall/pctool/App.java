@@ -5,7 +5,7 @@ import android.app.Application;
 public class App extends Application {
     
     private boolean mConnectionModeUSB;
-
+    
     @Override
     public void onCreate() {
         super.onCreate();

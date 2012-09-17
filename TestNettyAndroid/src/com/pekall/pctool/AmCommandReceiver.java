@@ -17,13 +17,13 @@ public class AmCommandReceiver extends BroadcastReceiver {
 		String action = intent.getAction();
 		Slog.d("onReceive action = " + action);
 		if (ACTION_FTP_SERVER_START.equals(action)) {
-			ServerController.startFTPServer(context);
+			ServiceController.startFTPService(context);
 		} else if (ACTION_FTP_SERVER_STOP.equals(action)) {
-		    ServerController.stopFTPServer(context);
+		    ServiceController.stopFTPService(context);
 		} else if (ACTION_MAIN_SERVER_START.equalsIgnoreCase(action)) {
-		    ServerController.startHttpServer(context);
+		    ServiceController.startHttpService(context);
         } else if (ACTION_MAIN_SERVER_STOP.equalsIgnoreCase(action)) {
-            ServerController.stopHttpServer(context);
+            ServiceController.stopHttpService(context);
         }
 	}
 	

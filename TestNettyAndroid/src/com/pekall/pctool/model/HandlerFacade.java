@@ -286,7 +286,7 @@ public class HandlerFacade {
                     break;
                 }
                 case WIFI: {
-                    
+                    setResultOK(responseBuilder);
                     break;
                 }
                 default: {

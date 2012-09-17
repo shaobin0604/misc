@@ -11,6 +11,8 @@ import com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
+import com.pekall.pctool.protos.MsgDefProtos.ConnectParam;
+import com.pekall.pctool.protos.MsgDefProtos.ConnectParam.ConnectType;
 import com.pekall.pctool.protos.MsgDefProtos.ContactRecord;
 import com.pekall.pctool.protos.MsgDefProtos.IMRecord;
 import com.pekall.pctool.protos.MsgDefProtos.IMRecord.IMType;
@@ -19,6 +21,7 @@ import com.pekall.pctool.protos.MsgDefProtos.ModifyTag;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
+import com.sun.corba.se.impl.orb.ParserTable.TestBadServerIdHandler;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -33,6 +36,9 @@ import org.apache.http.util.EntityUtils;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.List;
 
 public class Main {
@@ -44,15 +50,18 @@ public class Main {
     public static void main(String[] args) {
         try {
             // installAPK();
-            Thread.sleep(3000);
-
-            stopMainServer();
-            Thread.sleep(3000);
-
-            startMainServer();
-            Thread.sleep(3000);
-
-            forwardMainServerPort();
+//            Thread.sleep(3000);
+//
+//            stopMainServer();
+//            Thread.sleep(3000);
+//
+//            startMainServer();
+//            Thread.sleep(3000);
+//
+//            forwardMainServerPort();
+//            Thread.sleep(3000);
+            
+            testReceiveWifiBroadcast();
             Thread.sleep(3000);
 
         } catch (InterruptedException e) {
@@ -371,11 +380,15 @@ public class Main {
 
         System.out.println("testUpdateContact X");
     }
-
+    
     private static CmdResponse postCmdRequest(CmdRequest.Builder cmdRequestBuilder, boolean dumpResponse) {
+        return postCmdRequest("localhost", cmdRequestBuilder, dumpResponse);
+    }
+
+    private static CmdResponse postCmdRequest(String host, CmdRequest.Builder cmdRequestBuilder, boolean dumpResponse) {
 
         HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost("http://localhost:12580/rpc");
+        HttpPost post = new HttpPost("http://" + host + ":12580/rpc");
         post.setHeader("Content-Type", "application/x-protobuf");
         final CmdRequest cmdRequest = cmdRequestBuilder.build();
         post.setEntity(new ByteArrayEntity(cmdRequest.toByteArray()));
@@ -402,6 +415,51 @@ public class Main {
             client.getConnectionManager().shutdown();
         }
         return null;
+    }
+    
+    private static final int DISCOVERY_PORT = 2562;
+    
+    private static void testReceiveWifiBroadcast() {
+        try {
+            DatagramSocket socket = new DatagramSocket(DISCOVERY_PORT);
+            
+            byte[] buf = new byte[10];
+            
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
+            
+            while (true) {
+                socket.receive(packet);
+                
+                System.out.println("sender address: " + packet.getAddress().getHostAddress());
+                
+                String payload = new String(buf, 0, packet.getLength());
+                
+                System.out.println("sender payload: " + payload);
+                break;
+            }
+            
+            String address = packet.getAddress().getHostAddress();
+            
+            CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+            cmdRequestBuilder.setCmdType(CmdType.CMD_CONNECT);
+            
+            ConnectParam.Builder connectParamBuilder = ConnectParam.newBuilder();
+            connectParamBuilder.setConnectType(ConnectType.WIFI);
+            connectParamBuilder.setSecret("fdaa");
+            
+            cmdRequestBuilder.setConnectParam(connectParamBuilder);
+            
+            postCmdRequest(address, cmdRequestBuilder, true);
+            
+        } catch (SocketException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        
     }
 
     // ------------------------------------------------------------------------

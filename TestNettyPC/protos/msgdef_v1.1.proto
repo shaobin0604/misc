@@ -41,6 +41,20 @@ enum CmdType
 	CMD_QUERY_APP = 26;			//查询已安装的应用程序
 	CMD_UPLOAD_APK = 27;		//上传apk
 	CMD_DOWNLOAD_APK = 28;		//下载apk
+	
+	CMD_CONNECT = 29;			//连接手机
+}
+
+message ConnectParam
+{
+	//连接模式
+	enum ConnectType
+	{
+		USB = 0;
+		WIFI = 1;
+	}
+	required ConnectType		connect_type = 1;
+	optional string				secret = 2;			// 配对码，仅在WIFI模式下需要
 }
 
 message AppRecord
@@ -381,6 +395,7 @@ message CmdRequest
 	optional AppRecord		app_params = 8;		//应用记录参数
 	optional ContactsSync	contacts_sync = 9; 	//联系人同步
 	optional AgendaSync		agenda_sync = 10;  	//日程同步
+	optional ConnectParam	connect_param = 11; //连接管理
 }
 
 //顶层响应消息

@@ -80,8 +80,8 @@ public class HttpServerService extends Service {
             Slog.d("action: " + action);
             
             if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
-                ServerController.stopHttpServer(context);
-                ServerController.stopFTPServer(context);
+                ServiceController.stopHttpService(context);
+                ServiceController.stopFTPService(context);
             }
         }
         
