@@ -748,7 +748,13 @@ public class HandlerFacade {
 
             EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
 
-            if (CalendarUtil.addEvent(mContext, eventInfo) > 0) {
+            final long newEventId = CalendarUtil.addEvent(mContext, eventInfo);
+            if (newEventId > 0) {
+                AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder(agendaRecord);
+                agendaRecordBuilder.setId(newEventId);
+                
+                responseBuilder.addAgendaRecord(agendaRecordBuilder);
+                
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder, "CalendarUtil.addEvent");

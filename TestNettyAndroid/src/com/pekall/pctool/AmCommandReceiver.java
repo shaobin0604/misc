@@ -21,12 +21,10 @@ public class AmCommandReceiver extends BroadcastReceiver {
 		} else if (ACTION_FTP_SERVER_STOP.equals(action)) {
 		    ServiceController.stopFTPService(context);
 		} else if (ACTION_MAIN_SERVER_START.equalsIgnoreCase(action)) {
-		    ServiceController.startHttpService(context);
+		    ServiceController.startHttpService(context, /* usbMode */ true);
         } else if (ACTION_MAIN_SERVER_STOP.equalsIgnoreCase(action)) {
             ServiceController.stopHttpService(context);
         }
 	}
-	
-	
 
 }

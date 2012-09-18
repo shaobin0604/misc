@@ -23,14 +23,18 @@ public class ServiceController {
         context.stopService(serverService);
     }
 
-    public static void startHttpService(Context context) {
-        context.startService(new Intent(context, HttpServerService.class));
+    public static void startHttpService(Context context, boolean usbMode) {
+        final Intent intent = new Intent(context, HttpServerService.class);
+        if (usbMode) {
+            intent.putExtra(PcToolApp.EXTRAS_USB_MODE, true);
+        }
+        context.startService(intent);
     }
     
     public static void stopHttpService(Context context) {
         context.stopService(new Intent(context, HttpServerService.class));
     }
-    
+
     public static void startWifiBroadcastService(Context context) {
         context.startService(new Intent(context, WifiBroadcastService.class));
     }

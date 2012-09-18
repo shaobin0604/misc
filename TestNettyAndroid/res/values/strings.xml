@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">TestNettyAndroid</string>
+    <string name="note_ticker_wifi_start">Pekall PC Suite Daemon Wifi Start</string>
+    <string name="note_title_wifi_start">Pekall PC Suite Daemon Wifi Start</string>
+    <string name="note_text_wifi_start">Wifi connection in use</string>
+    
+    <string name="note_ticker_usb_start">Pekall PC Suite Daemon USB Start</string>
+    <string name="note_title_usb_start">Pekall PC Suite Daemon USB Start</string>
+    <string name="note_text_usb_start">USB connection in use</string>
 </resources>

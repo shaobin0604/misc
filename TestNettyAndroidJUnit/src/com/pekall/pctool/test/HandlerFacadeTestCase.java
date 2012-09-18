@@ -32,6 +32,7 @@ import com.pekall.pctool.protos.MsgDefProtos.SyncType;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 
 import java.io.FileOutputStream;
+import java.util.Date;
 import java.util.List;
 
 public class HandlerFacadeTestCase extends AndroidTestCase {
@@ -162,6 +163,29 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         cmdResponse = mHandlerFacade.handleCmdRequest(cmdRequestBuilder.build());
     }
     
+    public void testAddAgenda() throws Exception {
+        CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+        cmdRequestBuilder.setCmdType(CmdType.CMD_ADD_AGENDA);
+        
+        AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
+        
+        agendaRecordBuilder.setCalendarId(1);
+        agendaRecordBuilder.setAlertTime(60);
+        agendaRecordBuilder.setLocation("哈哈哈");
+        agendaRecordBuilder.setNote("呵呵呵");
+        agendaRecordBuilder.setSubject("测试");
+        
+        long now = System.currentTimeMillis();
+        
+        agendaRecordBuilder.setStartTime(now + 5 * 3600 * 1000);
+        agendaRecordBuilder.setEndTime(now + 10 * 3600 * 1000);
+        
+        cmdRequestBuilder.setAgendaParams(agendaRecordBuilder);
+        
+        CmdResponse cmdResponse = mHandlerFacade.addAgenda(cmdRequestBuilder.build());
+        
+        Slog.d(cmdResponse.toString());
+    }
     
     public void testQuerySms() throws Exception {
         CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();

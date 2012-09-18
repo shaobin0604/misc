@@ -241,17 +241,18 @@ public class CalendarUtil {
         if (TextUtils.isEmpty(eventInfo.rrule)) {
             // non-recurring
             eventValues.put(Events.DTEND, eventInfo.endTime);
+            eventValues.put(Events.DURATION, (String)null);
         } else {
             // recurring
             if (eventInfo.endTime - eventInfo.startTime > 0) {
                 String duration = "P" + ((eventInfo.endTime - eventInfo.startTime) / DateUtils.SECOND_IN_MILLIS) + "S";
                 eventValues.put(Events.DURATION, duration);
+                eventValues.put(Events.DTEND, (Long)null);
             } else {
                 Slog.e("Error endTime must > startTime");
+                return false;
             }
         }
-        
-        Slog.d(eventValues.toString());
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -375,11 +376,13 @@ public class CalendarUtil {
     }
     
     public static long[] queryEventIds(Context context) {
-        String projection[] = new String[] {
+        String projection[] = {
                 Events._ID, 
         };
+        
+        String selection = Events.DELETED + "!=1";
 
-        Cursor cursor = context.getContentResolver().query(Events.CONTENT_URI, projection, null, null, null);
+        Cursor cursor = context.getContentResolver().query(Events.CONTENT_URI, projection, selection, null, null);
         
         long[] ids = new long[0];
         if (cursor != null) {
@@ -418,10 +421,12 @@ public class CalendarUtil {
         String[] selectionArgs = null;
 
         if (calendarId > 0) {
-            selection = Events.CALENDAR_ID + "=?";
+            selection = Events.CALENDAR_ID + "=? and " + Events.DELETED + "!=1";
             selectionArgs = new String[] {
                 String.valueOf(calendarId)
             };
+        } else {
+            selection = Events.DELETED + "!=1";
         }
         Cursor cursor = context.getContentResolver().query(Events.CONTENT_URI, projection, selection, selectionArgs, null);
         return cursorToEventInfos(context, cursor);

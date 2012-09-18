@@ -8,15 +8,16 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.pekall.pctool.App;
+import com.pekall.pctool.PcToolApp;
 import com.pekall.pctool.R;
 import com.pekall.pctool.ServiceController;
+import com.pekall.pctool.WifiModeUtil;
 
 public class MainActivity extends Activity implements OnClickListener {
     
     private TextView mTvStatus;
     private ToggleButton mTbStatus;
-    private App mApp;
+    private PcToolApp mApp;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,20 +28,26 @@ public class MainActivity extends Activity implements OnClickListener {
         
         mTbStatus.setOnClickListener(this);
         
-        mApp = (App) getApplication();
+        mApp = (PcToolApp) getApplication();
     }
 
     @Override
     public void onClick(View v) {
         if (v == mTbStatus) {
             if (mTbStatus.isChecked()) {
-                ServiceController.startHttpService(mApp);
+                ServiceController.startHttpService(mApp, /* usbMode */ false);
                 ServiceController.startFTPService(mApp);
-                ServiceController.startWifiBroadcastService(mApp);
+                
+                String wifiSecret = WifiModeUtil.getWifiHostAddressBase64(mApp);
+                
+                mApp.setWifiSecret(wifiSecret);
+                
+                mTvStatus.setText(wifiSecret);
             } else {
-                ServiceController.stopWifiBroadcastService(mApp);
                 ServiceController.stopFTPService(mApp);
                 ServiceController.stopHttpService(mApp);
+                
+                mApp.clearWifiSecret();
             }
         }
     }
