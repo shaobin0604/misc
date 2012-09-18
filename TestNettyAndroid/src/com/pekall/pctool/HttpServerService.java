@@ -34,6 +34,7 @@ public class HttpServerService extends Service {
             mHttpServer.start();
             
             final boolean isUsbMode = intent.getBooleanExtra(PcToolApp.EXTRAS_USB_MODE, false);
+            mApp.setInService(true);
             mApp.setUsbMode(isUsbMode);
             if (isUsbMode) {
                 startListenUsbUnPlugEvent();
@@ -73,6 +74,8 @@ public class HttpServerService extends Service {
         if (mApp.isUsbMode()) {
             stopListenUsbUnPlugEvent();
         }
+        
+        mApp.setInService(false);
         
         Slog.d("onDestroy X");
     }

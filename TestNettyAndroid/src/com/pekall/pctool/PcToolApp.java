@@ -10,9 +10,19 @@ public class PcToolApp extends Application {
     
     private String mWifiSecret;
     
+    private boolean mIsInService;
+    
     @Override
     public void onCreate() {
         super.onCreate();
+    }
+    
+    public void setInService(boolean isInService) {
+        mIsInService = isInService;
+    }
+    
+    public boolean isInService() {
+        return mIsInService;
     }
     
     public void setUsbMode(boolean isUsbMode) {

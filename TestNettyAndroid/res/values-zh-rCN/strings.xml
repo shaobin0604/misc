@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">京联云手机精灵</string>
+    <string name="note_ticker_wifi_start">京联云手机精灵WIFI使用中</string>
+    <string name="note_title_wifi_start">京联云手机精灵WIFI使用中</string>
+    <string name="note_text_wifi_start">正在使用WIFI连接京联云手机精灵</string>
+    
+    <string name="note_ticker_usb_start">京联云手机精灵USB已连接</string>
+    <string name="note_title_usb_start">京联云手机精灵USB已连接</string>
+    <string name="note_text_usb_start">正在使用USB连接京联云手机精灵</string>
+</resources>
