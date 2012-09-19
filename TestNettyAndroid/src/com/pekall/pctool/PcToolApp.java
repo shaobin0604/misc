@@ -6,15 +6,22 @@ public class PcToolApp extends Application {
     public static final String EXTRAS_USB_MODE = "pctool.extras.usbmode";
     public static final int NOTIFICATION_ID = R.string.app_name;
     
-    private boolean mIsUsbMode;
-    
-    private String mWifiSecret;
-    
+    private boolean mIsAuthorized;
     private boolean mIsInService;
+    private boolean mIsUsbMode;
+    private String mWifiSecret;
     
     @Override
     public void onCreate() {
         super.onCreate();
+    }
+    
+    public void setAuthorized(boolean isAuthorized) {
+        mIsAuthorized = isAuthorized;
+    }
+    
+    public boolean isAuthorized() {
+        return mIsAuthorized;
     }
     
     public void setInService(boolean isInService) {
@@ -43,5 +50,9 @@ public class PcToolApp extends Application {
     
     public String getWifiSecret() {
         return mWifiSecret;
+    }
+    
+    public boolean isWifiSecretMatch(String wifiSecret) {
+        return wifiSecret.equals(mWifiSecret);
     }
 }

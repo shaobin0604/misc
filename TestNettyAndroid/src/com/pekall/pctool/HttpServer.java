@@ -14,6 +14,7 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
@@ -47,7 +48,7 @@ public class HttpServer {
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("decoder", new HttpRequestDecoder());
             pipeline.addLast("encoder", new HttpResponseEncoder());
-            // http处理handler
+
             pipeline.addLast("handler", new HttpServerHandler(new HandlerFacade(mContext)));
             return pipeline;
         }
@@ -61,13 +62,12 @@ public class HttpServer {
         Slog.d("start E, port = " + SERVER_PORT);
 
         mAllChannels = new DefaultChannelGroup("main-server");
-        mFactory = new OioServerSocketChannelFactory(
-                Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
-        // 配置服务器-使用java线程池作为解释线程
+        
+//      mFactory = new OioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+        mFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+        
         ServerBootstrap bootstrap = new ServerBootstrap(mFactory);
-        // 设置 pipeline factory.
         bootstrap.setPipelineFactory(new ServerPipelineFactory(mContext));
-        // 绑定端口
         Channel channel = bootstrap.bind(new InetSocketAddress(SERVER_PORT));
         mAllChannels.add(channel);
         

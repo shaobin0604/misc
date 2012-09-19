@@ -70,7 +70,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
     }
 
     public void testQueryContact() throws Exception {
-        List<Contact> contacts = ContactUtil.getContactsAll(getContext());
+        Collection<Contact> contacts = ContactUtil.getContactsAll(getContext());
         for (Contact contact : contacts) {
             Slog.d(contact.toString());
         }
@@ -79,17 +79,9 @@ public class ContactUtilTestCase extends AndroidTestCase {
         Slog.d("count = " + contacts.size());
     }
     
-    public void testQueryContactFast() throws Exception {
-        Collection<Contact> contacts = ContactUtil.getContactsAllFast(getContext());
-        for (Contact contact : contacts) {
-            Slog.d(contact.toString());
-        }
-        assertEquals(COUNT_OF_INITIAL_CONTACT, contacts.size());
-//      Slog.d("count = " + contacts.size());
-    }
     
     public void testQueryContactByIdFast() throws Exception {
-        Contact contact = ContactUtil.getContactByIdFast(getContext(), mContactId);
+        Contact contact = ContactUtil.getContactById(getContext(), mContactId);
         Slog.d(contact.toString());
         assertEquals(CONTACT_NAME, contact.name);
     }

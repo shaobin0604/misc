@@ -21,7 +21,6 @@ import com.pekall.pctool.protos.MsgDefProtos.ModifyTag;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
-import com.sun.corba.se.impl.orb.ParserTable.TestBadServerIdHandler;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -40,6 +39,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -50,55 +50,53 @@ public class Main {
     public static void main(String[] args) {
         try {
             // installAPK();
-//            Thread.sleep(3000);
-//
-//            stopMainServer();
-//            Thread.sleep(3000);
-//
-//            startMainServer();
-//            Thread.sleep(3000);
-//
-//            forwardMainServerPort();
+            // Thread.sleep(3000);
+            //
+            // stopMainServer();
+            // Thread.sleep(3000);
+            //
+            // startMainServer();
+            // Thread.sleep(3000);
+            //
+            // forwardMainServerPort();
+            // Thread.sleep(3000);
+
+            // testReceiveWifiBroadcast();
+
+//            testConnectViaWifi();
 //            Thread.sleep(3000);
             
-            testReceiveWifiBroadcast();
-            Thread.sleep(3000);
+//            testConnectViaUsb();
+            
+               testQueryContactsBenchmark();
+               Thread.sleep(3000);
+
+            // testGetAddressBook();
+
+            // testGetAppInfoPList();
+
+            // testQueryApp();
+
+            // testQuerySms();
+
+            // testQueryMmsAttachment();
+
+            // testQueryCalendar();
+
+            // testQueryAgenda();
+
+            // testQueryAccount();
+
+            // testQueryContact();
+
+            // testAddContact();
+
+            // testUpdateContact();
 
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        // testGetAddressBook();
-
-        // testGetAppInfoPList();
-
-        // testQueryApp();
-
-        // testQuerySms();
-        
-//        testQueryMmsAttachment();
-
-        // testQueryCalendar();
-
-        // testQueryAgenda();
-
-        // testQueryAccount();
-
-         testQueryContact();
-
-        // testAddContact();
-
-        // testUpdateContact();
-
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        stopMainServer();
-
     }
 
     private static void forwardMainServerPort() {
@@ -458,9 +456,96 @@ public class Main {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
-        
     }
+    
+    public static void testConnectViaWifi() {
+        CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+        cmdRequestBuilder.setCmdType(CmdType.CMD_CONNECT);
+        
+        ConnectParam.Builder connectParamBuilder = ConnectParam.newBuilder();
+        connectParamBuilder.setConnectType(ConnectType.WIFI);
+        connectParamBuilder.setSecret("Zw==");
+        
+        cmdRequestBuilder.setConnectParam(connectParamBuilder);
+        
+        String address = "192.168.40.103";
+        
+        postCmdRequest(address, cmdRequestBuilder, true);
+    }
+    
+    public static void testConnectViaUsb() {
+         try {
+            stopMainServer();
+            Thread.sleep(3000);
+            
+            startMainServer();
+            Thread.sleep(3000);
+           
+            forwardMainServerPort();
+            Thread.sleep(3000);
+            
+            CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+            cmdRequestBuilder.setCmdType(CmdType.CMD_CONNECT);
+            
+            ConnectParam.Builder connectParamBuilder = ConnectParam.newBuilder();
+            connectParamBuilder.setConnectType(ConnectType.USB);
+            
+            cmdRequestBuilder.setConnectParam(connectParamBuilder);
+            
+            String address = "localhost";
+            
+            int count = 0;
+            for (int i = 0; i < 100; i++) {
+                CmdResponse cmdResponse = postCmdRequest(address, cmdRequestBuilder, true);
+                count++;
+            }
+            
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            stopMainServer();
+        }
+    }
+    
+    public static void testQueryContactsBenchmark() {
+        try {
+           stopMainServer();
+           Thread.sleep(3000);
+           
+           startMainServer();
+           Thread.sleep(3000);
+          
+           forwardMainServerPort();
+           Thread.sleep(3000);
+           
+           CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+           cmdRequestBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
+           
+           String address = "localhost";
+           
+
+           
+           long begin = System.currentTimeMillis();
+           
+           int count = 0;
+           for (int i = 0; i < 50; i++) {
+               postCmdRequest(address, cmdRequestBuilder, false);
+               count++;
+           }
+           System.out.println("count: " + count);
+           
+           long end = System.currentTimeMillis();
+           
+           System.out.println("query contact cost: " + (end - begin) + "ms");
+       } catch (InterruptedException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       } finally {
+           stopMainServer();
+       }
+   }
+    
 
     // ------------------------------------------------------------------------
     //

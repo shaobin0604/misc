@@ -1,11 +1,6 @@
 
 package com.pekall.pctool.model;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-
 import android.content.Context;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Im;
@@ -14,6 +9,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 import com.google.protobuf.ByteString;
+import com.pekall.pctool.PcToolApp;
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.app.AppInfo;
@@ -73,29 +69,41 @@ import com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy;
 import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
 import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Queue;
+
 public class HandlerFacade {
-    private static final boolean DUMP_CMD_REQUEST = true;
-    private static final boolean DUMP_CMD_RESPONSE = true;
+    private static final boolean DUMP_CMD_REQUEST = false;
+    private static final boolean DUMP_CMD_RESPONSE = false;
     
-    private static void dumpCmdRequestIfNeeded(CmdRequest cmdRequest) {
+    private static void dumpCmdRequest(CmdRequest cmdRequest) {
         if (DUMP_CMD_REQUEST) {
-            Slog.d("++++++++++ DUMP_CMD_REQUEST ++++++++++");
-            Slog.d(cmdRequest.toString());
-            Slog.d("---------- DUMP_CMD_REQUEST ----------");
+            StringBuilder log = new StringBuilder();
+            log.append("\n++++++++++ CMD_REQUEST ++++++++++\n");
+            log.append(cmdRequest.toString());
+            log.append("\n---------------------------------\n");
+            Slog.d(log.toString());
         }
     }
     
-    private static void dumpCmdResponseIfNeeded(CmdResponse cmdResponse) {
+    private static void dumpCmdResponse(CmdResponse cmdResponse) {
         if (DUMP_CMD_RESPONSE) {
-            Slog.d("++++++++++ DUMP_CMD_RESPONSE ++++++++++");
-            Slog.d(cmdResponse.toString());
-            Slog.d("---------- DUMP_CMD_RESPONSE ----------");
+            StringBuilder log = new StringBuilder();
+            log.append("\n++++++++++ CMD_RESPONSE ++++++++++\n");
+            log.append(cmdResponse.toString());
+            log.append("\n----------------------------------\n");
+            Slog.d(log.toString());
         }
     }
     
     private static final int RESULT_CODE_OK = 0;
     private static final int RESULT_CODE_ERR_INSUFFICIENT_PARAMS = 100;
     private static final int RESULT_CODE_ERR_ILLEGAL_PARAMS = 101;
+    private static final int RESULT_CODE_ERR_AUTH_FAIL = 102;
+    private static final int RESULT_CODE_ERR_PERMISSION_DENY = 103;
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
 
     private static final String RESULT_MSG_OK = "OK";
@@ -107,7 +115,7 @@ public class HandlerFacade {
     }
     
     public CmdResponse handleCmdRequest(CmdRequest cmdRequest) {
-        dumpCmdRequestIfNeeded(cmdRequest);
+        dumpCmdRequest(cmdRequest);
 
         CmdResponse cmdResponse;
         if (cmdRequest.hasCmdType()) {
@@ -266,7 +274,7 @@ public class HandlerFacade {
             cmdResponse = unknownCmdResponse(cmdRequest);
         }
         
-        dumpCmdResponseIfNeeded(cmdResponse);
+        dumpCmdResponse(cmdResponse);
         
         return cmdResponse;
     }
@@ -286,7 +294,19 @@ public class HandlerFacade {
                     break;
                 }
                 case WIFI: {
-                    setResultOK(responseBuilder);
+                    if (connectParam.hasSecret()) {
+                        String wifiSecret = connectParam.getSecret();
+                        PcToolApp app = (PcToolApp) mContext;
+                        if (app.isWifiSecretMatch(wifiSecret)) {
+                            app.setAuthorized(true);
+                            setResultOK(responseBuilder);
+                        } else {
+                            setResultErrorAuthFail(responseBuilder, wifiSecret);
+                        }
+                    } else {
+                        setResultErrorInsufficentParams(responseBuilder, "secret");
+                    }
+                    
                     break;
                 }
                 default: {
@@ -1398,7 +1418,7 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
 
-        List<Contact> contactList = ContactUtil.getContactsAll(mContext);
+        Collection<Contact> contactList = ContactUtil.getContactsAll(mContext);
         
         Slog.d("Contacts number: " + contactList.size());
         
@@ -1412,9 +1432,6 @@ public class HandlerFacade {
         OrgRecord.Builder orgRecordBuilder = OrgRecord.newBuilder();
         
         for (Contact contact : contactList) {
-            Slog.d("++++++++++ DUMP CONTACT ++++++++++");
-            Slog.d(contact.toString());
-            Slog.d("---------- DUMP CONTACT ----------");
             
             contactToContactRecord(contactRecordBuilder, accountRecordBuilder, groupRecordBuilder, phoneRecordBuilder,
                     emailRecordBuilder, imRecordBuilder, addressRecordBuilder, orgRecordBuilder, contact);
@@ -1453,7 +1470,7 @@ public class HandlerFacade {
 
         contactRecordBuilder.setAccountInfo(accountRecordBuilder.build());
 
-        Slog.d("groupInfos = " + contact.groupInfos);
+//      Slog.d("groupInfos = " + contact.groupInfos);
         
         // group
         for (GroupInfo groupInfo : contact.groupInfos) {
@@ -1541,7 +1558,7 @@ public class HandlerFacade {
     }
     
     private static SyncResult modifyTagToSyncResult(int modifyTag) {
-        Slog.d("modifyTag = " + com.pekall.pctool.model.contact.Contact.ModifyTag.toString(modifyTag));
+//      Slog.d("modifyTag = " + com.pekall.pctool.model.contact.Contact.ModifyTag.toString(modifyTag));
         switch (modifyTag) {
             case com.pekall.pctool.model.contact.Contact.ModifyTag.add:
                 return SyncResult.PHONE_ADD;
@@ -2107,7 +2124,7 @@ public class HandlerFacade {
     private void handleSyncContactPhoneRefresh(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleSyncContactPhoneRefresh E");
         
-        List<Contact> contactList = ContactUtil.getContactsAll(mContext);
+        Collection<Contact> contactList = ContactUtil.getContactsAll(mContext);
 
         ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
@@ -2156,7 +2173,7 @@ public class HandlerFacade {
     private void handleSyncContactTwoWay(ContactsSync contactsSync, Builder responseBuilder, boolean fastSync) {
         Slog.d("handleSyncContactTwoWay E, fastSync = " + fastSync);
         
-        List<Contact> contactList = null;
+        Collection<Contact> contactList = null;
         if (fastSync) {
             contactList = FastSyncUtils.findChangedContacts(mContext);
         } else {
@@ -2584,7 +2601,11 @@ public class HandlerFacade {
             appBuilder.setVersionCode(appInfo.versionCode);
             appBuilder.setVersionName(normalizeStr(appInfo.versionName));
             appBuilder.setSize(appInfo.apkFileSize);
-            appBuilder.setAppIcon(ByteString.copyFrom(appInfo.icon));
+            
+            // FIXME: do not send icon temporarily
+            //
+            //appBuilder.setAppIcon(ByteString.copyFrom(appInfo.icon));
+            
             appBuilder.setApkPath(appInfo.apkFilePath);
 
             responseBuilder.addAppRecord(appBuilder.build());
@@ -2638,6 +2659,23 @@ public class HandlerFacade {
         Slog.e(msg);
 
         responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_PARAMS);
+        responseBuilder.setResultMsg(msg);
+    }
+    
+    private static void setResultErrorAuthFail(
+            CmdResponse.Builder responseBuilder, String... params) {
+        StringBuilder msgBuilder = new StringBuilder(
+                "Error authentication params: [");
+        for (String param : params) {
+            msgBuilder.append(param);
+            msgBuilder.append(", ");
+        }
+        msgBuilder.append(']');
+        final String msg = msgBuilder.toString();
+
+        Slog.e(msg);
+
+        responseBuilder.setResultCode(RESULT_CODE_ERR_AUTH_FAIL);
         responseBuilder.setResultMsg(msg);
     }
     

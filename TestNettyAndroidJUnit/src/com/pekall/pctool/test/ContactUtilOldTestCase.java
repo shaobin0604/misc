@@ -7,7 +7,7 @@ import android.test.AndroidTestCase;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.Contact;
-import com.pekall.pctool.model.contact.ContactUtilOld;
+import com.pekall.pctool.model.contact.ContactUtilOld1;
 
 import java.util.List;
 
@@ -32,14 +32,14 @@ public class ContactUtilOldTestCase extends AndroidTestCase {
     }
 
     public void testQueryContact() throws Exception {
-        List<Contact> contacts = ContactUtilOld.getAllContacts(getContext());
+        List<Contact> contacts = ContactUtilOld1.getAllContacts(getContext());
         for (Contact contact : contacts) {
             Slog.d(contact.toString());
         }
     }
     
     public void testUpdateContact() throws Exception {
-        List<Contact> contacts = ContactUtilOld.getAllContacts(getContext());
+        List<Contact> contacts = ContactUtilOld1.getAllContacts(getContext());
         
         Contact contact = contacts.get(0);
         
@@ -47,6 +47,6 @@ public class ContactUtilOldTestCase extends AndroidTestCase {
         
         contact.nickname = "testUpdateContact2";
         
-        ContactUtilOld.updateContact(getContext(), contact);
+        ContactUtilOld1.updateContact(getContext(), contact);
     }
 }

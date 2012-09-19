@@ -23,9 +23,6 @@ public class WifiModeUtil {
         for (int k = 0; k < 4; k++) {
             quads[k] = (byte) ((dhcp.ipAddress >> k * 8) & 0xFF);
         }
-        
-        
-        
         return quads; 
     }
     
@@ -40,9 +37,6 @@ public class WifiModeUtil {
         DhcpInfo dhcp = wifiManager.getDhcpInfo();
 
         int host = (dhcp.ipAddress & ~dhcp.netmask);
-        
-        Slog.d("ipAddress: " + dhcp.ipAddress);
-        Slog.d("host: " + host);
         
         byte[] quads = new byte[4];
         for (int k = 0; k < 4; k++) {
@@ -67,7 +61,7 @@ public class WifiModeUtil {
             inputBytes[i] = input.get(i);
         }
         
-        return Base64.encodeToString(inputBytes, Base64.DEFAULT);
+        return Base64.encodeToString(inputBytes, Base64.DEFAULT).trim();
     }
     
     public static int decodeWifiHostAddressBase64(String base64Str) {

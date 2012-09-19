@@ -43,7 +43,7 @@ import java.util.List;
  * 
  * @author fql
  */
-public class ContactUtilOld {
+public class ContactUtilOld1 {
 
     /****** Account ***********************************/
     public static final String DEFAULT_ACCOUNT_NAME = "contacts.account.name.local";
@@ -63,7 +63,7 @@ public class ContactUtilOld {
     /**
      * This utility class cannot be instantiated
      */
-    private ContactUtilOld() {
+    private ContactUtilOld1() {
     }
 
     /**

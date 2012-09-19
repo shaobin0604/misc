@@ -95,7 +95,11 @@ public class AppUtil {
             AppInfo appInfo = new AppInfo();
 
             appInfo.label = applicationInfo.loadLabel(pm).toString();
-            appInfo.icon = drawableToBytes(applicationInfo.loadIcon(pm));
+
+            // FIXME: do not include icon temporarily
+            //
+            //appInfo.icon = drawableToBytes(applicationInfo.loadIcon(pm));
+            
             appInfo.packageName = info.packageName;
             appInfo.versionName = info.versionName;
             appInfo.versionCode = info.versionCode;
@@ -205,7 +209,7 @@ public class AppUtil {
 
     private static byte[] bitmapToBytes(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
         return stream.toByteArray();
     }
 }

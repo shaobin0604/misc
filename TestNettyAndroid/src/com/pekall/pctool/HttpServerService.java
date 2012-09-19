@@ -12,6 +12,9 @@ import android.os.IBinder;
 import com.pekall.pctool.ui.MainActivity;
 
 public class HttpServerService extends Service {
+    public static final String ACTION_SERVER_STATE_START = "action.SERVER_STATE_START";
+    public static final String ACTION_SERVER_STATE_STOP  = "action.SERVER_STATE_STOP";
+    
     private HttpServer mHttpServer;
     private BroadcastReceiver mUsbUnPlugReceiver;
     private IntentFilter mUsbUnPlugFilter;
@@ -30,10 +33,11 @@ public class HttpServerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mHttpServer == null) {
-            mHttpServer = new HttpServer(this);
+            mHttpServer = new HttpServer(mApp);
             mHttpServer.start();
             
             final boolean isUsbMode = intent.getBooleanExtra(PcToolApp.EXTRAS_USB_MODE, false);
+            mApp.setAuthorized(false);
             mApp.setInService(true);
             mApp.setUsbMode(isUsbMode);
             if (isUsbMode) {
@@ -55,6 +59,10 @@ public class HttpServerService extends Service {
             notification.setLatestEventInfo(this, getString(noteTitleResId), getString(noteTextResId), contentIntent);
                 
             startForeground(PcToolApp.NOTIFICATION_ID, notification);
+            
+            Intent serverStateStartIntent = new Intent(ACTION_SERVER_STATE_START);
+            
+            sendBroadcast(serverStateStartIntent);
         }
         
         return START_STICKY;
@@ -76,6 +84,10 @@ public class HttpServerService extends Service {
         }
         
         mApp.setInService(false);
+        mApp.setAuthorized(false);
+        
+        Intent serverStateStopIntent = new Intent(ACTION_SERVER_STATE_STOP);
+        sendBroadcast(serverStateStopIntent);
         
         Slog.d("onDestroy X");
     }
