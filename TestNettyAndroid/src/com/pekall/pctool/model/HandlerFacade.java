@@ -76,8 +76,8 @@ import java.util.List;
 import java.util.Queue;
 
 public class HandlerFacade {
-    private static final boolean DUMP_CMD_REQUEST = false;
-    private static final boolean DUMP_CMD_RESPONSE = false;
+    private static final boolean DUMP_CMD_REQUEST = true;
+    private static final boolean DUMP_CMD_RESPONSE = true;
     
     private static void dumpCmdRequest(CmdRequest cmdRequest) {
         if (DUMP_CMD_REQUEST) {
