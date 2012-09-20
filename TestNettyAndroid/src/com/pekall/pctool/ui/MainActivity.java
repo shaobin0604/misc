@@ -2,11 +2,16 @@
 package com.pekall.pctool.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -18,7 +23,7 @@ import com.pekall.pctool.PcToolApp;
 import com.pekall.pctool.R;
 import com.pekall.pctool.ServiceController;
 import com.pekall.pctool.Slog;
-import com.pekall.pctool.WifiModeUtil;
+import com.pekall.pctool.WifiUtil;
 
 public class MainActivity extends Activity implements OnClickListener {
     private static final int FRAME_USB = 0;
@@ -74,6 +79,7 @@ public class MainActivity extends Activity implements OnClickListener {
         mTbWifiStatus.setOnClickListener(this);
     }
     
+    
     @Override
     protected void onStart() {
         super.onStart();
@@ -126,10 +132,18 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onClick(View v) {
         if (v == mTbWifiStatus) {
             if (mTbWifiStatus.isChecked()) {
+                
+                // to make sure wifi is connected
+                if (!WifiUtil.isWifiConnected(this)) {
+                    mTbWifiStatus.setChecked(false);
+                    showDialog();
+                    return;
+                }
+                
                 ServiceController.startHttpService(mApp, /* usbMode */ false);
                 ServiceController.startFTPService(mApp);
                 
-                String wifiSecret = WifiModeUtil.getWifiHostAddressBase64(mApp);
+                String wifiSecret = WifiUtil.getWifiHostAddressBase64(mApp);
                 
                 mApp.setWifiSecret(wifiSecret);
                 
@@ -146,6 +160,56 @@ public class MainActivity extends Activity implements OnClickListener {
                 ServiceController.stopFTPService(mApp);
                 ServiceController.stopHttpService(mApp);
             }
+        }
+    }
+    
+    public void showDialog() {
+        DialogFragment newFragment = MyAlertDialogFragment.newInstance();
+        newFragment.show(getFragmentManager(), "dialog");
+    }
+    
+    public void doPositiveClick() {
+        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+    }
+    
+    public void doNegativeClick() {
+        
+    }
+    
+    public static class MyAlertDialogFragment extends DialogFragment {
+
+        public static MyAlertDialogFragment newInstance() {
+            MyAlertDialogFragment frag = new MyAlertDialogFragment();
+            Bundle args = new Bundle();
+            args.putInt("title", R.string.dlg_title_wifi_tips);
+            args.putInt("text", R.string.dlg_text_wifi_tips);
+            frag.setArguments(args);
+            return frag;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final Bundle arguments = getArguments();
+            int title = arguments.getInt("title");
+            int text = arguments.getInt("text");
+            return new AlertDialog.Builder(getActivity())
+                    .setTitle(title)
+                    .setMessage(text)
+                    .setPositiveButton(android.R.string.ok,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                ((MainActivity)getActivity()).doPositiveClick();
+                            }
+                        }
+                    )
+                    .setNegativeButton(android.R.string.cancel,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                ((MainActivity)getActivity()).doNegativeClick();
+                            }
+                        }
+                    )
+                    .create();
         }
     }
 }

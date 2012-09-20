@@ -36,9 +36,9 @@ public class Defaults {
 	protected static String password = "pekall";
 	
 	public static int portNumber = 2121; 
-
 	public static int portNumberPassive = 2120;
-//	protected static int ipRetrievalAttempts = 5;
+
+	//	protected static int ipRetrievalAttempts = 5;
 	public static final int tcpConnectionBacklog = 5;
 	public static final String chrootDir =  Environment.getExternalStorageDirectory().getPath();
 	public static final boolean acceptWifi = true;

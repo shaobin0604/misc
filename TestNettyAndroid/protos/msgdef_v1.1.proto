@@ -55,6 +55,7 @@ message ConnectParam
 	}
 	required ConnectType		connect_type = 1;
 	optional string				secret = 2;			// 配对码，仅在WIFI模式下需要
+	optional string				host_name = 3;		// PC 主机名
 }
 
 message AppRecord

@@ -13,4 +13,8 @@
     <string name="note_title_usb_start">京联云手机精灵USB已连接</string>
     <string name="note_text_usb_start">正在使用USB连接京联云手机精灵</string>
     <string name="text_usb_in_service">USB连接正在使用</string>
+    
+    <string name="dlg_title_wifi_tips">设置WIFI网络</string>
+    <string name="dlg_text_wifi_tips">您的手机还没有连接WIFI网络，请点击[确定]开启WIFI网络连接</string>
+   
 </resources>

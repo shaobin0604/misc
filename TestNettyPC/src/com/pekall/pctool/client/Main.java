@@ -22,24 +22,35 @@ import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
 import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -63,13 +74,15 @@ public class Main {
 
             // testReceiveWifiBroadcast();
 
-//            testConnectViaWifi();
-//            Thread.sleep(3000);
+            // testConnectViaWifi();
+            // Thread.sleep(3000);
+
+//             testConnectViaUsb();
+
+            // testQueryContactsBenchmark();
+            Thread.sleep(3000);
             
-//            testConnectViaUsb();
-            
-               testQueryContactsBenchmark();
-               Thread.sleep(3000);
+            testImportApk();
 
             // testGetAddressBook();
 
@@ -225,7 +238,6 @@ public class Main {
                                 fos.write(attachmentRecord.getContent().toByteArray());
                                 System.out.println("write " + attachmentRecord.getName());
 
-                                
                             } catch (FileNotFoundException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
@@ -303,7 +315,7 @@ public class Main {
         CmdRequest.Builder builder = CmdRequest.newBuilder();
         builder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
 
-        postCmdRequest(builder, /* dumpResponse */ true);
+        postCmdRequest(builder, /* dumpResponse */true);
 
         System.out.println("testQueryContact X");
     }
@@ -378,7 +390,7 @@ public class Main {
 
         System.out.println("testUpdateContact X");
     }
-    
+
     private static CmdResponse postCmdRequest(CmdRequest.Builder cmdRequestBuilder, boolean dumpResponse) {
         return postCmdRequest("localhost", cmdRequestBuilder, dumpResponse);
     }
@@ -414,41 +426,41 @@ public class Main {
         }
         return null;
     }
-    
+
     private static final int DISCOVERY_PORT = 2562;
-    
+
     private static void testReceiveWifiBroadcast() {
         try {
             DatagramSocket socket = new DatagramSocket(DISCOVERY_PORT);
-            
+
             byte[] buf = new byte[10];
-            
+
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            
+
             while (true) {
                 socket.receive(packet);
-                
+
                 System.out.println("sender address: " + packet.getAddress().getHostAddress());
-                
+
                 String payload = new String(buf, 0, packet.getLength());
-                
+
                 System.out.println("sender payload: " + payload);
                 break;
             }
-            
+
             String address = packet.getAddress().getHostAddress();
-            
+
             CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
             cmdRequestBuilder.setCmdType(CmdType.CMD_CONNECT);
-            
+
             ConnectParam.Builder connectParamBuilder = ConnectParam.newBuilder();
             connectParamBuilder.setConnectType(ConnectType.WIFI);
             connectParamBuilder.setSecret("fdaa");
-            
+
             cmdRequestBuilder.setConnectParam(connectParamBuilder);
-            
+
             postCmdRequest(address, cmdRequestBuilder, true);
-            
+
         } catch (SocketException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -457,49 +469,92 @@ public class Main {
             e.printStackTrace();
         }
     }
-    
+
     public static void testConnectViaWifi() {
         CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
         cmdRequestBuilder.setCmdType(CmdType.CMD_CONNECT);
-        
+
         ConnectParam.Builder connectParamBuilder = ConnectParam.newBuilder();
         connectParamBuilder.setConnectType(ConnectType.WIFI);
         connectParamBuilder.setSecret("Zw==");
-        
+
         cmdRequestBuilder.setConnectParam(connectParamBuilder);
-        
+
         String address = "192.168.40.103";
-        
+
         postCmdRequest(address, cmdRequestBuilder, true);
     }
-    
+
     public static void testConnectViaUsb() {
-         try {
+        try {
             stopMainServer();
             Thread.sleep(3000);
-            
+
             startMainServer();
             Thread.sleep(3000);
-           
+
             forwardMainServerPort();
             Thread.sleep(3000);
-            
+
             CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
             cmdRequestBuilder.setCmdType(CmdType.CMD_CONNECT);
-            
+
             ConnectParam.Builder connectParamBuilder = ConnectParam.newBuilder();
             connectParamBuilder.setConnectType(ConnectType.USB);
             
+            String hostname = InetAddress.getLocalHost().getHostName();
+            
+            connectParamBuilder.setHostName(hostname);
+
             cmdRequestBuilder.setConnectParam(connectParamBuilder);
-            
+
             String address = "localhost";
-            
+
             int count = 0;
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 10; i++) {
                 CmdResponse cmdResponse = postCmdRequest(address, cmdRequestBuilder, true);
                 count++;
             }
-            
+            System.out.println("count: " + count);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            stopMainServer();
+        }
+    }
+
+    public static void testQueryContactsBenchmark() {
+        try {
+            stopMainServer();
+            Thread.sleep(3000);
+
+            startMainServer();
+            Thread.sleep(3000);
+
+            forwardMainServerPort();
+            Thread.sleep(3000);
+
+            CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+            cmdRequestBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
+
+            String address = "localhost";
+
+            long begin = System.currentTimeMillis();
+
+            int count = 0;
+            for (int i = 0; i < 50; i++) {
+                postCmdRequest(address, cmdRequestBuilder, false);
+                count++;
+            }
+            System.out.println("count: " + count);
+
+            long end = System.currentTimeMillis();
+
+            System.out.println("query contact cost: " + (end - begin) + "ms");
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -507,45 +562,137 @@ public class Main {
             stopMainServer();
         }
     }
-    
-    public static void testQueryContactsBenchmark() {
-        try {
-           stopMainServer();
-           Thread.sleep(3000);
-           
-           startMainServer();
-           Thread.sleep(3000);
-          
-           forwardMainServerPort();
-           Thread.sleep(3000);
-           
-           CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
-           cmdRequestBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
-           
-           String address = "localhost";
-           
 
-           
-           long begin = System.currentTimeMillis();
-           
-           int count = 0;
-           for (int i = 0; i < 50; i++) {
-               postCmdRequest(address, cmdRequestBuilder, false);
-               count++;
-           }
-           System.out.println("count: " + count);
-           
-           long end = System.currentTimeMillis();
-           
-           System.out.println("query contact cost: " + (end - begin) + "ms");
-       } catch (InterruptedException e) {
-           // TODO Auto-generated catch block
-           e.printStackTrace();
-       } finally {
-           stopMainServer();
-       }
-   }
-    
+    //
+    // Test import Apk
+    //
+
+    private static void testImportApk() {
+        try {
+            stopMainServer();
+            Thread.sleep(3000);
+
+            startMainServer();
+            Thread.sleep(3000);
+
+            forwardMainServerPort();
+            Thread.sleep(3000);
+
+            String url = "http://localhost:12580/import/com.pekall.pctool";
+
+            String description = "pctool server apk";
+            String filename = "TestNettyAndroid.apk";
+            File apk = new File(filename);
+
+            String response = executeMultiPartRequest(url, apk, filename, description);
+
+            System.out.println(response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * A generic method to execute any type of Http Request and constructs a
+     * response object
+     * 
+     * @param requestBase the request that needs to be exeuted
+     * @return server response as <code>String</code>
+     */
+    private static String executeRequest(HttpRequestBase requestBase) {
+        String responseString = "";
+
+        InputStream responseStream = null;
+        HttpClient client = new DefaultHttpClient();
+        try {
+            HttpResponse response = client.execute(requestBase);
+            if (response != null) {
+                HttpEntity responseEntity = response.getEntity();
+                
+                Header[] headers = response.getAllHeaders();
+                
+                for (Header header : headers) {
+                    System.out.println(header.toString());
+                }
+
+                if (responseEntity != null) {
+                    responseStream = responseEntity.getContent();
+                    if (responseStream != null) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(responseStream));
+                        String responseLine = br.readLine();
+                        String tempResponseString = "";
+                        while (responseLine != null) {
+                            tempResponseString = tempResponseString + responseLine
+                                    + System.getProperty("line.separator");
+                            responseLine = br.readLine();
+                        }
+                        br.close();
+                        if (tempResponseString.length() > 0) {
+                            responseString = tempResponseString;
+                        }
+                    }
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (responseStream != null) {
+                try {
+                    responseStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        client.getConnectionManager().shutdown();
+
+        return responseString;
+    }
+
+    /**
+     * Method that builds the multi-part form data request
+     * 
+     * @param urlString the urlString to which the file needs to be uploaded
+     * @param file the actual file instance that needs to be uploaded
+     * @param fileName name of the file, just to show how to add the usual form
+     *            parameters
+     * @param fileDescription some description for the file, just to show how to
+     *            add the usual form parameters
+     * @return server response as <code>String</code>
+     */
+    public static String executeMultiPartRequest(String urlString, File file, String fileName, String fileDescription) {
+
+        HttpPost postRequest = new HttpPost(urlString);
+        try {
+
+            MultipartEntity multiPartEntity = new MultipartEntity();
+
+            // The usual form parameters can be added this way
+            multiPartEntity.addPart("fileDescription", new StringBody(fileDescription != null ? fileDescription : ""));
+            multiPartEntity.addPart("fileName", new StringBody(fileName != null ? fileName : file.getName()));
+
+            /*
+             * Need to construct a FileBody with the file that needs to be
+             * attached and specify the mime type of the file. Add the fileBody
+             * to the request as an another part. This part will be considered
+             * as file part and the rest of them as usual form-data parts
+             */
+            FileBody fileBody = new FileBody(file, "application/octect-stream");
+            multiPartEntity.addPart("attachment", fileBody);
+
+            postRequest.setEntity(multiPartEntity);
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+        }
+
+        return executeRequest(postRequest);
+    }
 
     // ------------------------------------------------------------------------
     //

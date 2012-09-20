@@ -1,15 +1,20 @@
 package com.pekall.pctool;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
+import android.net.NetworkInfo;
+import android.net.NetworkInfo.State;
 import android.net.wifi.WifiManager;
+import android.provider.Settings;
 import android.util.Base64;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class WifiModeUtil {
+public class WifiUtil {
     public static byte[] getWifiAddress(Context context) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         
@@ -76,5 +81,12 @@ public class WifiModeUtil {
             }
         }
         return host;
+    }
+    
+    public static boolean isWifiConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifiInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        State wifiState = wifiInfo.getState();
+        return (wifiState == State.CONNECTED);
     }
 }

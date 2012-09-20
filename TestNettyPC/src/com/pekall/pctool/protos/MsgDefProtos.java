@@ -651,6 +651,10 @@ public final class MsgDefProtos {
     // optional string secret = 2;
     boolean hasSecret();
     String getSecret();
+    
+    // optional string host_name = 3;
+    boolean hasHostName();
+    String getHostName();
   }
   public static final class ConnectParam extends
       com.google.protobuf.GeneratedMessage
@@ -792,9 +796,42 @@ public final class MsgDefProtos {
       }
     }
     
+    // optional string host_name = 3;
+    public static final int HOST_NAME_FIELD_NUMBER = 3;
+    private java.lang.Object hostName_;
+    public boolean hasHostName() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public String getHostName() {
+      java.lang.Object ref = hostName_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          hostName_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getHostNameBytes() {
+      java.lang.Object ref = hostName_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        hostName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
     private void initFields() {
       connectType_ = com.pekall.pctool.protos.MsgDefProtos.ConnectParam.ConnectType.USB;
       secret_ = "";
+      hostName_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -818,6 +855,9 @@ public final class MsgDefProtos {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, getSecretBytes());
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getHostNameBytes());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -834,6 +874,10 @@ public final class MsgDefProtos {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getSecretBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getHostNameBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -963,6 +1007,8 @@ public final class MsgDefProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         secret_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        hostName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       
@@ -1009,6 +1055,10 @@ public final class MsgDefProtos {
           to_bitField0_ |= 0x00000002;
         }
         result.secret_ = secret_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.hostName_ = hostName_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1030,6 +1080,9 @@ public final class MsgDefProtos {
         }
         if (other.hasSecret()) {
           setSecret(other.getSecret());
+        }
+        if (other.hasHostName()) {
+          setHostName(other.getHostName());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1080,6 +1133,11 @@ public final class MsgDefProtos {
             case 18: {
               bitField0_ |= 0x00000002;
               secret_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              hostName_ = input.readBytes();
               break;
             }
           }
@@ -1145,6 +1203,42 @@ public final class MsgDefProtos {
       void setSecret(com.google.protobuf.ByteString value) {
         bitField0_ |= 0x00000002;
         secret_ = value;
+        onChanged();
+      }
+      
+      // optional string host_name = 3;
+      private java.lang.Object hostName_ = "";
+      public boolean hasHostName() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public String getHostName() {
+        java.lang.Object ref = hostName_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          hostName_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setHostName(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        hostName_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearHostName() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        hostName_ = getDefaultInstance().getHostName();
+        onChanged();
+        return this;
+      }
+      void setHostName(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000004;
+        hostName_ = value;
         onChanged();
       }
       
@@ -21918,169 +22012,170 @@ public final class MsgDefProtos {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\021msgdef_v1.1.proto\022\016pekall.pcsuite\"\200\001\n\014" +
+      "\n\021msgdef_v1.1.proto\022\016pekall.pcsuite\"\223\001\n\014" +
       "ConnectParam\022>\n\014connect_type\030\001 \002(\0162(.pek" +
       "all.pcsuite.ConnectParam.ConnectType\022\016\n\006" +
-      "secret\030\002 \001(\t\" \n\013ConnectType\022\007\n\003USB\020\000\022\010\n\004" +
-      "WIFI\020\001\"\330\002\n\tAppRecord\022\020\n\010app_name\030\001 \001(\t\0223" +
-      "\n\010app_type\030\002 \001(\0162!.pekall.pcsuite.AppRec" +
-      "ord.AppType\022@\n\rlocation_type\030\003 \001(\0162).pek" +
-      "all.pcsuite.AppRecord.AppLocationType\022\024\n" +
-      "\014package_name\030\004 \001(\t\022\024\n\014version_name\030\005 \001(" +
-      "\t\022\024\n\014version_code\030\007 \001(\005\022\020\n\010apk_path\030\006 \001(",
-      "\t\022\014\n\004size\030\010 \001(\003\022\020\n\010app_icon\030\t \001(\014\"\037\n\007App" +
-      "Type\022\n\n\006SYSTEM\020\000\022\010\n\004USER\020\001\"-\n\017AppLocatio" +
-      "nType\022\014\n\010INTERNAL\020\000\022\014\n\010EXTERNAL\020\001\"\253\001\n\tSM" +
-      "SRecord\022\016\n\006msg_id\030\001 \001(\003\022\022\n\ncontact_id\030\002 " +
-      "\001(\003\0221\n\nmsg_origin\030\003 \001(\0162\035.pekall.pcsuite" +
-      ".MsgOriginType\022\021\n\tphone_num\030\004 \001(\t\022\020\n\010msg" +
-      "_text\030\005 \001(\t\022\020\n\010msg_time\030\006 \001(\003\022\020\n\010read_ta" +
-      "g\030\007 \001(\010\"\274\001\n\020AttachmentRecord\022=\n\004type\030\001 \001" +
-      "(\0162/.pekall.pcsuite.AttachmentRecord.Att" +
-      "achmentType\022\014\n\004name\030\002 \001(\t\022\014\n\004size\030\003 \001(\003\022",
-      "\017\n\007content\030\004 \001(\014\"<\n\016AttachmentType\022\t\n\005IM" +
-      "AGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022\t\n\005OTHER\020\003\"c" +
-      "\n\013SlideRecord\022\020\n\010duration\030\001 \001(\005\022\014\n\004text\030" +
-      "\002 \001(\t\0224\n\nattachment\030\003 \003(\0132 .pekall.pcsui" +
-      "te.AttachmentRecord\"\214\002\n\tMMSRecord\022\016\n\006msg" +
-      "_id\030\001 \001(\003\022\022\n\ncontact_id\030\002 \001(\003\0221\n\nmsg_ori" +
-      "gin\030\003 \001(\0162\035.pekall.pcsuite.MsgOriginType" +
-      "\022\021\n\tphone_num\030\004 \001(\t\022\017\n\007subject\030\005 \001(\t\022\020\n\010" +
-      "msg_time\030\006 \001(\003\022\020\n\010read_tag\030\007 \001(\010\022*\n\005slid" +
-      "e\030\010 \003(\0132\033.pekall.pcsuite.SlideRecord\0224\n\n",
-      "attachment\030\t \003(\0132 .pekall.pcsuite.Attach" +
-      "mentRecord\"+\n\rAccountRecord\022\014\n\004type\030\001 \001(" +
-      "\t\022\014\n\004name\030\002 \001(\t\"\252\001\n\013GroupRecord\022\n\n\002id\030\001 " +
-      "\001(\003\022\017\n\007data_id\030\002 \001(\003\0223\n\014account_info\030\003 \001" +
-      "(\0132\035.pekall.pcsuite.AccountRecord\022\014\n\004nam" +
-      "e\030\004 \001(\t\022\014\n\004note\030\005 \001(\t\022-\n\nmodify_tag\030\006 \001(" +
-      "\0162\031.pekall.pcsuite.ModifyTag\"\226\002\n\013PhoneRe" +
-      "cord\022\n\n\002id\030\001 \001(\003\022\016\n\006number\030\002 \001(\t\0223\n\004type" +
-      "\030\003 \001(\0162%.pekall.pcsuite.PhoneRecord.Phon" +
-      "eType\022\014\n\004name\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162",
-      "\031.pekall.pcsuite.ModifyTag\"y\n\tPhoneType\022" +
-      "\n\n\006MOBILE\020\000\022\010\n\004WORK\020\001\022\010\n\004HOME\020\002\022\010\n\004MAIN\020" +
-      "\003\022\014\n\010WORK_FAX\020\004\022\014\n\010HOME_FAX\020\005\022\t\n\005PAGER\020\006" +
-      "\022\t\n\005OTHER\020\007\022\020\n\014USER_DEFINED\020c\"\330\001\n\013EmailR" +
-      "ecord\022\n\n\002id\030\001 \001(\003\022\r\n\005email\030\002 \001(\t\0223\n\004type" +
-      "\030\003 \001(\0162%.pekall.pcsuite.EmailRecord.Emai" +
-      "lType\022\014\n\004name\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162" +
-      "\031.pekall.pcsuite.ModifyTag\"<\n\tEmailType\022" +
-      "\010\n\004WORK\020\000\022\010\n\004HOME\020\001\022\t\n\005OTHER\020\002\022\020\n\014USER_D" +
-      "EFINED\020c\"\217\002\n\010IMRecord\022\n\n\002id\030\001 \001(\003\022\017\n\007acc",
-      "ount\030\002 \001(\t\022-\n\004type\030\003 \001(\0162\037.pekall.pcsuit" +
-      "e.IMRecord.IMType\022\014\n\004name\030\004 \001(\t\022-\n\nmodif" +
-      "y_tag\030\005 \001(\0162\031.pekall.pcsuite.ModifyTag\"z" +
-      "\n\006IMType\022\006\n\002QQ\020\000\022\007\n\003MSN\020\001\022\t\n\005YAHOO\020\002\022\007\n\003" +
-      "AIM\020\003\022\t\n\005SKYPE\020\004\022\t\n\005GTALK\020\005\022\007\n\003ICQ\020\006\022\n\n\006" +
-      "JABBER\020\007\022\016\n\nNETMEETING\020\010\022\020\n\014USER_DEFINED" +
-      "\020c\"\274\002\n\rAddressRecord\022\n\n\002id\030\001 \001(\003\022?\n\014addr" +
-      "ess_type\030\002 \001(\0162).pekall.pcsuite.AddressR" +
-      "ecord.AddressType\022\014\n\004name\030\003 \001(\t\022\017\n\007addre" +
-      "ss\030\004 \001(\t\022\017\n\007country\030\005 \001(\t\022\020\n\010province\030\006 ",
-      "\001(\t\022\014\n\004city\030\007 \001(\t\022\014\n\004road\030\010 \001(\t\022\021\n\tpost_" +
-      "code\030\t \001(\t\022-\n\nmodify_tag\030\n \001(\0162\031.pekall." +
-      "pcsuite.ModifyTag\">\n\013AddressType\022\010\n\004WORK" +
-      "\020\000\022\010\n\004HOME\020\001\022\t\n\005OTHER\020\002\022\020\n\014USER_DEFINED\020" +
-      "c\"\314\001\n\tOrgRecord\022\n\n\002id\030\001 \001(\003\022\020\n\010org_name\030" +
-      "\002 \001(\t\022/\n\004type\030\003 \001(\0162!.pekall.pcsuite.Org" +
-      "Record.OrgType\022\014\n\004name\030\004 \001(\t\022-\n\nmodify_t" +
-      "ag\030\005 \001(\0162\031.pekall.pcsuite.ModifyTag\"3\n\007O" +
-      "rgType\022\013\n\007COMPANY\020\000\022\t\n\005OTHER\020\001\022\020\n\014USER_D" +
-      "EFINED\020c\"\354\003\n\rContactRecord\022\n\n\002id\030\001 \001(\003\022\014",
-      "\n\004name\030\002 \001(\t\022\020\n\010nickname\030\003 \001(\t\022\r\n\005photo\030" +
-      "\004 \001(\014\022\030\n\020photo_modify_tag\030\005 \001(\010\022\017\n\007versi" +
-      "on\030\006 \001(\005\022/\n\013sync_result\030\007 \001(\0162\032.pekall.p" +
-      "csuite.SyncResult\022\r\n\005pc_id\030\010 \001(\t\0223\n\014acco" +
-      "unt_info\030\t \001(\0132\035.pekall.pcsuite.AccountR" +
-      "ecord\022*\n\005group\030\n \003(\0132\033.pekall.pcsuite.Gr" +
-      "oupRecord\022*\n\005phone\030\013 \003(\0132\033.pekall.pcsuit" +
-      "e.PhoneRecord\022*\n\005email\030\014 \003(\0132\033.pekall.pc" +
-      "suite.EmailRecord\022$\n\002im\030\r \003(\0132\030.pekall.p" +
-      "csuite.IMRecord\022.\n\007address\030\016 \003(\0132\035.pekal",
-      "l.pcsuite.AddressRecord\022&\n\003org\030\017 \003(\0132\031.p" +
-      "ekall.pcsuite.OrgRecord\"\332\001\n\014ContactsSync" +
-      "\022&\n\004type\030\001 \002(\0162\030.pekall.pcsuite.SyncType" +
-      "\022-\n\010sub_type\030\002 \002(\0162\033.pekall.pcsuite.Sync" +
-      "SubType\022<\n\022sync_conflict_ploy\030\003 \001(\0162 .pe" +
-      "kall.pcsuite.SyncConflictPloy\0225\n\016contact" +
-      "_record\030\004 \003(\0132\035.pekall.pcsuite.ContactRe" +
-      "cord\"_\n\016CalendarRecord\022\n\n\002id\030\001 \001(\003\0223\n\014ac" +
-      "count_info\030\002 \001(\0132\035.pekall.pcsuite.Accoun" +
-      "tRecord\022\014\n\004name\030\003 \001(\t\"\200\002\n\014AgendaRecord\022\n",
-      "\n\002id\030\001 \001(\003\022\023\n\013calendar_id\030\002 \001(\003\022\017\n\007subje" +
-      "ct\030\003 \001(\t\022\020\n\010location\030\004 \001(\t\022\022\n\nstart_time" +
-      "\030\005 \001(\003\022\020\n\010end_time\030\006 \001(\003\022\023\n\013repeat_rule\030" +
-      "\007 \001(\t\022\022\n\nalert_time\030\010 \001(\005\022\014\n\004note\030\t \001(\t\022" +
-      "\017\n\007version\030\n \001(\003\022/\n\013sync_result\030\013 \001(\0162\032." +
-      "pekall.pcsuite.SyncResult\022\r\n\005pc_id\030\014 \001(\t" +
-      "\"\326\001\n\nAgendaSync\022&\n\004type\030\001 \002(\0162\030.pekall.p" +
-      "csuite.SyncType\022-\n\010sub_type\030\002 \002(\0162\033.peka" +
-      "ll.pcsuite.SyncSubType\022<\n\022sync_conflict_" +
-      "ploy\030\003 \001(\0162 .pekall.pcsuite.SyncConflict",
-      "Ploy\0223\n\ragenda_record\030\004 \003(\0132\034.pekall.pcs" +
-      "uite.AgendaRecord\"\221\004\n\nCmdRequest\022)\n\010cmd_" +
-      "type\030\001 \002(\0162\027.pekall.pcsuite.CmdType\022\021\n\tr" +
-      "ecord_id\030\002 \003(\003\022-\n\nsms_params\030\003 \001(\0132\031.pek" +
-      "all.pcsuite.SMSRecord\022-\n\nmms_params\030\004 \001(" +
-      "\0132\031.pekall.pcsuite.MMSRecord\0221\n\014group_pa" +
-      "rams\030\005 \001(\0132\033.pekall.pcsuite.GroupRecord\022" +
-      "5\n\016contact_params\030\006 \001(\0132\035.pekall.pcsuite" +
-      ".ContactRecord\0223\n\ragenda_params\030\007 \001(\0132\034." +
-      "pekall.pcsuite.AgendaRecord\022-\n\napp_param",
-      "s\030\010 \001(\0132\031.pekall.pcsuite.AppRecord\0223\n\rco" +
-      "ntacts_sync\030\t \001(\0132\034.pekall.pcsuite.Conta" +
-      "ctsSync\022/\n\013agenda_sync\030\n \001(\0132\032.pekall.pc" +
-      "suite.AgendaSync\0223\n\rconnect_param\030\013 \001(\0132" +
-      "\034.pekall.pcsuite.ConnectParam\"\343\004\n\013CmdRes" +
-      "ponse\022)\n\010cmd_type\030\001 \002(\0162\027.pekall.pcsuite" +
-      ".CmdType\022\023\n\013result_code\030\002 \002(\005\022\022\n\nresult_" +
-      "msg\030\003 \002(\t\022-\n\nsms_record\030\004 \003(\0132\031.pekall.p" +
-      "csuite.SMSRecord\022-\n\nmms_record\030\005 \003(\0132\031.p" +
-      "ekall.pcsuite.MMSRecord\0225\n\016contact_recor",
-      "d\030\006 \003(\0132\035.pekall.pcsuite.ContactRecord\0227" +
-      "\n\017calendar_record\030\007 \003(\0132\036.pekall.pcsuite" +
-      ".CalendarRecord\0223\n\ragenda_record\030\010 \003(\0132\034" +
-      ".pekall.pcsuite.AgendaRecord\022-\n\napp_reco" +
-      "rd\030\t \003(\0132\031.pekall.pcsuite.AppRecord\0225\n\016a" +
-      "ccount_record\030\n \003(\0132\035.pekall.pcsuite.Acc" +
-      "ountRecord\0221\n\014group_record\030\013 \003(\0132\033.pekal" +
-      "l.pcsuite.GroupRecord\0223\n\rcontacts_sync\030\014" +
-      " \001(\0132\034.pekall.pcsuite.ContactsSync\022/\n\013ag" +
-      "enda_sync\030\r \001(\0132\032.pekall.pcsuite.AgendaS",
-      "ync*\206\005\n\007CmdType\022\022\n\016CMD_HEART_BEAT\020\000\022\021\n\rC" +
-      "MD_QUERY_SMS\020\001\022\022\n\016CMD_DELETE_SMS\020\002\022\020\n\014CM" +
-      "D_SEND_SMS\020\003\022\022\n\016CMD_IMPORT_SMS\020\004\022\021\n\rCMD_" +
-      "QUERY_MMS\020\005\022\022\n\016CMD_DELETE_MMS\020\006\022\020\n\014CMD_S" +
-      "END_MMS\020\007\022\022\n\016CMD_IMPORT_MMS\020\010\022\031\n\025CMD_REI" +
-      "CEIVED_NEW_MSG\020\t\022\026\n\022CMD_GET_ALL_GROUPS\020\n" +
-      "\022\021\n\rCMD_ADD_GROUP\020\013\022\024\n\020CMD_DELETE_GROUP\020" +
-      "\014\022\022\n\016CMD_EDIT_GROUP\020\r\022\030\n\024CMD_GET_ALL_ACC" +
-      "OUNTS\020\016\022\026\n\022CMD_QUERY_CONTACTS\020\017\022\023\n\017CMD_A" +
-      "DD_CONTACT\020\020\022\026\n\022CMD_DELETE_CONTACT\020\021\022\024\n\020",
-      "CMD_EDIT_CONTACT\020\022\022\025\n\021CMD_SYNC_CONTACTS\020" +
-      "\023\022\026\n\022CMD_QUERY_CALENDAR\020\024\022\025\n\021CMD_QUERY_A" +
-      "GENDAS\020\025\022\022\n\016CMD_ADD_AGENDA\020\026\022\025\n\021CMD_DELE" +
-      "TE_AGENDA\020\027\022\023\n\017CMD_EDIT_AGENDA\020\030\022\024\n\020CMD_" +
-      "SYNC_AGENDAS\020\031\022\021\n\rCMD_QUERY_APP\020\032\022\022\n\016CMD" +
-      "_UPLOAD_APK\020\033\022\024\n\020CMD_DOWNLOAD_APK\020\034\022\017\n\013C" +
-      "MD_CONNECT\020\035*b\n\rMsgOriginType\022\007\n\003ANY\020\000\022\t" +
-      "\n\005INBOX\020\001\022\013\n\007SENTBOX\020\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006" +
-      "OUTBOX\020\004\022\n\n\006FAILED\020\005\022\n\n\006QUEUED\020\006*1\n\tModi" +
-      "fyTag\022\010\n\004SAME\020\000\022\007\n\003ADD\020\001\022\007\n\003DEL\020\002\022\010\n\004EDI",
-      "T\020\003*+\n\010SyncType\022\014\n\010PC_PHONE\020\000\022\021\n\rOUTLOOK" +
-      "_PHONE\020\001*\313\001\n\013SyncSubType\022\025\n\021TWO_WAY_SLOW" +
-      "_SYNC\020\000\022\025\n\021TWO_WAY_FAST_SYNC\020\001\022\026\n\022PHONE_" +
-      "REFRESH_SYNC\020\002\022\023\n\017PC_REFRESH_SYNC\020\003\022\023\n\017P" +
-      "HONE_FAST_SYNC\020\004\022\020\n\014PC_FAST_SYNC\020\005\022\034\n\030TW" +
-      "O_WAY_SLOW_SYNC_SECOND\020\006\022\034\n\030TWO_WAY_FAST" +
-      "_SYNC_SECOND\020\007*\221\001\n\nSyncResult\022\r\n\tNO_CHAN" +
-      "GE\020\000\022\n\n\006PC_ADD\020\001\022\n\n\006PC_DEL\020\002\022\r\n\tPC_MODIF" +
-      "Y\020\003\022\017\n\013BOTH_MODIFY\020\005\022\r\n\tPHONE_ADD\020\006\022\r\n\tP" +
-      "HONE_DEL\020\007\022\020\n\014PHONE_MODIFY\020\010\022\014\n\010BOTH_DEL",
-      "\020\t*D\n\020SyncConflictPloy\022\010\n\004SKIP\020\000\022\013\n\007PC_S" +
-      "IDE\020\001\022\016\n\nPHONE_SIDE\020\002\022\t\n\005MEGER\020\003B*\n\030com." +
-      "pekall.pctool.protosB\014MsgDefProtosH\001"
+      "secret\030\002 \001(\t\022\021\n\thost_name\030\003 \001(\t\" \n\013Conne" +
+      "ctType\022\007\n\003USB\020\000\022\010\n\004WIFI\020\001\"\330\002\n\tAppRecord\022" +
+      "\020\n\010app_name\030\001 \001(\t\0223\n\010app_type\030\002 \001(\0162!.pe" +
+      "kall.pcsuite.AppRecord.AppType\022@\n\rlocati" +
+      "on_type\030\003 \001(\0162).pekall.pcsuite.AppRecord" +
+      ".AppLocationType\022\024\n\014package_name\030\004 \001(\t\022\024" +
+      "\n\014version_name\030\005 \001(\t\022\024\n\014version_code\030\007 \001",
+      "(\005\022\020\n\010apk_path\030\006 \001(\t\022\014\n\004size\030\010 \001(\003\022\020\n\010ap" +
+      "p_icon\030\t \001(\014\"\037\n\007AppType\022\n\n\006SYSTEM\020\000\022\010\n\004U" +
+      "SER\020\001\"-\n\017AppLocationType\022\014\n\010INTERNAL\020\000\022\014" +
+      "\n\010EXTERNAL\020\001\"\253\001\n\tSMSRecord\022\016\n\006msg_id\030\001 \001" +
+      "(\003\022\022\n\ncontact_id\030\002 \001(\003\0221\n\nmsg_origin\030\003 \001" +
+      "(\0162\035.pekall.pcsuite.MsgOriginType\022\021\n\tpho" +
+      "ne_num\030\004 \001(\t\022\020\n\010msg_text\030\005 \001(\t\022\020\n\010msg_ti" +
+      "me\030\006 \001(\003\022\020\n\010read_tag\030\007 \001(\010\"\274\001\n\020Attachmen" +
+      "tRecord\022=\n\004type\030\001 \001(\0162/.pekall.pcsuite.A" +
+      "ttachmentRecord.AttachmentType\022\014\n\004name\030\002",
+      " \001(\t\022\014\n\004size\030\003 \001(\003\022\017\n\007content\030\004 \001(\014\"<\n\016A" +
+      "ttachmentType\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005A" +
+      "UDIO\020\002\022\t\n\005OTHER\020\003\"c\n\013SlideRecord\022\020\n\010dura" +
+      "tion\030\001 \001(\005\022\014\n\004text\030\002 \001(\t\0224\n\nattachment\030\003" +
+      " \003(\0132 .pekall.pcsuite.AttachmentRecord\"\214" +
+      "\002\n\tMMSRecord\022\016\n\006msg_id\030\001 \001(\003\022\022\n\ncontact_" +
+      "id\030\002 \001(\003\0221\n\nmsg_origin\030\003 \001(\0162\035.pekall.pc" +
+      "suite.MsgOriginType\022\021\n\tphone_num\030\004 \001(\t\022\017" +
+      "\n\007subject\030\005 \001(\t\022\020\n\010msg_time\030\006 \001(\003\022\020\n\010rea" +
+      "d_tag\030\007 \001(\010\022*\n\005slide\030\010 \003(\0132\033.pekall.pcsu",
+      "ite.SlideRecord\0224\n\nattachment\030\t \003(\0132 .pe" +
+      "kall.pcsuite.AttachmentRecord\"+\n\rAccount" +
+      "Record\022\014\n\004type\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"\252\001\n\013G" +
+      "roupRecord\022\n\n\002id\030\001 \001(\003\022\017\n\007data_id\030\002 \001(\003\022" +
+      "3\n\014account_info\030\003 \001(\0132\035.pekall.pcsuite.A" +
+      "ccountRecord\022\014\n\004name\030\004 \001(\t\022\014\n\004note\030\005 \001(\t" +
+      "\022-\n\nmodify_tag\030\006 \001(\0162\031.pekall.pcsuite.Mo" +
+      "difyTag\"\226\002\n\013PhoneRecord\022\n\n\002id\030\001 \001(\003\022\016\n\006n" +
+      "umber\030\002 \001(\t\0223\n\004type\030\003 \001(\0162%.pekall.pcsui" +
+      "te.PhoneRecord.PhoneType\022\014\n\004name\030\004 \001(\t\022-",
+      "\n\nmodify_tag\030\005 \001(\0162\031.pekall.pcsuite.Modi" +
+      "fyTag\"y\n\tPhoneType\022\n\n\006MOBILE\020\000\022\010\n\004WORK\020\001" +
+      "\022\010\n\004HOME\020\002\022\010\n\004MAIN\020\003\022\014\n\010WORK_FAX\020\004\022\014\n\010HO" +
+      "ME_FAX\020\005\022\t\n\005PAGER\020\006\022\t\n\005OTHER\020\007\022\020\n\014USER_D" +
+      "EFINED\020c\"\330\001\n\013EmailRecord\022\n\n\002id\030\001 \001(\003\022\r\n\005" +
+      "email\030\002 \001(\t\0223\n\004type\030\003 \001(\0162%.pekall.pcsui" +
+      "te.EmailRecord.EmailType\022\014\n\004name\030\004 \001(\t\022-" +
+      "\n\nmodify_tag\030\005 \001(\0162\031.pekall.pcsuite.Modi" +
+      "fyTag\"<\n\tEmailType\022\010\n\004WORK\020\000\022\010\n\004HOME\020\001\022\t" +
+      "\n\005OTHER\020\002\022\020\n\014USER_DEFINED\020c\"\217\002\n\010IMRecord",
+      "\022\n\n\002id\030\001 \001(\003\022\017\n\007account\030\002 \001(\t\022-\n\004type\030\003 " +
+      "\001(\0162\037.pekall.pcsuite.IMRecord.IMType\022\014\n\004" +
+      "name\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162\031.pekall." +
+      "pcsuite.ModifyTag\"z\n\006IMType\022\006\n\002QQ\020\000\022\007\n\003M" +
+      "SN\020\001\022\t\n\005YAHOO\020\002\022\007\n\003AIM\020\003\022\t\n\005SKYPE\020\004\022\t\n\005G" +
+      "TALK\020\005\022\007\n\003ICQ\020\006\022\n\n\006JABBER\020\007\022\016\n\nNETMEETIN" +
+      "G\020\010\022\020\n\014USER_DEFINED\020c\"\274\002\n\rAddressRecord\022" +
+      "\n\n\002id\030\001 \001(\003\022?\n\014address_type\030\002 \001(\0162).peka" +
+      "ll.pcsuite.AddressRecord.AddressType\022\014\n\004" +
+      "name\030\003 \001(\t\022\017\n\007address\030\004 \001(\t\022\017\n\007country\030\005",
+      " \001(\t\022\020\n\010province\030\006 \001(\t\022\014\n\004city\030\007 \001(\t\022\014\n\004" +
+      "road\030\010 \001(\t\022\021\n\tpost_code\030\t \001(\t\022-\n\nmodify_" +
+      "tag\030\n \001(\0162\031.pekall.pcsuite.ModifyTag\">\n\013" +
+      "AddressType\022\010\n\004WORK\020\000\022\010\n\004HOME\020\001\022\t\n\005OTHER" +
+      "\020\002\022\020\n\014USER_DEFINED\020c\"\314\001\n\tOrgRecord\022\n\n\002id" +
+      "\030\001 \001(\003\022\020\n\010org_name\030\002 \001(\t\022/\n\004type\030\003 \001(\0162!" +
+      ".pekall.pcsuite.OrgRecord.OrgType\022\014\n\004nam" +
+      "e\030\004 \001(\t\022-\n\nmodify_tag\030\005 \001(\0162\031.pekall.pcs" +
+      "uite.ModifyTag\"3\n\007OrgType\022\013\n\007COMPANY\020\000\022\t" +
+      "\n\005OTHER\020\001\022\020\n\014USER_DEFINED\020c\"\354\003\n\rContactR",
+      "ecord\022\n\n\002id\030\001 \001(\003\022\014\n\004name\030\002 \001(\t\022\020\n\010nickn" +
+      "ame\030\003 \001(\t\022\r\n\005photo\030\004 \001(\014\022\030\n\020photo_modify" +
+      "_tag\030\005 \001(\010\022\017\n\007version\030\006 \001(\005\022/\n\013sync_resu" +
+      "lt\030\007 \001(\0162\032.pekall.pcsuite.SyncResult\022\r\n\005" +
+      "pc_id\030\010 \001(\t\0223\n\014account_info\030\t \001(\0132\035.peka" +
+      "ll.pcsuite.AccountRecord\022*\n\005group\030\n \003(\0132" +
+      "\033.pekall.pcsuite.GroupRecord\022*\n\005phone\030\013 " +
+      "\003(\0132\033.pekall.pcsuite.PhoneRecord\022*\n\005emai" +
+      "l\030\014 \003(\0132\033.pekall.pcsuite.EmailRecord\022$\n\002" +
+      "im\030\r \003(\0132\030.pekall.pcsuite.IMRecord\022.\n\007ad",
+      "dress\030\016 \003(\0132\035.pekall.pcsuite.AddressReco" +
+      "rd\022&\n\003org\030\017 \003(\0132\031.pekall.pcsuite.OrgReco" +
+      "rd\"\332\001\n\014ContactsSync\022&\n\004type\030\001 \002(\0162\030.peka" +
+      "ll.pcsuite.SyncType\022-\n\010sub_type\030\002 \002(\0162\033." +
+      "pekall.pcsuite.SyncSubType\022<\n\022sync_confl" +
+      "ict_ploy\030\003 \001(\0162 .pekall.pcsuite.SyncConf" +
+      "lictPloy\0225\n\016contact_record\030\004 \003(\0132\035.pekal" +
+      "l.pcsuite.ContactRecord\"_\n\016CalendarRecor" +
+      "d\022\n\n\002id\030\001 \001(\003\0223\n\014account_info\030\002 \001(\0132\035.pe" +
+      "kall.pcsuite.AccountRecord\022\014\n\004name\030\003 \001(\t",
+      "\"\200\002\n\014AgendaRecord\022\n\n\002id\030\001 \001(\003\022\023\n\013calenda" +
+      "r_id\030\002 \001(\003\022\017\n\007subject\030\003 \001(\t\022\020\n\010location\030" +
+      "\004 \001(\t\022\022\n\nstart_time\030\005 \001(\003\022\020\n\010end_time\030\006 " +
+      "\001(\003\022\023\n\013repeat_rule\030\007 \001(\t\022\022\n\nalert_time\030\010" +
+      " \001(\005\022\014\n\004note\030\t \001(\t\022\017\n\007version\030\n \001(\003\022/\n\013s" +
+      "ync_result\030\013 \001(\0162\032.pekall.pcsuite.SyncRe" +
+      "sult\022\r\n\005pc_id\030\014 \001(\t\"\326\001\n\nAgendaSync\022&\n\004ty" +
+      "pe\030\001 \002(\0162\030.pekall.pcsuite.SyncType\022-\n\010su" +
+      "b_type\030\002 \002(\0162\033.pekall.pcsuite.SyncSubTyp" +
+      "e\022<\n\022sync_conflict_ploy\030\003 \001(\0162 .pekall.p",
+      "csuite.SyncConflictPloy\0223\n\ragenda_record" +
+      "\030\004 \003(\0132\034.pekall.pcsuite.AgendaRecord\"\221\004\n" +
+      "\nCmdRequest\022)\n\010cmd_type\030\001 \002(\0162\027.pekall.p" +
+      "csuite.CmdType\022\021\n\trecord_id\030\002 \003(\003\022-\n\nsms" +
+      "_params\030\003 \001(\0132\031.pekall.pcsuite.SMSRecord" +
+      "\022-\n\nmms_params\030\004 \001(\0132\031.pekall.pcsuite.MM" +
+      "SRecord\0221\n\014group_params\030\005 \001(\0132\033.pekall.p" +
+      "csuite.GroupRecord\0225\n\016contact_params\030\006 \001" +
+      "(\0132\035.pekall.pcsuite.ContactRecord\0223\n\rage" +
+      "nda_params\030\007 \001(\0132\034.pekall.pcsuite.Agenda",
+      "Record\022-\n\napp_params\030\010 \001(\0132\031.pekall.pcsu" +
+      "ite.AppRecord\0223\n\rcontacts_sync\030\t \001(\0132\034.p" +
+      "ekall.pcsuite.ContactsSync\022/\n\013agenda_syn" +
+      "c\030\n \001(\0132\032.pekall.pcsuite.AgendaSync\0223\n\rc" +
+      "onnect_param\030\013 \001(\0132\034.pekall.pcsuite.Conn" +
+      "ectParam\"\343\004\n\013CmdResponse\022)\n\010cmd_type\030\001 \002" +
+      "(\0162\027.pekall.pcsuite.CmdType\022\023\n\013result_co" +
+      "de\030\002 \002(\005\022\022\n\nresult_msg\030\003 \002(\t\022-\n\nsms_reco" +
+      "rd\030\004 \003(\0132\031.pekall.pcsuite.SMSRecord\022-\n\nm" +
+      "ms_record\030\005 \003(\0132\031.pekall.pcsuite.MMSReco",
+      "rd\0225\n\016contact_record\030\006 \003(\0132\035.pekall.pcsu" +
+      "ite.ContactRecord\0227\n\017calendar_record\030\007 \003" +
+      "(\0132\036.pekall.pcsuite.CalendarRecord\0223\n\rag" +
+      "enda_record\030\010 \003(\0132\034.pekall.pcsuite.Agend" +
+      "aRecord\022-\n\napp_record\030\t \003(\0132\031.pekall.pcs" +
+      "uite.AppRecord\0225\n\016account_record\030\n \003(\0132\035" +
+      ".pekall.pcsuite.AccountRecord\0221\n\014group_r" +
+      "ecord\030\013 \003(\0132\033.pekall.pcsuite.GroupRecord" +
+      "\0223\n\rcontacts_sync\030\014 \001(\0132\034.pekall.pcsuite" +
+      ".ContactsSync\022/\n\013agenda_sync\030\r \001(\0132\032.pek",
+      "all.pcsuite.AgendaSync*\206\005\n\007CmdType\022\022\n\016CM" +
+      "D_HEART_BEAT\020\000\022\021\n\rCMD_QUERY_SMS\020\001\022\022\n\016CMD" +
+      "_DELETE_SMS\020\002\022\020\n\014CMD_SEND_SMS\020\003\022\022\n\016CMD_I" +
+      "MPORT_SMS\020\004\022\021\n\rCMD_QUERY_MMS\020\005\022\022\n\016CMD_DE" +
+      "LETE_MMS\020\006\022\020\n\014CMD_SEND_MMS\020\007\022\022\n\016CMD_IMPO" +
+      "RT_MMS\020\010\022\031\n\025CMD_REICEIVED_NEW_MSG\020\t\022\026\n\022C" +
+      "MD_GET_ALL_GROUPS\020\n\022\021\n\rCMD_ADD_GROUP\020\013\022\024" +
+      "\n\020CMD_DELETE_GROUP\020\014\022\022\n\016CMD_EDIT_GROUP\020\r" +
+      "\022\030\n\024CMD_GET_ALL_ACCOUNTS\020\016\022\026\n\022CMD_QUERY_" +
+      "CONTACTS\020\017\022\023\n\017CMD_ADD_CONTACT\020\020\022\026\n\022CMD_D",
+      "ELETE_CONTACT\020\021\022\024\n\020CMD_EDIT_CONTACT\020\022\022\025\n" +
+      "\021CMD_SYNC_CONTACTS\020\023\022\026\n\022CMD_QUERY_CALEND" +
+      "AR\020\024\022\025\n\021CMD_QUERY_AGENDAS\020\025\022\022\n\016CMD_ADD_A" +
+      "GENDA\020\026\022\025\n\021CMD_DELETE_AGENDA\020\027\022\023\n\017CMD_ED" +
+      "IT_AGENDA\020\030\022\024\n\020CMD_SYNC_AGENDAS\020\031\022\021\n\rCMD" +
+      "_QUERY_APP\020\032\022\022\n\016CMD_UPLOAD_APK\020\033\022\024\n\020CMD_" +
+      "DOWNLOAD_APK\020\034\022\017\n\013CMD_CONNECT\020\035*b\n\rMsgOr" +
+      "iginType\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001\022\013\n\007SENTBOX\020" +
+      "\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006OUTBOX\020\004\022\n\n\006FAILED\020\005\022" +
+      "\n\n\006QUEUED\020\006*1\n\tModifyTag\022\010\n\004SAME\020\000\022\007\n\003AD",
+      "D\020\001\022\007\n\003DEL\020\002\022\010\n\004EDIT\020\003*+\n\010SyncType\022\014\n\010PC" +
+      "_PHONE\020\000\022\021\n\rOUTLOOK_PHONE\020\001*\313\001\n\013SyncSubT" +
+      "ype\022\025\n\021TWO_WAY_SLOW_SYNC\020\000\022\025\n\021TWO_WAY_FA" +
+      "ST_SYNC\020\001\022\026\n\022PHONE_REFRESH_SYNC\020\002\022\023\n\017PC_" +
+      "REFRESH_SYNC\020\003\022\023\n\017PHONE_FAST_SYNC\020\004\022\020\n\014P" +
+      "C_FAST_SYNC\020\005\022\034\n\030TWO_WAY_SLOW_SYNC_SECON" +
+      "D\020\006\022\034\n\030TWO_WAY_FAST_SYNC_SECOND\020\007*\221\001\n\nSy" +
+      "ncResult\022\r\n\tNO_CHANGE\020\000\022\n\n\006PC_ADD\020\001\022\n\n\006P" +
+      "C_DEL\020\002\022\r\n\tPC_MODIFY\020\003\022\017\n\013BOTH_MODIFY\020\005\022" +
+      "\r\n\tPHONE_ADD\020\006\022\r\n\tPHONE_DEL\020\007\022\020\n\014PHONE_M",
+      "ODIFY\020\010\022\014\n\010BOTH_DEL\020\t*D\n\020SyncConflictPlo" +
+      "y\022\010\n\004SKIP\020\000\022\013\n\007PC_SIDE\020\001\022\016\n\nPHONE_SIDE\020\002" +
+      "\022\t\n\005MEGER\020\003B*\n\030com.pekall.pctool.protosB" +
+      "\014MsgDefProtosH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -22092,7 +22187,7 @@ public final class MsgDefProtos {
           internal_static_pekall_pcsuite_ConnectParam_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_ConnectParam_descriptor,
-              new java.lang.String[] { "ConnectType", "Secret", },
+              new java.lang.String[] { "ConnectType", "Secret", "HostName", },
               com.pekall.pctool.protos.MsgDefProtos.ConnectParam.class,
               com.pekall.pctool.protos.MsgDefProtos.ConnectParam.Builder.class);
           internal_static_pekall_pcsuite_AppRecord_descriptor =

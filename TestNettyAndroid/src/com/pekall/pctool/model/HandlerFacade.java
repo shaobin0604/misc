@@ -82,9 +82,9 @@ public class HandlerFacade {
     private static void dumpCmdRequest(CmdRequest cmdRequest) {
         if (DUMP_CMD_REQUEST) {
             StringBuilder log = new StringBuilder();
-            log.append("\n++++++++++ CMD_REQUEST ++++++++++\n");
+            log.append("\n\n++++++++++ CMD_REQUEST ++++++++++\n");
             log.append(cmdRequest.toString());
-            log.append("\n---------------------------------\n");
+            log.append("++++++++++++++++++++++++++++++++++\n\n");
             Slog.d(log.toString());
         }
     }
@@ -92,9 +92,9 @@ public class HandlerFacade {
     private static void dumpCmdResponse(CmdResponse cmdResponse) {
         if (DUMP_CMD_RESPONSE) {
             StringBuilder log = new StringBuilder();
-            log.append("\n++++++++++ CMD_RESPONSE ++++++++++\n");
+            log.append("\n\n---------- CMD_RESPONSE ----------\n");
             log.append(cmdResponse.toString());
-            log.append("\n----------------------------------\n");
+            log.append("----------------------------------\n\n");
             Slog.d(log.toString());
         }
     }
@@ -112,6 +112,10 @@ public class HandlerFacade {
 
     public HandlerFacade(Context context) {
         this.mContext = context;
+    }
+    
+    public Context getContext() {
+        return mContext;
     }
     
     public CmdResponse handleCmdRequest(CmdRequest cmdRequest) {

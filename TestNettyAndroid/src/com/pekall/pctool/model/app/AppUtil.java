@@ -2,6 +2,7 @@
 package com.pekall.pctool.model.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -144,6 +145,13 @@ public class AppUtil {
             Slog.e("file not found: " + filePath, e);
             throw new AppNotExistException(packageName);
         }
+    }
+    
+    public static void installAPK(Context context, File file) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        context.startActivity(intent);
     }
     
     public static final String PC_TOOL_EXPORT_APP_DIR = "/sdcard/pctool";

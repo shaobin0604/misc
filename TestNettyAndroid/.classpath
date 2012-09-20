@@ -2,12 +2,6 @@
 <classpath>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="lib" path="libs/netty-3.5.3.Final.jar" sourcepath="/home/dev01/opt/common-libs/netty-3.5.3.Final/jar/netty-3.5.3.Final-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/home/dev01/opt/common-libs/netty-3.5.3.Final/doc/api/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="libs/protobuf-java-2.4.1.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="output" path="bin/classes"/>
