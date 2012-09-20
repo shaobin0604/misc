@@ -8,6 +8,18 @@ import com.pekall.pctool.WifiUtil;
 import java.util.Arrays;
 
 public class WifiUtilTestCase extends AndroidTestCase {
+	
+	public void testHostPartInt2Bytes() throws Exception {
+		byte[] original = {123, 43};
+		
+		int intValue = WifiUtil.hostPartBytesToInt(original);
+		
+		Slog.d("intValue: " + intValue);
+		
+		byte[] transcode = WifiUtil.hostPartInt2Bytes(intValue);
+		
+		Slog.d("transcode: " + Arrays.toString(transcode));
+	}
 
     public void testGetWifiAddress() throws Exception {
         Slog.d(Arrays.toString(WifiUtil.getWifiAddress(getContext())));

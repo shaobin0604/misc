@@ -1,20 +1,50 @@
 package com.pekall.pctool;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
+
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
 import android.net.wifi.WifiManager;
-import android.provider.Settings;
 import android.util.Base64;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class WifiUtil {
+	public static byte[] hostPartInt2Bytes(int address) {
+		Stack<Byte> bytes = new Stack<Byte>();
+        for (int k = 0; k < 4; k++) {
+            byte part = (byte) ((address >> k * 8) & 0xFF);
+            if (part != 0) {
+            	bytes.push(part);
+            }
+        }
+        
+        byte[] ret = new byte[bytes.size()];
+        
+        for (int i = 0; i < ret.length; i++) {
+        	ret[i] = bytes.pop();
+        }
+        
+        return ret; 
+	}
+	
+	public static int hostPartBytesToInt(byte[] address) {
+		int host = 0;
+        for (int i = 0; i < 4; i++) {
+            if (i < address.length) {
+                host = (host << 8) | address[i];
+            } else {
+                host = (host << 8);
+            }
+        }
+        return host;
+	}
+	
     public static byte[] getWifiAddress(Context context) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         
@@ -72,10 +102,11 @@ public class WifiUtil {
     public static int decodeWifiHostAddressBase64(String base64Str) {
         byte[] bytes = Base64.decode(base64Str, Base64.DEFAULT);
         Slog.d(Arrays.toString(bytes));
+        final int length = bytes.length;
         int host = 0;
         for (int i = 0; i < 4; i++) {
             if (i < bytes.length) {
-                host = (host << 8) | bytes[i];
+                host = (host << 8) | bytes[length - i];
             } else {
                 host = (host << 8);
             }
