@@ -1,15 +1,29 @@
 <resources>
     <string name="app_name">Pekall PC Suite Daemon</string>
+
     <string name="note_ticker_wifi_start">Pekall PC Suite Daemon Wifi Start</string>
+    <string name="note_ticker_wifi_connected">%1$s connected via WIFI</string>
+    
     <string name="note_title_wifi_start">Pekall PC Suite Daemon Wifi Start</string>
     <string name="note_text_wifi_start">Wifi connection in use</string>
+    <string name="note_text_wifi_connected">%1$s connected via WIFI</string>
+    
+    <string name="text_wifi_connected">%1$s connected via WIFI</string>
     <string name="text_wifi_in_service">Wifi connection in use</string>
+    
     <string name="text_wifi_tips">Use WIFI to connect PC</string>
     
     <string name="text_password">password: %1$s</string>
     
     <string name="note_ticker_usb_start">Pekall PC Suite Daemon USB Start</string>
+    <string name="note_ticker_usb_connected">%1$s connected via USB</string>
     <string name="note_title_usb_start">Pekall PC Suite Daemon USB Start</string>
     <string name="note_text_usb_start">USB connection in use</string>
+    <string name="note_text_usb_connected">%1$s connected via USB</string>
+    
     <string name="text_usb_in_service">USB connection in use</string>
+    <string name="text_usb_connected">%1$s connected via USB</string>
+    
+    <string name="dlg_title_wifi_tips">Setting WIFI network</string>
+    <string name="dlg_text_wifi_tips">You have not connected to WIFI network, click [OK] to proceed</string>
 </resources>

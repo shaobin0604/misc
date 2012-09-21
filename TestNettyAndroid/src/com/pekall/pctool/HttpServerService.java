@@ -1,5 +1,10 @@
 package com.pekall.pctool;
 
+import static com.pekall.pctool.ServerController.ACTION_SERVER_STATE_CHANGED;
+import static com.pekall.pctool.ServerController.EXTRAS_STATE_KEY;
+import static com.pekall.pctool.ServerController.STATE_START;
+import static com.pekall.pctool.ServerController.STATE_STOP;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -12,20 +17,15 @@ import android.os.IBinder;
 import com.pekall.pctool.ui.MainActivity;
 
 public class HttpServerService extends Service {
-    public static final String ACTION_SERVER_STATE_START = "action.SERVER_STATE_START";
-    public static final String ACTION_SERVER_STATE_STOP  = "action.SERVER_STATE_STOP";
     
     private HttpServer mHttpServer;
     private BroadcastReceiver mUsbUnPlugReceiver;
     private IntentFilter mUsbUnPlugFilter;
     
-    private PcToolApp mApp;
-    
     @Override
     public void onCreate() {
         Slog.d("onCreate E");
         super.onCreate();
-        mApp = (PcToolApp) getApplication();
         Slog.d("onCreate X");
     }
     
@@ -33,13 +33,12 @@ public class HttpServerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mHttpServer == null) {
-            mHttpServer = new HttpServer(mApp);
+            mHttpServer = new HttpServer(this);
             mHttpServer.start();
             
-            final boolean isUsbMode = intent.getBooleanExtra(PcToolApp.EXTRAS_USB_MODE, false);
-            mApp.setAuthorized(false);
-            mApp.setInService(true);
-            mApp.setUsbMode(isUsbMode);
+            final boolean isUsbMode = intent.getBooleanExtra(ServerController.EXTRAS_USB_MODE, false);
+            ServerController.setServiceState(STATE_START);
+            ServerController.setUsbMode(isUsbMode);
             if (isUsbMode) {
                 startListenUsbUnPlugEvent();
             }
@@ -58,9 +57,10 @@ public class HttpServerService extends Service {
             
             notification.setLatestEventInfo(this, getString(noteTitleResId), getString(noteTextResId), contentIntent);
                 
-            startForeground(PcToolApp.NOTIFICATION_ID, notification);
+            startForeground(ServerController.NOTIFICATION_ID, notification);
             
-            Intent serverStateStartIntent = new Intent(ACTION_SERVER_STATE_START);
+            Intent serverStateStartIntent = new Intent(ACTION_SERVER_STATE_CHANGED);
+            serverStateStartIntent.putExtra(EXTRAS_STATE_KEY, STATE_START);
             
             sendBroadcast(serverStateStartIntent);
         }
@@ -79,14 +79,16 @@ public class HttpServerService extends Service {
             mHttpServer = null;
         }
         
-        if (mApp.isUsbMode()) {
+        if (ServerController.isUsbMode()) {
             stopListenUsbUnPlugEvent();
         }
         
-        mApp.setInService(false);
-        mApp.setAuthorized(false);
+        ServerController.setServiceState(STATE_STOP);
+        ServerController.setWifiSecret(null);
+        ServerController.setHostname(null);
         
-        Intent serverStateStopIntent = new Intent(ACTION_SERVER_STATE_STOP);
+        Intent serverStateStopIntent = new Intent(ACTION_SERVER_STATE_CHANGED);
+        serverStateStopIntent.putExtra(EXTRAS_STATE_KEY, STATE_STOP);
         sendBroadcast(serverStateStopIntent);
         
         Slog.d("onDestroy X");
@@ -121,7 +123,7 @@ public class HttpServerService extends Service {
         Slog.d("stopListenUsbUnPlugEvent X");
     }
     
-    private class UsbUnPlugEventReceiver extends BroadcastReceiver {
+    private static class UsbUnPlugEventReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -129,8 +131,8 @@ public class HttpServerService extends Service {
             Slog.d("action: " + action);
             
             if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
-                ServiceController.stopHttpService(context);
-                ServiceController.stopFTPService(context);
+                ServerController.stopHttpService(context);
+                ServerController.stopFTPService(context);
             }
         }
         

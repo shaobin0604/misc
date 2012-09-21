@@ -77,12 +77,12 @@ public class Main {
             // testConnectViaWifi();
             // Thread.sleep(3000);
 
-//             testConnectViaUsb();
+             testConnectViaUsb();
 
             // testQueryContactsBenchmark();
             Thread.sleep(3000);
             
-            testImportApk();
+//            testImportApk();
 
             // testGetAddressBook();
 
@@ -510,12 +510,22 @@ public class Main {
 
             String address = "localhost";
 
-            int count = 0;
-            for (int i = 0; i < 10; i++) {
-                CmdResponse cmdResponse = postCmdRequest(address, cmdRequestBuilder, true);
-                count++;
+            CmdResponse cmdResponse = postCmdRequest(address, cmdRequestBuilder, true);
+            
+            if (cmdResponse.getResultCode() == 0) {
+                System.out.println("connect ok");
             }
-            System.out.println("count: " + count);
+            System.out.println("now sleep 10s");
+            
+            cmdRequestBuilder = CmdRequest.newBuilder();
+            cmdRequestBuilder.setCmdType(CmdType.CMD_DISCONNECT);
+            
+            cmdResponse = postCmdRequest(address, cmdRequestBuilder, true);
+            
+            if (cmdResponse.getResultCode() == 0) {
+                System.out.println("disconnect ok");
+            }
+            
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

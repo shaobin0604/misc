@@ -9,7 +9,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 import com.google.protobuf.ByteString;
-import com.pekall.pctool.PcToolApp;
+import com.pekall.pctool.ServerController;
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.app.AppInfo;
@@ -84,7 +84,7 @@ public class HandlerFacade {
             StringBuilder log = new StringBuilder();
             log.append("\n\n++++++++++ CMD_REQUEST ++++++++++\n");
             log.append(cmdRequest.toString());
-            log.append("++++++++++++++++++++++++++++++++++\n\n");
+            log.append( "++++++++++++++++++++++++++++++++++\n\n");
             Slog.d(log.toString());
         }
     }
@@ -94,7 +94,7 @@ public class HandlerFacade {
             StringBuilder log = new StringBuilder();
             log.append("\n\n---------- CMD_RESPONSE ----------\n");
             log.append(cmdResponse.toString());
-            log.append("----------------------------------\n\n");
+            log.append( "-----------------------------------\n\n");
             Slog.d(log.toString());
         }
     }
@@ -142,6 +142,11 @@ public class HandlerFacade {
                     break;
                 }
                 
+                case CMD_DISCONNECT: {
+                    cmdResponse = disconnect(cmdRequest);
+                    break;
+                }
+                
                 //
                 // APP related methods
                 //
@@ -165,6 +170,11 @@ public class HandlerFacade {
 
                 case CMD_IMPORT_SMS: {
                     cmdResponse = importSms(cmdRequest);
+                    break;
+                }
+                
+                case CMD_SEND_SMS: {
+                    cmdResponse = sendSms(cmdRequest);
                     break;
                 }
                 
@@ -290,22 +300,28 @@ public class HandlerFacade {
         responseBuilder.setCmdType(cmdRequest.getCmdType());
         
         if (cmdRequest.hasConnectParam()) {
+            
             ConnectParam connectParam = cmdRequest.getConnectParam();
             final ConnectType connectType = connectParam.getConnectType();
+            String hostname = connectParam.getHostName();
             switch (connectType) {
                 case USB: {
+                    ServerController.setServiceState(ServerController.STATE_CONNECTED);
+                    ServerController.setHostname(hostname);
+                    ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
                     setResultOK(responseBuilder);
                     break;
                 }
                 case WIFI: {
                     if (connectParam.hasSecret()) {
                         String wifiSecret = connectParam.getSecret();
-                        PcToolApp app = (PcToolApp) mContext;
-                        if (app.isWifiSecretMatch(wifiSecret)) {
-                            app.setAuthorized(true);
+                        if (ServerController.isWifiSecretMatch(wifiSecret)) {
+                            ServerController.setServiceState(ServerController.STATE_CONNECTED);
+                            ServerController.setHostname(hostname);
+                            ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
                             setResultOK(responseBuilder);
                         } else {
-                            setResultErrorAuthFail(responseBuilder, wifiSecret);
+                            setResultErrorAuthFail(responseBuilder, "secret");
                         }
                     } else {
                         setResultErrorInsufficentParams(responseBuilder, "secret");
@@ -324,6 +340,20 @@ public class HandlerFacade {
 
         Slog.d("connect X");
 
+        return responseBuilder.build();
+    }
+    
+    private CmdResponse disconnect(CmdRequest cmdRequest) {
+        Slog.d("disconnect E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(cmdRequest.getCmdType());
+        setResultOK(responseBuilder);
+        
+        ServerController.setServiceState(ServerController.STATE_DISCONNECTED);
+        ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
+        
+        Slog.d("disconnect X");
         return responseBuilder.build();
     }
 
@@ -447,6 +477,41 @@ public class HandlerFacade {
             setResultErrorInsufficentParams(responseBuilder, "sms");
         }
         Slog.d("importSms X");
+        return responseBuilder.build();
+    }
+    
+    public CmdResponse sendSms(CmdRequest request) {
+        Slog.d("sendSms E");
+
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_SEND_SMS);
+
+        if (request.hasSmsParams()) {
+
+            SMSRecord smsRecord = request.getSmsParams();
+            
+            String phoneNum = smsRecord.getPhoneNum();
+            String msgText = smsRecord.getMsgText();
+
+            Sms sms = new Sms();
+
+            sms.address = phoneNum;
+            sms.body = msgText;
+
+            long newSmsId = SmsUtil.sendSms(mContext, sms);
+            if (newSmsId > 0) {
+                SMSRecord.Builder smsRecordBuilder = SMSRecord.newBuilder(smsRecord);
+                smsRecordBuilder.setMsgId(newSmsId);
+                
+                responseBuilder.addSmsRecord(smsRecordBuilder);
+                setResultOK(responseBuilder);
+            } else {
+                setResultErrorInternal(responseBuilder, "SmsUtil.sendSms");
+            }
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "sms");
+        }
+        Slog.d("sendSms X");
         return responseBuilder.build();
     }
 

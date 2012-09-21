@@ -10,6 +10,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.UriMatcher;
 import android.net.Uri;
 import android.os.Environment;
@@ -17,9 +18,9 @@ import android.os.Environment;
 import com.pekall.pctool.model.HandlerFacade;
 import com.pekall.pctool.model.app.AppUtil;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
-import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
+import com.pekall.pctool.protos.MsgDefProtos.CmdType;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
@@ -69,7 +70,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 import java.util.Collections;
@@ -117,6 +117,8 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                                                         // exit (in normal exit)
         DiskAttribute.baseDirectory = null; // system temp directory
     }
+    
+    private ShutdownServerListener mShutdownServerListener;
 
     //
     // Business logic facade
@@ -125,6 +127,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
 
     public HttpServerHandler(HandlerFacade facade) {
         this.mHandlerFacade = facade;
+        this.mShutdownServerListener = new ShutdownServerListener(facade.getContext());
     }
 
     @Override
@@ -157,10 +160,14 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         switch (match) {
             case RPC_END_POINT: {
                 if (HttpMethod.POST.equals(method)) {
-                    HttpResponse response = handleRPC(request);
+                    HttpResponseWrapper httpResponseWrapper = handleRPC(request);
                     Channel ch = e.getChannel();
-                    // Write the initial line and the header.
-                    ch.write(response).addListener(ChannelFutureListener.CLOSE);
+                    ChannelFuture future = ch.write(httpResponseWrapper.mHttpResponse);
+                    if (httpResponseWrapper.mIsHaltRequested) {
+                        future.addListener(mShutdownServerListener);
+                    } else {
+                        future.addListener(ChannelFutureListener.CLOSE);
+                    }
                 } else {
                     Slog.e("not http post request");
                     sendError(ctx, BAD_REQUEST);
@@ -193,34 +200,38 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
 
     }
 
-    private HttpResponse handleRPC(HttpRequest request) {
-        Slog.d("handleRPC E");
+    private HttpResponseWrapper handleRPC(HttpRequest request) {
+        Slog.d("\n==================== handleRPC E ====================\n\n");
 
         ChannelBuffer content = request.getContent();
         ChannelBufferInputStream cbis = new ChannelBufferInputStream(content);
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+        HttpResponse httpResponse = new DefaultHttpResponse(HTTP_1_1, OK);
+        boolean shutdownServer = false;
         try {
             CmdRequest cmdRequest = CmdRequest.parseFrom(cbis);
             
             CmdResponse cmdResponse = mHandlerFacade.handleCmdRequest(cmdRequest);
             
+            if (cmdResponse.getCmdType() == CmdType.CMD_DISCONNECT) {
+                shutdownServer = true;
+            }
+            
             ChannelBuffer buffer = new DynamicChannelBuffer(2048);
             buffer.writeBytes(cmdResponse.toByteArray());
             
-            response.setContent(buffer);
-            response.setHeader(CONTENT_TYPE, "application/x-protobuf");
-            response.setHeader(CONTENT_LENGTH, response.getContent().writerIndex());
+            httpResponse.setContent(buffer);
+            httpResponse.setHeader(CONTENT_TYPE, "application/x-protobuf");
+            httpResponse.setHeader(CONTENT_LENGTH, httpResponse.getContent().writerIndex());
         } catch (IOException e) {
             Slog.e("Error when handleRPC, send 500 internal server error", e);
 
-            response.setStatus(INTERNAL_SERVER_ERROR);
-            response.setHeader(CONTENT_LENGTH, 0);
+            httpResponse.setStatus(INTERNAL_SERVER_ERROR);
+            httpResponse.setHeader(CONTENT_LENGTH, 0);
         }
-        Slog.d("handleRPC X");
-        return response;
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper(httpResponse, shutdownServer);
+        Slog.d("\n=====================================================\n\n");
+        return httpResponseWrapper;
     }
-
-    
 
     private void handleExportApp(final String packageName, MessageEvent event) {
         Slog.d("packageName = " + packageName);
@@ -615,5 +626,34 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         // Close the connection as soon as the error message is sent.
         ctx.getChannel().write(response)
                 .addListener(ChannelFutureListener.CLOSE);
+    }
+    
+    private static final class HttpResponseWrapper {
+        boolean mIsHaltRequested;    // whether shutdown server after send response 
+        HttpResponse mHttpResponse;
+        
+        HttpResponseWrapper(HttpResponse httpResponse, boolean isHaltRequested) {
+            mHttpResponse = httpResponse;
+            mIsHaltRequested = isHaltRequested;
+        }
+    }
+    
+    private static final class ShutdownServerListener implements ChannelFutureListener {
+        
+        private Context mContext;
+        
+        ShutdownServerListener(Context context) {
+            mContext = context;
+        }
+        
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+            // 1. close channel first
+            future.getChannel().close();
+            
+            // 2. then send broadcast to shutdown server
+            Intent shutdownIntent = new Intent(AmCommandReceiver.ACTION_MAIN_SERVER_STOP);
+            mContext.sendBroadcast(shutdownIntent);
+        }
     }
 }

@@ -1,6 +1,13 @@
 
 package com.pekall.pctool.ui;
 
+import static com.pekall.pctool.ServerController.ACTION_SERVER_STATE_CHANGED;
+import static com.pekall.pctool.ServerController.EXTRAS_STATE_KEY;
+import static com.pekall.pctool.ServerController.STATE_CONNECTED;
+import static com.pekall.pctool.ServerController.STATE_DISCONNECTED;
+import static com.pekall.pctool.ServerController.STATE_START;
+import static com.pekall.pctool.ServerController.STATE_STOP;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,10 +25,8 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.ViewFlipper;
 
-import com.pekall.pctool.HttpServerService;
-import com.pekall.pctool.PcToolApp;
 import com.pekall.pctool.R;
-import com.pekall.pctool.ServiceController;
+import com.pekall.pctool.ServerController;
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.WifiUtil;
 
@@ -40,8 +45,6 @@ public class MainActivity extends Activity implements OnClickListener {
     private TextView mTvWifiStatus;
     private ToggleButton mTbWifiStatus;
     
-    private PcToolApp mApp;
-    
     private boolean mDisplayUsbMode; 
     
     private BroadcastReceiver mServerStateReceiver = new BroadcastReceiver() {
@@ -50,10 +53,43 @@ public class MainActivity extends Activity implements OnClickListener {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             Slog.d("action: " + action);
-            if (HttpServerService.ACTION_SERVER_STATE_START.equals(action)) {
-                
-            } else if (HttpServerService.ACTION_SERVER_STATE_STOP.equals(action)) {
-                finish();
+            if (ACTION_SERVER_STATE_CHANGED.equals(action)) {
+                Bundle extras = intent.getExtras();
+                int state = extras.getInt(EXTRAS_STATE_KEY);
+                switch (state) {
+                    case STATE_START: {
+                        if (ServerController.isUsbMode()) {
+                            mTvUsbStatus.setText(R.string.text_usb_in_service);
+                        } else {
+                            mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                            mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
+                            mTvWifiSecret.setVisibility(View.VISIBLE);
+                        }
+                        break;
+                    }
+                    case STATE_STOP: {
+                        finish();
+                        break;
+                    }
+                    case STATE_CONNECTED: {
+                        if (ServerController.isUsbMode()) {
+                            mTvUsbStatus.setText(getString(R.string.text_usb_connected, ServerController.getHostname()));
+                        } else {
+                            mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
+                        }
+                        break;
+                    }
+                    case STATE_DISCONNECTED: {
+                        if (ServerController.isUsbMode()) {
+                            mTvUsbStatus.setText(R.string.text_usb_in_service);
+                        } else {
+                            mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
             }
         }
     };
@@ -62,8 +98,6 @@ public class MainActivity extends Activity implements OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        mApp = (PcToolApp) getApplication();
-        
         
         mViewFlipper = (ViewFlipper) findViewById(R.id.view_flipper);
         
@@ -83,37 +117,51 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onStart() {
         super.onStart();
-        
         Slog.d("onStart E");
         
-        if (mApp.isInService()) {
-            mDisplayUsbMode = mApp.isUsbMode();
-            
-            if (mDisplayUsbMode) {
-                mTvUsbStatus.setText(R.string.text_usb_in_service);
-                mTbUsbStatus.setChecked(true);
-            } else {
-                mTvWifiStatus.setText(R.string.text_wifi_in_service);
-                mTvWifiSecret.setText(getString(R.string.text_password, mApp.getWifiSecret()));
-                mTvWifiSecret.setVisibility(View.VISIBLE);
-                
-                mTbWifiStatus.setChecked(true);
+        mDisplayUsbMode = false;
+        
+        switch (ServerController.getServerState()) {
+            case STATE_START: {
+                mDisplayUsbMode = ServerController.isUsbMode();
+                if (mDisplayUsbMode) {
+                    mTbUsbStatus.setChecked(true);
+                    mTvUsbStatus.setText(R.string.text_usb_in_service);
+                } else {
+                    mTbWifiStatus.setChecked(true);
+                    mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                }
+                break;
             }
-            
-        } else {
-            mDisplayUsbMode = false;
-            
-            mTvWifiStatus.setText(R.string.text_wifi_tips);
-            mTvWifiSecret.setVisibility(View.INVISIBLE);
-            
-            mTbWifiStatus.setChecked(false);
+            case STATE_CONNECTED: {
+                mDisplayUsbMode = ServerController.isUsbMode();
+                if (mDisplayUsbMode) {
+                    mTbUsbStatus.setChecked(true);
+                    mTvUsbStatus.setText(getString(R.string.text_usb_connected, ServerController.getHostname()));
+                } else {
+                    mTbWifiStatus.setChecked(true);
+                    mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
+                }
+                break;
+            }
+            case STATE_DISCONNECTED:
+            case STATE_STOP: {
+                mDisplayUsbMode = ServerController.isUsbMode();
+                if (!mDisplayUsbMode) {
+                    mTvWifiStatus.setText(R.string.text_wifi_tips);
+                    mTvWifiSecret.setVisibility(View.INVISIBLE);
+                    mTbWifiStatus.setChecked(false);
+                }
+                break;
+            }
+            default:
+                break;
         }
         
         mViewFlipper.setDisplayedChild(mDisplayUsbMode ? FRAME_USB : FRAME_WIFI);
         
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(HttpServerService.ACTION_SERVER_STATE_START);
-        intentFilter.addAction(HttpServerService.ACTION_SERVER_STATE_STOP);
+        intentFilter.addAction(ACTION_SERVER_STATE_CHANGED);
         
         registerReceiver(mServerStateReceiver, intentFilter);
         
@@ -130,6 +178,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     public void onClick(View v) {
+        final Context context = getApplicationContext();
         if (v == mTbWifiStatus) {
             if (mTbWifiStatus.isChecked()) {
                 
@@ -140,25 +189,19 @@ public class MainActivity extends Activity implements OnClickListener {
                     return;
                 }
                 
-                ServiceController.startHttpService(mApp, /* usbMode */ false);
-                ServiceController.startFTPService(mApp);
+                String wifiSecret = WifiUtil.getWifiHostAddressBase64(context);
+                ServerController.setWifiSecret(wifiSecret);
                 
-                String wifiSecret = WifiUtil.getWifiHostAddressBase64(mApp);
-                
-                mApp.setWifiSecret(wifiSecret);
-                
-                mTvWifiStatus.setText(R.string.text_wifi_in_service);
-                mTvWifiSecret.setText(getString(R.string.text_password, wifiSecret));
-                mTvWifiSecret.setVisibility(View.VISIBLE);
+                ServerController.startHttpService(context, /* usbMode */ false);
+                ServerController.startFTPService(context);
             } else {
-                ServiceController.stopFTPService(mApp);
-                ServiceController.stopHttpService(mApp);
-                mApp.clearWifiSecret();
+                ServerController.stopFTPService(context);
+                ServerController.stopHttpService(context);
             }
         } else if (v == mTbUsbStatus) {
             if (!mTbUsbStatus.isChecked()) {
-                ServiceController.stopFTPService(mApp);
-                ServiceController.stopHttpService(mApp);
+                ServerController.stopFTPService(context);
+                ServerController.stopHttpService(context);
             }
         }
     }
