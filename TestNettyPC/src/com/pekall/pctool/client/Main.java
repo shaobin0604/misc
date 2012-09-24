@@ -77,12 +77,12 @@ public class Main {
             // testConnectViaWifi();
             // Thread.sleep(3000);
 
-             testConnectViaUsb();
+//             testConnectViaUsb();
 
             // testQueryContactsBenchmark();
             Thread.sleep(3000);
             
-//            testImportApk();
+            testImportApk();
 
             // testGetAddressBook();
 
@@ -588,10 +588,10 @@ public class Main {
             forwardMainServerPort();
             Thread.sleep(3000);
 
-            String url = "http://localhost:12580/import/com.pekall.pctool";
+            String url = "http://localhost:12580/import";
 
-            String description = "pctool server apk";
-            String filename = "TestNettyAndroid.apk";
+            String description = "UC Web";
+            String filename = "com.UCMobile-1.apk";
             File apk = new File(filename);
 
             String response = executeMultiPartRequest(url, apk, filename, description);
@@ -679,13 +679,13 @@ public class Main {
     public static String executeMultiPartRequest(String urlString, File file, String fileName, String fileDescription) {
 
         HttpPost postRequest = new HttpPost(urlString);
-        try {
+//        try {
 
             MultipartEntity multiPartEntity = new MultipartEntity();
 
             // The usual form parameters can be added this way
-            multiPartEntity.addPart("fileDescription", new StringBody(fileDescription != null ? fileDescription : ""));
-            multiPartEntity.addPart("fileName", new StringBody(fileName != null ? fileName : file.getName()));
+//            multiPartEntity.addPart("fileDescription", new StringBody(fileDescription != null ? fileDescription : ""));
+//            multiPartEntity.addPart("fileName", new StringBody(fileName != null ? fileName : file.getName()));
 
             /*
              * Need to construct a FileBody with the file that needs to be
@@ -697,9 +697,9 @@ public class Main {
             multiPartEntity.addPart("attachment", fileBody);
 
             postRequest.setEntity(multiPartEntity);
-        } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace();
-        }
+//        } catch (UnsupportedEncodingException ex) {
+//            ex.printStackTrace();
+//        }
 
         return executeRequest(postRequest);
     }
