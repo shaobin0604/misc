@@ -39,11 +39,12 @@ enum CmdType
 	CMD_SYNC_AGENDAS = 25;		//同步日程（pc和手机、outlook和手机）
 	
 	CMD_QUERY_APP = 26;			//查询已安装的应用程序
-	CMD_UPLOAD_APK = 27;		//上传apk
-	CMD_DOWNLOAD_APK = 28;		//下载apk
+	CMD_UNINSTALL_APP = 27;		//卸载应用
+	CMD_UPLOAD_APK = 28;		//上传apk
+	CMD_DOWNLOAD_APK = 29;		//下载apk
 	
-	CMD_CONNECT = 29;			//连接手机
-	CMD_DISCONNECT = 30;		//断开连接
+	CMD_CONNECT = 30;			//连接手机
+	CMD_DISCONNECT = 31;		//断开连接
 }
 
 message ConnectParam

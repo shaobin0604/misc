@@ -21,8 +21,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 import android.widget.ViewFlipper;
 
 import com.pekall.pctool.R;
@@ -38,12 +38,14 @@ public class MainActivity extends Activity implements OnClickListener {
     
     // usb mode
     private TextView mTvUsbStatus;
-    private ToggleButton mTbUsbStatus;
+    private ImageView mTbUsbStatus;
+    private boolean mIsUsbOn;
     
     // wifi mode
     private TextView mTvWifiSecret;
     private TextView mTvWifiStatus;
-    private ToggleButton mTbWifiStatus;
+    private ImageView mTbWifiStatus;
+    private boolean mIsWifiOn;
     
     private boolean mDisplayUsbMode; 
     
@@ -102,17 +104,32 @@ public class MainActivity extends Activity implements OnClickListener {
         mViewFlipper = (ViewFlipper) findViewById(R.id.view_flipper);
         
         mTvUsbStatus = (TextView) findViewById(R.id.tv_usb_status);
-        mTbUsbStatus = (ToggleButton) findViewById(R.id.tb_usb_status);
+        mTbUsbStatus = (ImageView) findViewById(R.id.tb_usb_status);
         
         mTbUsbStatus.setOnClickListener(this);
         
         mTvWifiSecret = (TextView) findViewById(R.id.tv_wifi_secret);
         mTvWifiStatus = (TextView) findViewById(R.id.tv_wifi_status);
-        mTbWifiStatus = (ToggleButton) findViewById(R.id.tb_wifi_status);
+        mTbWifiStatus = (ImageView) findViewById(R.id.tb_wifi_status);
         
         mTbWifiStatus.setOnClickListener(this);
     }
     
+    private void setWifiModeState(boolean on) {
+        mIsWifiOn = on;
+        if (on) {
+            mTbWifiStatus.setImageResource(R.drawable.btn_close_wifi);
+        } else {
+            mTbWifiStatus.setImageResource(R.drawable.btn_start_wifi);
+        }
+    }
+    
+    private void setUsbModeState(boolean on) {
+        mIsUsbOn = on;
+        if (on) {
+            mTbUsbStatus.setImageResource(R.drawable.btn_close_usb);
+        } 
+    }
     
     @Override
     protected void onStart() {
@@ -125,10 +142,10 @@ public class MainActivity extends Activity implements OnClickListener {
             case STATE_START: {
                 mDisplayUsbMode = ServerController.isUsbMode();
                 if (mDisplayUsbMode) {
-                    mTbUsbStatus.setChecked(true);
+                    setUsbModeState(true);
                     mTvUsbStatus.setText(R.string.text_usb_in_service);
                 } else {
-                    mTbWifiStatus.setChecked(true);
+                    setWifiModeState(true);
                     mTvWifiStatus.setText(R.string.text_wifi_in_service);
                 }
                 break;
@@ -136,10 +153,10 @@ public class MainActivity extends Activity implements OnClickListener {
             case STATE_CONNECTED: {
                 mDisplayUsbMode = ServerController.isUsbMode();
                 if (mDisplayUsbMode) {
-                    mTbUsbStatus.setChecked(true);
+                    setUsbModeState(true);
                     mTvUsbStatus.setText(getString(R.string.text_usb_connected, ServerController.getHostname()));
                 } else {
-                    mTbWifiStatus.setChecked(true);
+                    setWifiModeState(true);
                     mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
                 }
                 break;
@@ -150,7 +167,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 if (!mDisplayUsbMode) {
                     mTvWifiStatus.setText(R.string.text_wifi_tips);
                     mTvWifiSecret.setVisibility(View.INVISIBLE);
-                    mTbWifiStatus.setChecked(false);
+                    setWifiModeState(false);
                 }
                 break;
             }
@@ -180,14 +197,15 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onClick(View v) {
         final Context context = getApplicationContext();
         if (v == mTbWifiStatus) {
-            if (mTbWifiStatus.isChecked()) {
+            if (!mIsWifiOn) {
                 
                 // to make sure wifi is connected
                 if (!WifiUtil.isWifiConnected(this)) {
-                    mTbWifiStatus.setChecked(false);
                     showDialog();
                     return;
                 }
+                
+                setWifiModeState(true);
                 
                 String wifiSecret = WifiUtil.getWifiHostAddressBase64(context);
                 ServerController.setWifiSecret(wifiSecret);
@@ -195,11 +213,13 @@ public class MainActivity extends Activity implements OnClickListener {
                 ServerController.startHttpService(context, /* usbMode */ false);
                 ServerController.startFTPService(context);
             } else {
+                setWifiModeState(false);
+                
                 ServerController.stopFTPService(context);
                 ServerController.stopHttpService(context);
             }
         } else if (v == mTbUsbStatus) {
-            if (!mTbUsbStatus.isChecked()) {
+            if (mIsUsbOn) {
                 ServerController.stopFTPService(context);
                 ServerController.stopHttpService(context);
             }

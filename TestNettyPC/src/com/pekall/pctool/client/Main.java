@@ -7,6 +7,7 @@ import com.pekall.pctool.protos.AppInfoProtos.AppInfoP;
 import com.pekall.pctool.protos.AppInfoProtos.AppInfoPList;
 import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AgendaRecord;
+import com.pekall.pctool.protos.MsgDefProtos.AppRecord;
 import com.pekall.pctool.protos.MsgDefProtos.AttachmentRecord;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
@@ -52,64 +53,32 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.List;
 
+
 public class Main {
 
     private static final String HOME_DIR = "/home/dev01";
 
     // private static final String HOME_DIR = "/home/shaobin";
 
-    public static void main(String[] args) {
-        try {
-            // installAPK();
-            // Thread.sleep(3000);
-            //
-            // stopMainServer();
-            // Thread.sleep(3000);
-            //
-            // startMainServer();
-            // Thread.sleep(3000);
-            //
-            // forwardMainServerPort();
-            // Thread.sleep(3000);
-
-            // testReceiveWifiBroadcast();
-
-            // testConnectViaWifi();
-            // Thread.sleep(3000);
-
-//             testConnectViaUsb();
-
-            // testQueryContactsBenchmark();
-            Thread.sleep(3000);
-            
-            testImportApk();
-
-            // testGetAddressBook();
-
-            // testGetAppInfoPList();
-
-            // testQueryApp();
-
-            // testQuerySms();
-
-            // testQueryMmsAttachment();
-
-            // testQueryCalendar();
-
-            // testQueryAgenda();
-
-            // testQueryAccount();
-
-            // testQueryContact();
-
-            // testAddContact();
-
-            // testUpdateContact();
-
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public static void main(String[] args) throws Exception {
+        setup();
+        
+        testUninstallAppInWifiMode();
+        
+        teardown();
+    }
+    
+    private static void setup() throws Exception {
+        stopMainServer();
+        Thread.sleep(2000);
+        startMainServer();
+        Thread.sleep(2000);
+        forwardMainServerPort();
+        Thread.sleep(2000);
+    }
+    
+    private static void teardown() throws Exception {
+        stopMainServer();
     }
 
     private static void forwardMainServerPort() {
@@ -571,6 +540,23 @@ public class Main {
         } finally {
             stopMainServer();
         }
+    }
+    
+    
+    private static void testUninstallAppInWifiMode() {
+        
+        
+        CmdRequest.Builder cmdRequestBuilder = CmdRequest.newBuilder();
+        cmdRequestBuilder.setCmdType(CmdType.CMD_UNINSTALL_APP);
+        
+        AppRecord.Builder appRecordBuilder = AppRecord.newBuilder();
+        appRecordBuilder.setPackageName("com.jingdong.app.mall");
+        
+        cmdRequestBuilder.setAppParams(appRecordBuilder);
+        
+        String address = "localhost";
+        
+        CmdResponse cmdResponse = postCmdRequest(address, cmdRequestBuilder, true);
     }
 
     //

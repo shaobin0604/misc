@@ -154,6 +154,13 @@ public class AppUtil {
         context.startActivity(intent);
     }
     
+    public static void uninstallAPK(Context context, String packageName) {
+        Uri packageURI = Uri.parse("package:" + packageName);   
+        Intent intent = new Intent(Intent.ACTION_DELETE, packageURI);   
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
+
     public static final String PC_TOOL_EXPORT_APP_DIR = "/sdcard/pctool";
     
     public static boolean exportApp(Context context, String packageName) throws AppNotExistException {

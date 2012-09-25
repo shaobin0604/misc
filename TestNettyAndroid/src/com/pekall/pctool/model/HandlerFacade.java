@@ -135,7 +135,7 @@ public class HandlerFacade {
                 }
                 
                 //
-                // CONNECT related methods
+                // Connection management related methods
                 //
                 case CMD_CONNECT: {
                     cmdResponse = connect(cmdRequest);
@@ -152,6 +152,11 @@ public class HandlerFacade {
                 //
                 case CMD_QUERY_APP: {
                     cmdResponse = queryApp(cmdRequest);
+                    break;
+                }
+                
+                case CMD_UNINSTALL_APP: {
+                    cmdResponse = uninstallApp(cmdRequest);
                     break;
                 }
 
@@ -292,6 +297,7 @@ public class HandlerFacade {
         
         return cmdResponse;
     }
+
 
     private CmdResponse connect(CmdRequest cmdRequest) {
         Slog.d("connect E");
@@ -2685,6 +2691,25 @@ public class HandlerFacade {
         setResultOK(responseBuilder);
 
         Slog.d("queryApp X");
+        return responseBuilder.build();
+    }
+    
+    private CmdResponse uninstallApp(CmdRequest cmdRequest) {
+        Slog.d("uninstallApp E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(CmdType.CMD_UNINSTALL_APP);
+        
+        if (cmdRequest.hasAppParams()) {
+            AppRecord appRecord = cmdRequest.getAppParams();
+            String packageName = appRecord.getPackageName();
+            AppUtil.uninstallAPK(mContext, packageName);
+            setResultOK(responseBuilder);
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "AppParams");
+        }
+        
+        Slog.d("uninstallApp X");
         return responseBuilder.build();
     }
 
