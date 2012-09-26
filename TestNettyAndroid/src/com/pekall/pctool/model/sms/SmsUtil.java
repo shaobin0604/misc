@@ -3,6 +3,7 @@ package com.pekall.pctool.model.sms;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
@@ -10,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.telephony.PhoneNumberUtils;
+import android.telephony.SmsManager;
 
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.ContactUtil;
@@ -20,7 +22,7 @@ import java.util.List;
 public class SmsUtil {
 
     private static final int INVALID_ROW_ID = 0;
-    
+
     private static final String ERROR_CODE = "error_code";
     private static final String LOCKED = "locked";
     private static final String SERVICE_CENTER = "service_center";
@@ -54,9 +56,10 @@ public class SmsUtil {
     private static final Uri SMS_QUEUED_URI = Uri.parse(SMS_QUEUED);
 
     private static final String DEFAULT_SORT_ORDER = "date DESC";
-    
+
     private static final String[] DEFAULT_PROJECTION = {
-        _ID, THREAD_ID, PERSON, ADDRESS, DATE, PROTOCOL, READ, STATUS, TYPE, BODY, SERVICE_CENTER, LOCKED, ERROR_CODE,
+            _ID, THREAD_ID, PERSON, ADDRESS, DATE, PROTOCOL, READ, STATUS, TYPE, BODY, SERVICE_CENTER, LOCKED,
+            ERROR_CODE,
     };
 
     // prevent this class being instantiated
@@ -72,7 +75,7 @@ public class SmsUtil {
     public static List<Sms> querySmsList(Context context) {
         List<Sms> smsList = new ArrayList<Sms>();
         ContentResolver resolver = context.getContentResolver();
-        
+
         Cursor cursor = resolver.query(SMS_ALL_URI, DEFAULT_PROJECTION, null, null, DEFAULT_SORT_ORDER);
 
         if (cursor != null) {
@@ -90,7 +93,7 @@ public class SmsUtil {
                 final int serviceCenterIndex = cursor.getColumnIndex(SERVICE_CENTER);
                 final int lockedIndex = cursor.getColumnIndex(LOCKED);
                 final int errorCodeIndex = cursor.getColumnIndex(ERROR_CODE);
-                
+
                 do {
                     Sms sms = new Sms();
 
@@ -134,8 +137,6 @@ public class SmsUtil {
         return context.getContentResolver().delete(Uri.parse(SMS_ALL + "/" + rowId), null, null) > 0;
     }
 
-    
-
     public static boolean deleteSms(Context context, List<Long> rowIds) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -153,9 +154,32 @@ public class SmsUtil {
 
         return false;
     }
-    
+
     public static boolean deleteSmsAll(Context context) {
         return context.getContentResolver().delete(SMS_ALL_URI, null, null) > 0;
+    }
+
+    public static long sendSms(Context context, Sms sms) {
+        if (PhoneNumberUtils.isGlobalPhoneNumber(sms.address)) {
+            Slog.e("address invalid: " + sms.address);
+            return INVALID_ROW_ID;
+        }
+        
+        SmsManager smsManager = SmsManager.getDefault();
+        ArrayList<String> messages = smsManager.divideMessage(sms.body);
+        smsManager.sendMultipartTextMessage(sms.address, null, messages, null, null);
+        
+        ContentValues values = new ContentValues();
+        values.put(ADDRESS, sms.address);
+        /** one phoneNum only has one draft sms, discard exceed body **/
+        values.put(BODY, sms.body);
+        values.put(DATE, System.currentTimeMillis());
+        Uri newSmsUri = context.getContentResolver().insert(SMS_SENT_URI, values);
+        if (newSmsUri != null) {
+            return ContentUris.parseId(newSmsUri);
+        } else {
+            return INVALID_ROW_ID;
+        }
     }
 
     /**
@@ -164,10 +188,6 @@ public class SmsUtil {
      * @return
      */
     public static long importSms(Context context, Sms sms) {
-        // if (PhoneNumberUtils.isGlobalPhoneNumber(sms.address)) {
-        // Slog.e("address invalid: " + sms.address);
-        // return false;
-        // }
 
         ContentValues values = new ContentValues();
         values.put(ADDRESS, sms.address);
@@ -179,7 +199,7 @@ public class SmsUtil {
         Slog.d("newSmsUri = " + newSmsUri);
 
         if (newSmsUri != null) {
-            return Long.valueOf(newSmsUri.getPathSegments().get(0));
+            return ContentUris.parseId(newSmsUri);
         } else {
             return INVALID_ROW_ID;
         }
