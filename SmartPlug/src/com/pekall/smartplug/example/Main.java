@@ -11,6 +11,7 @@ public class Main {
     
     
     public static void main(String[] args) {
+//        final String host = "localhost";
         final String host = "192.168.20.102";
         final int port = 16668;
         
@@ -39,8 +40,7 @@ public class Main {
         //
         
         Scanner sc = new Scanner(System.in);
-        int i = sc.nextInt();
-        
+        sc.next();
         smartPlug.disconnect();
         smartPlug.release();
     }
