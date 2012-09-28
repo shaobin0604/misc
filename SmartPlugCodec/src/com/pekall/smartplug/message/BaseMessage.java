@@ -1,7 +1,22 @@
 package com.pekall.smartplug.message;
 
 public abstract class BaseMessage {
-    public MessageType mMessageType;
+    protected MessageType mMessageType;
+    protected int mMessageId;
     
-    public abstract int size();
+    public BaseMessage(int messageId) {
+        this.mMessageId = messageId;
+    }
+    
+    public int size() {
+        return Integer.SIZE / Byte.SIZE;
+    }
+
+    public MessageType getMessageType() {
+        return mMessageType;
+    }
+
+    public int getMessageId() {
+        return mMessageId;
+    }
 }

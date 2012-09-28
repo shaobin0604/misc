@@ -1,17 +1,23 @@
 package com.pekall.smartplug.codec;
 
-import java.io.UnsupportedEncodingException;
+import com.pekall.smartplug.message.GetStatusRequest;
+import com.pekall.smartplug.message.GetStatusResponse;
+import com.pekall.smartplug.message.Heartbeat;
+import com.pekall.smartplug.message.HelloRequest;
+import com.pekall.smartplug.message.HelloResponse;
+import com.pekall.smartplug.message.MessageType;
+import com.pekall.smartplug.message.ReportStatusRequest;
+import com.pekall.smartplug.message.ReportStatusResponse;
+import com.pekall.smartplug.message.SetStatusRequest;
+import com.pekall.smartplug.message.SetStatusResponse;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 
-import com.pekall.smartplug.message.HelloRequest;
-import com.pekall.smartplug.message.HelloResponse;
+import java.io.UnsupportedEncodingException;
 
-import static com.pekall.smartplug.message.MessageType.MSG_HELLO_REQ;
-import static com.pekall.smartplug.message.MessageType.MSG_HELLO_RES;
 public class SmartPlugDecoder extends FrameDecoder {
 	private static final int HEADER_SIZE = 4;   // msg_type: short, msg_length: short
     private static final int STRING_MAX_BYTES = 31;
@@ -36,7 +42,7 @@ public class SmartPlugDecoder extends FrameDecoder {
         buffer.markReaderIndex();
 
         // Read the type field;
-        short type = buffer.readShort();
+        short typeValue = buffer.readShort();
         // Read the length field.
         short length = buffer.readShort();
 
@@ -53,17 +59,76 @@ public class SmartPlugDecoder extends FrameDecoder {
            return null;
         }
 
-        if (type == MSG_HELLO_REQ.getValue()) {
-			return decodeHelloRequest(buffer);
-        } else if (type == MSG_HELLO_RES.getValue()) {
-			return decodeHelloResponse(buffer);
-        } else {
-			throw new IllegalArgumentException();
-		}
+        MessageType type = MessageType.fromValue(typeValue);
+        
+        switch (type) {
+            case MSG_HELLO_REQ:
+                return decodeHelloRequest(buffer);
+            case MSG_HELLO_RES:
+                return decodeHelloResponse(buffer);
+            case MSG_REPORT_STATUS_REQ:
+                return decodeReportStatusRequest(buffer);
+            case MSG_REPORT_STATUS_RES:
+                return decodeReportStatusResponse(buffer);
+            case MSG_HEARTBEAT:
+                return decodeHeartbeat(buffer);
+            case MSG_GET_STATUS_REQ:
+                return decodeGetStatusRequest(buffer);
+            case MSG_GET_STATUS_RES:
+                return decodeGetStatusResponse(buffer);
+            case MSG_SET_STATUS_REQ:
+                return decodeSetStatusRequest(buffer);
+            case MSG_SET_STATUS_RES:
+                return decodeSetStatusResponse(buffer);
+            default:
+                throw new IllegalArgumentException("Unknown MessageType: " + type);
+        }
+    }
+
+    private Object decodeHeartbeat(ChannelBuffer buffer) {
+        int messageId = buffer.readInt();
+        short status = buffer.readShort();
+        return new Heartbeat(messageId, status);
+    }
+
+    private Object decodeSetStatusResponse(ChannelBuffer buffer) {
+        int messageId = buffer.readInt();
+        short resultCode = buffer.readShort();
+        return new SetStatusResponse(messageId, resultCode);
+    }
+
+    private Object decodeSetStatusRequest(ChannelBuffer buffer) {
+        int messageId = buffer.readInt();
+        short status = buffer.readShort();
+        return new SetStatusRequest(messageId, status);
+    }
+
+    private Object decodeGetStatusResponse(ChannelBuffer buffer) {
+        int messageId = buffer.readInt();
+        short status = buffer.readShort();
+        return new GetStatusResponse(messageId, status);
+    }
+
+    private Object decodeGetStatusRequest(ChannelBuffer buffer) {
+        int messageId = buffer.readInt();
+        return new GetStatusRequest(messageId);
+    }
+
+    private Object decodeReportStatusResponse(ChannelBuffer buffer) {
+        int messageId = buffer.readInt();
+        return new ReportStatusResponse(messageId);
+    }
+
+    private Object decodeReportStatusRequest(ChannelBuffer buffer) {
+        int messageId = buffer.readInt();
+        short status = buffer.readShort();
+        return new ReportStatusRequest(messageId, status);
     }
 
     private Object decodeHelloRequest(ChannelBuffer buffer) throws UnsupportedEncodingException {
-    	byte[] bytes = new byte[STRING_MAX_BYTES_PLUS_ONE];
+        int messageId = buffer.readInt();
+
+        byte[] bytes = new byte[STRING_MAX_BYTES_PLUS_ONE];
     	int deviceIdLen = buffer.bytesBefore((byte)0);
     	buffer.readBytes(bytes);
     	String deviceId = new String(bytes, 0, deviceIdLen, "utf-8");
@@ -72,19 +137,19 @@ public class SmartPlugDecoder extends FrameDecoder {
     	buffer.readBytes(bytes);
     	String deviceMode = new String(bytes, 0, deviceModeLen, "utf-8");
     	
-    	return new HelloRequest(deviceId, deviceMode);
+    	return new HelloRequest(messageId, deviceId, deviceMode);
 	}
 
 	private Object decodeHelloResponse(ChannelBuffer buffer) throws UnsupportedEncodingException {
+	    int messageId = buffer.readInt();
+	    
 		short resultCode = buffer.readShort();
+		
 		int serverNameLen = buffer.bytesBefore((byte)0);
 		byte[] bytes = new byte[STRING_MAX_BYTES_PLUS_ONE];
 		buffer.readBytes(bytes);
 		String serverName = new String(bytes, 0, serverNameLen, "utf-8");
 		
-		return new HelloResponse(resultCode, serverName);
+		return new HelloResponse(messageId, resultCode, serverName);
 	}
-
-	
-
 }

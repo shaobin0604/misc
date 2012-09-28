@@ -13,6 +13,9 @@ a.out
 bin/
 gen/
 
+# svn files
+.svn/
+
 # Local configuration file (sdk path, etc)
 local.properties
 */.settings/*

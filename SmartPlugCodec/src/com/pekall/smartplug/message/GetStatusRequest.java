@@ -4,13 +4,18 @@ import static com.pekall.smartplug.message.MessageType.*;
 
 public class GetStatusRequest extends BaseMessage {
 
-    public GetStatusRequest() {
-        super();
+    public GetStatusRequest(int messageId) {
+        super(messageId);
         this.mMessageType = MSG_GET_STATUS_REQ; 
     }
 
     @Override
     public int size() {
-        return 0;
+        return super.size();
+    }
+
+    @Override
+    public String toString() {
+        return "GetStatusRequest [mMessageType=" + mMessageType + ", mMessageId=" + mMessageId + "]";
     }
 }
