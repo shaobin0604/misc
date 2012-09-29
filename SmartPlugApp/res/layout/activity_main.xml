@@ -1,9 +1,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" 
-    android:orientation="vertical">
-    
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
     <com.pekall.smartplug.smartplugapp.Lamp
         android:id="@+id/lamp1"
         android:layout_width="fill_parent"
@@ -17,6 +17,23 @@
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
 
-    
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        
+        <ToggleButton android:id="@+id/network_switch"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textOn="@string/network_on"
+            android:textOff="@string/network_off"/>
+        <ToggleButton android:id="@+id/light_switch"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textOn="@string/light_on"
+            android:textOff="@string/light_off"/>
+    </LinearLayout>
 
 </LinearLayout>
