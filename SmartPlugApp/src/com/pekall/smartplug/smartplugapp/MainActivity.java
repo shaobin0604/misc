@@ -19,11 +19,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity implements OnClickListener, SmartPlugListener {
-    private static final String HOST = "zealot.eicp.net";
-    private static final int PORT = 10854;
+//    private static final String HOST = "zealot.eicp.net";
+//    private static final int PORT = 10854;
+    private static final String HOST = "192.168.1.104";
+    private static final int PORT = 16668;
     
-    private static final String DEVICE_ID = "";
-    private static final String DEVICE_MODE = "";
+    private static final String DEVICE_ID = "1";
+    private static final String DEVICE_MODE = "1";
     
     private static final int WHAT_DISCONNECTED = 1;
     private static final int WHAT_SET_STATUS = 2;
@@ -46,7 +48,9 @@ public class MainActivity extends Activity implements OnClickListener, SmartPlug
                     mNetworkSwitch.setChecked(false);
                     break;
                 case WHAT_SET_STATUS:
-                    mLamp.setState(msg.arg1 == 1);
+                    boolean status = (msg.arg1 == 1);
+                    mLamp.setState(status);
+                    mLightSwitch.setChecked(status);
                     break;
                 default:
                     break;
@@ -98,6 +102,8 @@ public class MainActivity extends Activity implements OnClickListener, SmartPlug
         }
         
         mSmartPlug.release();
+        
+        mExecutorService.shutdown();
     }
 
 
@@ -114,16 +120,14 @@ public class MainActivity extends Activity implements OnClickListener, SmartPlug
         mHandler.sendEmptyMessage(WHAT_DISCONNECTED);
     }
 
-
-
     @Override
     public void onClick(View v) {
         // TODO Auto-generated method stub
         if (v == mNetworkSwitch) {
             if (mNetworkSwitch.isChecked()) {
-                
+                login(HOST, PORT, DEVICE_ID, DEVICE_MODE);
             } else {
-                
+                mSmartPlug.disconnect();
             }
         } else if (v == mLightSwitch) {
             final boolean status = mLightSwitch.isChecked();
@@ -144,7 +148,7 @@ public class MainActivity extends Activity implements OnClickListener, SmartPlug
     }
     
     private void login(String host, int port, String deviceId, String deviceMode) {
-        
+        new LoginTask(host, port, deviceId, deviceMode).execute((Void)null);
     }
     
     private class ReportStateTask implements Runnable {
@@ -188,7 +192,7 @@ public class MainActivity extends Activity implements OnClickListener, SmartPlug
             
             ret = mSmartPlug.login(mDeviceId, mDeviceMode);
             
-            Slog.d("connect " + (ret ? "ok" : "fail"));
+            Slog.d("login " + (ret ? "ok" : "fail"));
             
             return ret;
         }

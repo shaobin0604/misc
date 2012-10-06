@@ -132,6 +132,12 @@ public class SmartPlugImpl implements SmartPlug {
     @Override
     public boolean login(String pn, String sn) {
         clog("login E");
+        
+        if (!isConnected()) {
+            clog("not connected");
+            return false;
+        }
+        
         ClientHandler handler = mClientChannel.getPipeline().get(ClientHandler.class);
 
         HelloRequest request = new HelloRequest(getNextMessageId(), sn, pn);
@@ -169,6 +175,10 @@ public class SmartPlugImpl implements SmartPlug {
 
     @Override
     public boolean reportStatus(boolean on) {
+        if (!isConnected()) {
+            return false;
+        }
+        
         ClientHandler handler = mClientChannel.getPipeline().get(ClientHandler.class);
         ReportStatusRequest request = new ReportStatusRequest(getNextMessageId(), (on ? STATUS_ON : STATUS_OFF));
         ReportStatusResponse response = (ReportStatusResponse) handler.getResponse(request);
