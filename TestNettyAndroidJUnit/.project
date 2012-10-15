@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>TestNettyAndroidJUnit</name>
+	<name>com.pekall.pctool.test</name>
 	<comment></comment>
 	<projects>
 		<project>TestNettyAndroid</project>

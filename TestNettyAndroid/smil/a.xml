@@ -1,2 +1,74 @@
-<smil><head><layout><root-layout width="320px" height="480px"/><region id="Text" left="0" top="0" width="320px" height="160px" fit="meet"/><region id="Image" left="0" top="160" width="320px" height="320px" fit="meet"/></layout></head><body><par dur="1420ms"><text src="text_1.txt" region="Text"/><video src="VID_20000119_114200.mp4" region="Image" dur="1420ms"/></par><par dur="3000ms"><text src="text_2.txt" region="Text"/><img src="132" region="Image"/><audio src="5337967.mp3" dur="4063ms"/></par><par dur="4063ms"><img src="133" region="Image"/><text src="text_4.txt" region="Text"/><audio src="05337967.mp3" dur="4063ms"/></par></body></smil>
+<smil>
 
+    <head>
+
+        <layout>
+
+            <root-layout
+                height="480px"
+                width="320px" />
+
+            <region
+                id="Text"
+                fit="meet"
+                height="160px"
+                left="0"
+                top="0"
+                width="320px" />
+
+            <region
+                id="Image"
+                fit="meet"
+                height="320px"
+                left="0"
+                top="160"
+                width="320px" />
+        </layout>
+    </head>
+
+    <body>
+
+        <par dur="1420ms" >
+
+            <text
+                region="Text"
+                src="text_1.txt" />
+
+            <video
+                dur="1420ms"
+                region="Image"
+                src="VID_20000119_114200.mp4" />
+        </par>
+
+        <par dur="3000ms" >
+
+            <text
+                region="Text"
+                src="text_2.txt" />
+
+            <img
+                region="Image"
+                src="132" />
+
+            <audio
+                dur="4063ms"
+                src="5337967.mp3" />
+        </par>
+
+        <par dur="4063ms" >
+
+            <img
+                region="Image"
+                src="133" />
+
+            <text
+                region="Text"
+                src="text_4.txt" />
+
+            <audio
+                dur="4063ms"
+                src="05337967.mp3" />
+        </par>
+    </body>
+
+</smil>

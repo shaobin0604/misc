@@ -19,13 +19,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity implements OnClickListener, SmartPlugListener {
-//    private static final String HOST = "zealot.eicp.net";
-//    private static final int PORT = 10854;
-    private static final String HOST = "192.168.1.104";
-    private static final int PORT = 16668;
+    private static final String HOST = "zealot.eicp.net";
+    private static final int PORT = 10854;
+//    private static final String HOST = "192.168.1.104";
+//    private static final int PORT = 16668;
     
     private static final String DEVICE_ID = "1";
-    private static final String DEVICE_MODE = "1";
+    private static final String DEVICE_MODE = "light_01_m";
     
     private static final int WHAT_DISCONNECTED = 1;
     private static final int WHAT_SET_STATUS = 2;

@@ -603,6 +603,14 @@ public class ContactUtil {
         int newDataIdSkipCount = 0;
         Queue<Long> newDataIds = new LinkedList<Long>();
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+        
+        // update account
+        ops.add(ContentProviderOperation
+                .newUpdate(RawContacts.CONTENT_URI)
+                .withSelection(RawContacts._ID + "=?", new String[] {String.valueOf(contact.id)})
+                .withValue(RawContacts.ACCOUNT_TYPE, contact.accountInfo.accountType)
+                .withValue(RawContacts.ACCOUNT_NAME, contact.accountInfo.accountName).build());
+        
 
         // update Name
         if (hasField(context, StructuredName.CONTENT_ITEM_TYPE, contact.id)) {
