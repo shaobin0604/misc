@@ -1,4 +1,3 @@
-
 package com.pekall.pctool.model.contact;
 
 import java.util.ArrayList;
@@ -614,18 +613,14 @@ public class ContactUtil {
 
         // update Name
         if (hasField(context, StructuredName.CONTENT_ITEM_TYPE, contact.id)) {
-            final Builder builder = ContentProviderOperation
+            ops.add(ContentProviderOperation
                     .newUpdate(Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + " = ?",
-                            new String[] {
-                                    String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
-                            }).withValue(StructuredName.DISPLAY_NAME, contact.name);
-            if (TextUtils.isEmpty(contact.name)) {
-                builder.withValue(StructuredName.FAMILY_NAME, "")
-                        .withValue(StructuredName.GIVEN_NAME, "")
-                        .withValue(StructuredName.MIDDLE_NAME, "");
-            }
-            ops.add(builder.build());
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + "=?",
+                            new String[] { String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE })
+                    .withValue(StructuredName.DISPLAY_NAME, contact.name)
+                    .withValue(StructuredName.FAMILY_NAME, "")
+                    .withValue(StructuredName.GIVEN_NAME, "")
+                    .withValue(StructuredName.MIDDLE_NAME, "").build());
         } else {
             ops.add(ContentProviderOperation
                     .newInsert(Data.CONTENT_URI)
@@ -801,6 +796,13 @@ public class ContactUtil {
             } else if (ar.modifyFlag == ModifyTag.del) {
                 ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, ar.id)).build());
             } else if (ar.modifyFlag == ModifyTag.edit) {
+                if (TextUtils.isEmpty(ar.address)) {
+                    ar.country = "";
+                    ar.street = "";
+                    ar.city = "";
+                    ar.postcode = "";
+                    ar.region = "";
+                }
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
                         .withSelection(Data._ID + "=?", new String[] {
                                 String.valueOf(ar.id)

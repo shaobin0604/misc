@@ -1,0 +1,10 @@
+<resources>
+
+    <string name="app_name">BackupServiceTestApp</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="do_backup">do_backup</string>
+    <string name="do_restore">do_restore</string>
+
+</resources>
