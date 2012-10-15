@@ -1,32 +1,6 @@
 
 package com.pekall.pctool.model.mms;
 
-import android.content.ContentProviderOperation;
-import android.content.ContentUris;
-import android.content.Context;
-import android.content.OperationApplicationException;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.RemoteException;
-import android.sax.Element;
-import android.sax.EndElementListener;
-import android.sax.RootElement;
-import android.sax.StartElementListener;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.util.Log;
-import android.util.Xml;
-
-import com.pekall.pctool.Slog;
-import com.pekall.pctool.model.contact.ContactUtil;
-import com.pekall.pctool.model.mms.Mms.Attachment;
-import com.pekall.pctool.model.mms.Mms.Slide;
-
-import org.xml.sax.Attributes;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -35,6 +9,26 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import android.content.ContentProviderOperation;
+import android.content.ContentUris;
+import android.content.Context;
+import android.content.OperationApplicationException;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.RemoteException;
+import android.text.TextUtils;
+import android.text.format.DateUtils;
+import android.util.Log;
+
+import com.pekall.pctool.Slog;
+import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.model.mms.Mms.Attachment;
+import com.pekall.pctool.model.mms.Mms.Slide;
 
 public class MmsUtil {
     static final Uri MAIN_MMS_URI = Uri.parse("content://mms");

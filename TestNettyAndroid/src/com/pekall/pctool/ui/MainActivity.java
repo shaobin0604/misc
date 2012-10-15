@@ -61,31 +61,46 @@ public class MainActivity extends Activity implements OnClickListener {
                 switch (state) {
                     case STATE_START: {
                         if (ServerController.isUsbMode()) {
+                        	setUsbModeState(true);
                             mTvUsbStatus.setText(R.string.text_usb_in_service);
+                            mViewFlipper.setDisplayedChild(FRAME_USB);
                         } else {
+                        	setWifiModeState(true);
                             mTvWifiStatus.setText(R.string.text_wifi_in_service);
                             mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
                             mTvWifiSecret.setVisibility(View.VISIBLE);
+                            mViewFlipper.setDisplayedChild(FRAME_WIFI);
                         }
                         break;
                     }
                     case STATE_STOP: {
-                        finish();
+                    	mTvWifiStatus.setText(R.string.text_wifi_tips);
+                        mTvWifiSecret.setVisibility(View.INVISIBLE);
+                        setWifiModeState(false);
+                        mViewFlipper.setDisplayedChild(FRAME_WIFI);
                         break;
                     }
                     case STATE_CONNECTED: {
                         if (ServerController.isUsbMode()) {
+                        	setUsbModeState(true);
                             mTvUsbStatus.setText(getString(R.string.text_usb_connected, ServerController.getHostname()));
+                            mViewFlipper.setDisplayedChild(FRAME_USB);
                         } else {
+                        	setWifiModeState(true);
                             mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
+                            mViewFlipper.setDisplayedChild(FRAME_WIFI);
                         }
                         break;
                     }
                     case STATE_DISCONNECTED: {
                         if (ServerController.isUsbMode()) {
+                        	setUsbModeState(true);
                             mTvUsbStatus.setText(R.string.text_usb_in_service);
+                            mViewFlipper.setDisplayedChild(FRAME_USB);
                         } else {
+                        	setWifiModeState(true);
                             mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                            mViewFlipper.setDisplayedChild(FRAME_WIFI);
                         }
                         break;
                     }
@@ -205,16 +220,12 @@ public class MainActivity extends Activity implements OnClickListener {
                     return;
                 }
                 
-                setWifiModeState(true);
-                
                 String wifiSecret = WifiUtil.getWifiHostAddressBase64(context);
                 ServerController.setWifiSecret(wifiSecret);
                 
                 ServerController.startHttpService(context, /* usbMode */ false);
                 ServerController.startFTPService(context);
             } else {
-                setWifiModeState(false);
-                
                 ServerController.stopFTPService(context);
                 ServerController.stopHttpService(context);
             }

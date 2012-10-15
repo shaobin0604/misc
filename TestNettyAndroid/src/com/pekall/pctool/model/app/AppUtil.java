@@ -196,11 +196,31 @@ public class AppUtil {
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return false;
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return false;
+        } finally {
+        	if (is != null) {
+        		try {
+					is.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        	
+        	if (os != null) {
+        		try {
+					os.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
         }
-        return false;
+        
     }
     
     public static boolean importApp(Context context, String packageName) {
