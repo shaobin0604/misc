@@ -1916,10 +1916,10 @@ public class HandlerFacade {
         for (GroupRecord groupRecord : contactRecord.getGroupList()) {
             GroupInfo groupInfo = new GroupInfo();
 
-            // only group id is required
-            
+            // only id in 'data' table is needed
             if (groupRecord.hasId()) {
                 groupInfo.grId = groupRecord.getId();
+                groupInfo.dataId = groupRecord.getDataId();
             }
             
             groupInfo.modifyFlag = toModelModifyTag(groupRecord.getModifyTag());
