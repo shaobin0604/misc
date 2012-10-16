@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">京联云手机精灵</string>
+    <string name="app_name">京联云手机助手</string>
     <string name="note_ticker_wifi_start">京联云手机精灵WIFI使用中</string>
     <string name="note_ticker_wifi_connected">正在通过WIFI连接%1$s</string>
     

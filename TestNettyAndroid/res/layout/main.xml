@@ -4,15 +4,21 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <ImageView
+    <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/title"/>
+        android:gravity="center"
+        android:text="@string/app_name"
+        android:textColor="@android:color/white"
+        android:textSize="25dip"
+        android:textStyle="bold" 
+        android:background="@drawable/title"/>
 
     <ViewFlipper
         android:id="@+id/view_flipper"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
+        android:layout_height="0dip"
+        android:layout_weight="1" >
 
         <include layout="@layout/usb_mode" />
 
