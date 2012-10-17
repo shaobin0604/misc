@@ -621,7 +621,7 @@ public class ContactUtil {
                     ops.add(ContentProviderOperation
                             .newUpdate(Data.CONTENT_URI)
                             .withSelection(
-                                    Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + " = ?",
+                                    Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE + "=?",
                                     new String[] {
                                             String.valueOf(contact.id), Photo.CONTENT_ITEM_TYPE
                                     }).withValue(Data.DATA15, contact.photo)
@@ -663,8 +663,7 @@ public class ContactUtil {
                         .withValue(Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
                         .withValue(GroupMembership.GROUP_ROW_ID, gi.grId).build());
             } else if (gi.modifyFlag == ModifyTag.del) {
-                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId))
-                        .build());
+                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId)).build());
             } else if (gi.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
                         .withSelection(Data._ID + "=?", new String[] {
@@ -804,6 +803,10 @@ public class ContactUtil {
 
         try {
             // Slog.d(ops.toString());
+        	for (ContentProviderOperation op : ops) {
+        		Slog.d("op: " + op.toString());
+        	}
+        	
             ContentProviderResult[] results = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
 
             for (ContentProviderResult result : results) {
