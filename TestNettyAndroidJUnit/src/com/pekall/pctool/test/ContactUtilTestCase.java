@@ -1,20 +1,22 @@
 
 package com.pekall.pctool.test;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Queue;
-
 import android.provider.ContactsContract.CommonDataKinds;
 import android.test.AndroidTestCase;
 
 import com.pekall.pctool.Slog;
+import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.Contact.EmailInfo;
 import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.ContactUtil;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 public class ContactUtilTestCase extends AndroidTestCase {
     
@@ -61,12 +63,17 @@ public class ContactUtilTestCase extends AndroidTestCase {
         
         ContactUtil.deleteContactAll(getContext());
         
-        populateContacts();
+//        populateContacts();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+    
+    public void testQueryAccount() throws Exception {
+        Set<AccountInfo> accounts = ContactUtil.getAllAccounts(getContext());
+        Slog.d(accounts.toString());
     }
 
     public void testQueryContact() throws Exception {

@@ -1,13 +1,5 @@
-package com.pekall.pctool.model.contact;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+package com.pekall.pctool.model.contact;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -48,23 +40,31 @@ import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 
-public class ContactUtil {
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
+public class ContactUtil {
+    
+    private static final String HUAWEI_T8808D_MODEL = "HUAWEI T8808D";
+    private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_NAME = "Phone";
+    private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_TYPE = "com.android.huawei.phone";
+    
+    private static final String LENOVO_S868T_MODEL = "Lenovo S868t";
+    private static final String LENOVO_S868T_LOCAL_ACCOUNT_NAME = "contacts.account.name.local";
+    private static final String LENOVO_S868T_LOCAL_ACCOUNT_TYPE = "contacts.account.type.local";
+    
     private static final boolean DUMP_PARAMS = true;
 
     //
-    // Accounts
     //
-    public static final String DEFAULT_ACCOUNT_NAME = "contacts.account.name.local";
-    public static final String DEFAULT_ACCOUNT_TYPE = "contacts.account.type.local";
-    public static final String SIM1_ACCOUNT_NAME = "contacts.account.name.sim1";
-    public static final String SIM1_ACCOUNT_TYPE = "contacts.account.type.sim";
-    public static final String SIM2_ACCOUNT_NAME = "contacts.account.name.sim2";
-    public static final String SIM2_ACCOUNT_TYPE = "contacts.account.type.sim";
-
-    
-    //
-    //  
     //
     private static final int RAW_CONTACT_DELETE_FLAG = 1;
 
@@ -196,78 +196,40 @@ public class ContactUtil {
         return li;
     }
 
- 
     /**
      * get all accounts of phone we need to show the account.name
      * 
      * @param context
      * @return
      */
-    public static List<AccountInfo> getAllAccounts(Context context) {
+    public static Set<AccountInfo> getAllAccounts(Context context) {
         AccountManager accountManager = AccountManager.get(context);
         Account[] accounts = accountManager.getAccounts();
-        List<AccountInfo> ls = new ArrayList<AccountInfo>();
+        Set<AccountInfo> accountInfos = new HashSet<AccountInfo>();
         for (int i = 0; i < accounts.length; i++) {
             AccountInfo ai = new AccountInfo();
             ai.accountName = accounts[i].name;
             ai.accountType = accounts[i].type;
-            ls.add(ai);
+            accountInfos.add(ai);
         }
-        AccountInfo ai = new AccountInfo();
-        ai.accountName = DEFAULT_ACCOUNT_NAME;
-        ai.accountType = DEFAULT_ACCOUNT_TYPE;
-        ls.add(ai);
-        if (getSimCardState(context) == 1) {
-            ai = new AccountInfo();
-            ai.accountName = SIM1_ACCOUNT_NAME;
-            ai.accountType = SIM1_ACCOUNT_TYPE;
-            ls.add(ai);
-        } else if (getSimCardState(context) == 2) {
-            ai = new AccountInfo();
-            ai.accountName = SIM2_ACCOUNT_NAME;
-            ai.accountType = SIM2_ACCOUNT_TYPE;
-            ls.add(ai);
-        } else if (getSimCardState(context) == 3) {
-            ai = new AccountInfo();
-            ai.accountName = SIM1_ACCOUNT_NAME;
-            ai.accountType = SIM1_ACCOUNT_TYPE;
-            ls.add(ai);
-            ai = new AccountInfo();
-            ai.accountName = SIM2_ACCOUNT_NAME;
-            ai.accountType = SIM2_ACCOUNT_TYPE;
-            ls.add(ai);
+        
+        String model = android.os.Build.MODEL;
+        
+        Slog.d("model: " + model);
+        
+        if (HUAWEI_T8808D_MODEL.equals(model)) {
+            AccountInfo ai = new AccountInfo();
+            ai.accountName = HUAWEI_T8808D_LOCAL_ACCOUNT_NAME;
+            ai.accountType = HUAWEI_T8808D_LOCAL_ACCOUNT_TYPE;
+            accountInfos.add(ai);
+        } else {
+            AccountInfo ai = new AccountInfo();
+            ai.accountName = LENOVO_S868T_LOCAL_ACCOUNT_NAME;
+            ai.accountType = LENOVO_S868T_LOCAL_ACCOUNT_TYPE;
+            accountInfos.add(ai);
         }
-        return ls;
-    }
-
-    /**
-     * get the sim card state return 1 means simcard 1 return 2 means simcard 2
-     * return 3 means simcard1 and simcard2 return 0 means no simcard only test
-     * for coolpal 7728
-     * 
-     * @param context
-     * @return
-     */
-    public static int getSimCardState(Context context) {
-        int count = 0;
-        String where = RawContacts.ACCOUNT_NAME + "=?" + " and " + RawContacts.ACCOUNT_TYPE + "=?";
-        String whereargs1[] = new String[] {
-                SIM1_ACCOUNT_NAME, SIM1_ACCOUNT_TYPE
-        };
-        String whereargs2[] = new String[] {
-                SIM2_ACCOUNT_NAME, SIM2_ACCOUNT_TYPE
-        };
-        Cursor cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, null, where,
-                whereargs1, null);
-        if (cursor.getCount() > 0)
-            count++;
-        cursor.close();
-        cursor = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, null, where, whereargs2,
-                null);
-        if (cursor.getCount() > 0)
-            count += 2;
-        cursor.close();
-        return count;
+        
+        return accountInfos;
     }
 
     /**
@@ -599,21 +561,24 @@ public class ContactUtil {
         int newDataIdSkipCount = 0;
         Queue<Long> newDataIds = new LinkedList<Long>();
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        
+
         // update account
         ops.add(ContentProviderOperation
                 .newUpdate(RawContacts.CONTENT_URI)
-                .withSelection(RawContacts._ID + "=?", new String[] {String.valueOf(contact.id)})
+                .withSelection(RawContacts._ID + "=?", new String[] {
+                    String.valueOf(contact.id)
+                })
                 .withValue(RawContacts.ACCOUNT_TYPE, contact.accountInfo.accountType)
                 .withValue(RawContacts.ACCOUNT_NAME, contact.accountInfo.accountName).build());
-        
 
         // update Name
         if (hasField(context, StructuredName.CONTENT_ITEM_TYPE, contact.id)) {
             ops.add(ContentProviderOperation
                     .newUpdate(Data.CONTENT_URI)
                     .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + "=?",
-                            new String[] { String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE })
+                            new String[] {
+                                    String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
+                            })
                     .withValue(StructuredName.DISPLAY_NAME, contact.name)
                     .withValue(StructuredName.FAMILY_NAME, "")
                     .withValue(StructuredName.GIVEN_NAME, "")
@@ -881,13 +846,6 @@ public class ContactUtil {
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
-        // if the contact's account info is empty, we add the contact to default
-        // account
-        if (TextUtils.isEmpty(contact.accountInfo.accountName)) {
-            contact.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
-            contact.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
-        }
-
         // rawcontacts'account
         // don't give c._Id value because it is automatically increased
         ops.add(ContentProviderOperation
@@ -1032,11 +990,6 @@ public class ContactUtil {
      * @param context
      */
     public static List<GroupInfo> getGroupByAccount(Context context, AccountInfo ai) {
-        if (ai == null) {
-            ai = new AccountInfo();
-            ai.accountName = DEFAULT_ACCOUNT_NAME;
-            ai.accountType = DEFAULT_ACCOUNT_TYPE;
-        }
         String where = ContactsContract.Groups.ACCOUNT_NAME + "=?" + " and " + ContactsContract.Groups.ACCOUNT_TYPE
                 + "=?";
         String whereArgs[] = {
@@ -1064,8 +1017,6 @@ public class ContactUtil {
         }
         return ls;
     }
-
-
 
     /**
      * Check whether the contact belongs to some group
@@ -1096,19 +1047,14 @@ public class ContactUtil {
      * add a group
      */
     public static boolean addGroup(Context context, GroupInfo gi) {
-        if (TextUtils.isEmpty(gi.accountInfo.accountName)) {
-            gi.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
-            gi.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
-        }
-        
         ContentValues cv = new ContentValues();
         cv.put(Groups.ACCOUNT_NAME, gi.accountInfo.accountName);
         cv.put(Groups.ACCOUNT_TYPE, gi.accountInfo.accountType);
         cv.put(Groups.TITLE, gi.name);
         cv.put(Groups.NOTES, gi.note);
-        
+
         Uri newUri = context.getContentResolver().insert(Groups.CONTENT_URI, cv);
-        
+
         return ContentUris.parseId(newUri) > 0;
     }
 
@@ -1132,17 +1078,11 @@ public class ContactUtil {
     }
 
     /**
-     * 
-     * 
      * @param context
      * @param groupInfo
      * @return true if success, otherwise false
      */
     public static boolean updateGroup(Context context, GroupInfo groupInfo) {
-        if (TextUtils.isEmpty(groupInfo.accountInfo.accountName)) {
-            groupInfo.accountInfo.accountName = DEFAULT_ACCOUNT_NAME;
-            groupInfo.accountInfo.accountType = DEFAULT_ACCOUNT_TYPE;
-        }
         ContentValues cv = new ContentValues();
         cv.put(Groups.ACCOUNT_NAME, groupInfo.accountInfo.accountName);
         cv.put(Groups.ACCOUNT_TYPE, groupInfo.accountInfo.accountType);
@@ -1155,7 +1095,8 @@ public class ContactUtil {
     }
 
     /**
-     * Check whether the mimeType specified column has been set in {@link android.provider.ContactsContract.RawContacts.Data}
+     * Check whether the mimeType specified column has been set in
+     * {@link android.provider.ContactsContract.RawContacts.Data}
      * 
      * @param context
      * @param mimeType
@@ -1170,7 +1111,7 @@ public class ContactUtil {
         String[] whereArgs = {
                 mimeType, String.valueOf(rawContactId)
         };
-        
+
         Cursor cursor = context.getContentResolver().query(Data.CONTENT_URI, projection, where, whereArgs, null);
         boolean hasField = false;
         try {
@@ -1180,38 +1121,40 @@ public class ContactUtil {
         }
         return hasField;
     }
-    
+
     public static Contact getContactById(Context context, long rawContactId) {
         String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG + " and " + RawContacts._ID + "=?";
-        String[] selectionArgs = {String.valueOf(rawContactId)};
-        
+        String[] selectionArgs = {
+            String.valueOf(rawContactId)
+        };
+
         Collection<Contact> contacts = getContactsFast(context, selection, selectionArgs);
-        
+
         for (Contact contact : contacts) {
             return contact;
         }
         return null;
     }
-    
+
     public static Collection<Contact> getContactsAll(Context context) {
         String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG;
         String[] selectionArgs = null;
-        
+
         return getContactsFast(context, selection, selectionArgs);
     }
 
     private static Collection<Contact> getContactsFast(Context context, String selection, String[] selectionArgs) {
         Map<Long, Contact> contactsMap = new HashMap<Long, Contact>();
-        
+
         {
             String[] projection = {
-                    RawContacts._ID, 
-                    RawContacts.ACCOUNT_NAME, 
-                    RawContacts.ACCOUNT_TYPE, 
+                    RawContacts._ID,
+                    RawContacts.ACCOUNT_NAME,
+                    RawContacts.ACCOUNT_TYPE,
                     RawContacts.VERSION
             };
 
-            Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, projection, 
+            Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, projection,
                     selection, selectionArgs, null);
 
             if (cursor != null) {
@@ -1228,7 +1171,7 @@ public class ContactUtil {
                             contact.accountInfo.accountName = cursor.getString(idxForAccountName);
                             contact.accountInfo.accountType = cursor.getString(idxForAccountType);
                             contact.version = cursor.getInt(idxForVersion);
-                            
+
                             contactsMap.put(contact.id, contact);
                         } while (cursor.moveToNext());
                     }
@@ -1240,24 +1183,24 @@ public class ContactUtil {
 
         {
             String[] projection = {
-                   RawContactsEntity._ID,
-                   RawContactsEntity.DATA_ID,
-                   RawContactsEntity.MIMETYPE,
-                   RawContactsEntity.DATA1,
-                   RawContactsEntity.DATA2,
-                   RawContactsEntity.DATA3,
-                   RawContactsEntity.DATA4,
-                   RawContactsEntity.DATA5,
-                   RawContactsEntity.DATA6,
-                   RawContactsEntity.DATA7,
-                   RawContactsEntity.DATA8,
-                   RawContactsEntity.DATA9,
-                   RawContactsEntity.DATA10,
-                   RawContactsEntity.DATA11,
-                   RawContactsEntity.DATA12,
-                   RawContactsEntity.DATA13,
-                   RawContactsEntity.DATA14,
-                   RawContactsEntity.DATA15,
+                    RawContactsEntity._ID,
+                    RawContactsEntity.DATA_ID,
+                    RawContactsEntity.MIMETYPE,
+                    RawContactsEntity.DATA1,
+                    RawContactsEntity.DATA2,
+                    RawContactsEntity.DATA3,
+                    RawContactsEntity.DATA4,
+                    RawContactsEntity.DATA5,
+                    RawContactsEntity.DATA6,
+                    RawContactsEntity.DATA7,
+                    RawContactsEntity.DATA8,
+                    RawContactsEntity.DATA9,
+                    RawContactsEntity.DATA10,
+                    RawContactsEntity.DATA11,
+                    RawContactsEntity.DATA12,
+                    RawContactsEntity.DATA13,
+                    RawContactsEntity.DATA14,
+                    RawContactsEntity.DATA15,
             };
             Cursor cursor = context.getContentResolver().query(RawContactsEntity.CONTENT_URI, projection,
                     selection, selectionArgs, RawContactsEntity._ID);
@@ -1282,17 +1225,17 @@ public class ContactUtil {
                         final int idxForData13 = cursor.getColumnIndex(RawContactsEntity.DATA13);
                         final int idxForData14 = cursor.getColumnIndex(RawContactsEntity.DATA14);
                         final int idxForData15 = cursor.getColumnIndex(RawContactsEntity.DATA15);
-                        
+
                         do {
                             final long rawContactId = cursor.getLong(idxForRawContactId);
                             Contact contact = contactsMap.get(rawContactId);
                             if (contact != null) {
                                 String mimeType = cursor.getString(idxForMimeType);
-                                
+
                                 if (TextUtils.isEmpty(mimeType)) {
                                     continue;
                                 }
-                                
+
                                 if (mimeType.equals(StructuredName.CONTENT_ITEM_TYPE)) {
                                     contact.name = cursor.getString(idxForData1);
                                 } else if (mimeType.equals(Nickname.CONTENT_ITEM_TYPE)) {
@@ -1301,50 +1244,51 @@ public class ContactUtil {
                                     contact.photo = cursor.getBlob(idxForData15);
                                 } else if (mimeType.equals(GroupMembership.CONTENT_ITEM_TYPE)) {
                                     GroupInfo groupInfo = new GroupInfo();
-                                    
+
                                     groupInfo.grId = cursor.getLong(idxForData1);
                                     groupInfo.dataId = cursor.getLong(idxForDataId);
-                                    
+
                                     contact.addGroupInfo(groupInfo);
                                 } else if (mimeType.equals(Phone.CONTENT_ITEM_TYPE)) {
                                     PhoneInfo phoneInfo = new PhoneInfo();
-                                    
+
                                     phoneInfo.id = cursor.getLong(idxForDataId);
-                                    phoneInfo.number = cursor.getString(idxForData1);   // number
-                                    phoneInfo.type = cursor.getInt(idxForData2);        // type
+                                    phoneInfo.number = cursor.getString(idxForData1); // number
+                                    phoneInfo.type = cursor.getInt(idxForData2); // type
                                     if (phoneInfo.type == Phone.TYPE_CUSTOM) {
-                                        phoneInfo.customName = cursor.getString(idxForData3);   // label
+                                        phoneInfo.customName = cursor.getString(idxForData3); // label
                                     }
-                                    
+
                                     contact.addPhoneInfo(phoneInfo);
                                 } else if (mimeType.equals(Email.CONTENT_ITEM_TYPE)) {
                                     EmailInfo emailInfo = new EmailInfo();
-                                    
+
                                     emailInfo.id = cursor.getLong(idxForDataId);
-                                    emailInfo.address = cursor.getString(idxForData1);    // address
-                                    emailInfo.type = cursor.getInt(idxForData2);        // type
+                                    emailInfo.address = cursor.getString(idxForData1); // address
+                                    emailInfo.type = cursor.getInt(idxForData2); // type
                                     if (emailInfo.type == Email.TYPE_CUSTOM) {
                                         emailInfo.customName = cursor.getString(idxForData3); // label
                                     }
-                                    
+
                                     contact.addEmailInfo(emailInfo);
                                 } else if (mimeType.equals(Im.CONTENT_ITEM_TYPE)) {
                                     ImInfo imInfo = new ImInfo();
-                                    
+
                                     imInfo.id = cursor.getLong(idxForDataId);
                                     imInfo.account = cursor.getString(idxForData1); // data
-                                    imInfo.protocol = cursor.getInt(idxForData5);   // protocol
+                                    imInfo.protocol = cursor.getInt(idxForData5); // protocol
                                     if (imInfo.protocol == Im.PROTOCOL_CUSTOM) {
-                                        imInfo.customProtocol = cursor.getString(idxForData6); // custom protocol
+                                        imInfo.customProtocol = cursor.getString(idxForData6); // custom
+                                                                                               // protocol
                                     }
-                                    
+
                                     contact.addImInfo(imInfo);
                                 } else if (mimeType.equals(Organization.CONTENT_ITEM_TYPE)) {
                                     OrgInfo orgInfo = new OrgInfo();
-                                    
+
                                     orgInfo.id = cursor.getLong(idxForDataId);
-                                    orgInfo.company = cursor.getString(idxForData1);    // company
-                                    if (cursor.isNull(idxForData2)) {                   // type
+                                    orgInfo.company = cursor.getString(idxForData1); // company
+                                    if (cursor.isNull(idxForData2)) { // type
                                         orgInfo.type = Organization.TYPE_WORK;
                                     } else {
                                         orgInfo.type = cursor.getInt(idxForData2);
@@ -1352,13 +1296,14 @@ public class ContactUtil {
                                     if (orgInfo.type == Organization.TYPE_CUSTOM) {
                                         orgInfo.customName = cursor.getString(idxForData3); // label
                                     }
-                                    
+
                                     contact.addOrgInfo(orgInfo);
                                 } else if (mimeType.equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                                     AddressInfo addressInfo = new AddressInfo();
-                                    
+
                                     addressInfo.id = cursor.getLong(idxForDataId);
-                                    addressInfo.address = cursor.getString(idxForData1);    // formated address
+                                    addressInfo.address = cursor.getString(idxForData1); // formated
+                                                                                         // address
                                     addressInfo.type = cursor.getInt(idxForData2); // type
                                     addressInfo.street = cursor.getString(idxForData4); // street
                                     addressInfo.city = cursor.getString(idxForData7); // city
@@ -1369,11 +1314,11 @@ public class ContactUtil {
                                     if (addressInfo.type == StructuredPostal.TYPE_CUSTOM) {
                                         addressInfo.customName = cursor.getString(idxForData3); // label
                                     }
-                                    
+
                                     contact.addAddressInfo(addressInfo);
-                                } 
+                                }
                             }
-                            
+
                         } while (cursor.moveToNext());
                     }
                 } finally {

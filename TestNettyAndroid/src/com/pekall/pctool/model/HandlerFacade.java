@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 public class HandlerFacade {
     private static final boolean DUMP_CMD_REQUEST = true;
@@ -1313,7 +1314,7 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_GET_ALL_ACCOUNTS);
 
-        List<AccountInfo> accountInfoList = ContactUtil
+        Set<AccountInfo> accountInfoList = ContactUtil
                 .getAllAccounts(mContext);
 
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
