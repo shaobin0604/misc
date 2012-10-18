@@ -17,4 +17,9 @@ public class GroupInfo {
         accountInfo.accountType = type;
     }
 
+    @Override
+    public String toString() {
+        return "GroupInfo [grId=" + grId + ", name=" + name + ", note=" + note + ", accountInfo=" + accountInfo
+                + ", modifyFlag=" + modifyFlag + ", dataId=" + dataId + "]";
+    }
 }

@@ -173,7 +173,17 @@ public class ContactUtil {
      */
     public static List<GroupInfo> getAllGroups(Context context) {
         List<GroupInfo> li = new ArrayList<GroupInfo>();
-        Cursor cursorOfGroup = context.getContentResolver().query(Groups.CONTENT_URI, null, null, null, null);
+        
+        final String[] projection = {
+                Groups._ID, Groups.TITLE, Groups.NOTES, Groups.ACCOUNT_TYPE, Groups.ACCOUNT_NAME,
+        };                
+        
+        final String selection = Groups.DELETED + "=?";
+        
+        final String[] selectionArgs = {
+                String.valueOf(0),
+        };
+        Cursor cursorOfGroup = context.getContentResolver().query(Groups.CONTENT_URI, projection, selection, selectionArgs, null);
         if (cursorOfGroup.moveToFirst()) {
             final int GROUP_ID = cursorOfGroup.getColumnIndex(Groups._ID);
             final int GROUP_TITLE = cursorOfGroup.getColumnIndex(Groups.TITLE);

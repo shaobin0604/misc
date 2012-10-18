@@ -7,6 +7,7 @@ import android.test.AndroidTestCase;
 import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact;
+import com.pekall.pctool.model.contact.GroupInfo;
 import com.pekall.pctool.model.contact.Contact.EmailInfo;
 import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
@@ -69,6 +70,11 @@ public class ContactUtilTestCase extends AndroidTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+    
+    public void testQueryGroups() throws Exception {
+        List<GroupInfo> groups = ContactUtil.getAllGroups(getContext());
+        Slog.d(groups.toString());
     }
     
     public void testQueryAccount() throws Exception {
