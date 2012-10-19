@@ -53,6 +53,9 @@ import java.util.Set;
 
 public class ContactUtil {
     
+    private static final String GOOGLE_GROUP_STARRED_IN_ANDROID = "Starred in Android";
+    private static final String GOOGLE_GROUP_MY_CONTACTS = "My Contacts";
+    private static final String ACCOUNT_TYPE_GOOGLE = "com.google";
     private static final String HUAWEI_T8808D_MODEL = "HUAWEI T8808D";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_NAME = "Phone";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_TYPE = "com.android.huawei.phone";
@@ -175,7 +178,7 @@ public class ContactUtil {
         List<GroupInfo> li = new ArrayList<GroupInfo>();
         
         final String[] projection = {
-                Groups._ID, Groups.TITLE, Groups.NOTES, Groups.ACCOUNT_TYPE, Groups.ACCOUNT_NAME,
+                Groups._ID, Groups.TITLE, Groups.NOTES, Groups.ACCOUNT_TYPE, Groups.ACCOUNT_NAME
         };                
         
         final String selection = Groups.DELETED + "=?";
@@ -191,14 +194,28 @@ public class ContactUtil {
             final int GROUP_ACCOUNT_TYPE = cursorOfGroup.getColumnIndex(Groups.ACCOUNT_TYPE);
             final int GROUP_ACCOUNT_NAME = cursorOfGroup.getColumnIndex(Groups.ACCOUNT_NAME);
             do {
+                
+
+                long id = cursorOfGroup.getLong(GROUP_ID);
+                String name = cursorOfGroup.getString(GROUP_TITLE);
+                String note = cursorOfGroup.getString(GROUP_NOTES);
+                String accountType = cursorOfGroup.getString(GROUP_ACCOUNT_TYPE);
+                String accountName = cursorOfGroup.getString(GROUP_ACCOUNT_NAME);
+                
+                // FIXME: skip 'My Contacts' & 'Starred in Android' group in google account 
+                if (ACCOUNT_TYPE_GOOGLE.equals(accountType)) {
+                    if (GOOGLE_GROUP_MY_CONTACTS.equals(name) || GOOGLE_GROUP_STARRED_IN_ANDROID.equals(name)) {
+                        continue;
+                    }
+                }
+                
                 GroupInfo gi = new GroupInfo();
-
-                gi.grId = cursorOfGroup.getLong(GROUP_ID);
-                gi.name = cursorOfGroup.getString(GROUP_TITLE);
-                gi.note = cursorOfGroup.getString(GROUP_NOTES);
-                gi.accountInfo.accountType = cursorOfGroup.getString(GROUP_ACCOUNT_TYPE);
-                gi.accountInfo.accountName = cursorOfGroup.getString(GROUP_ACCOUNT_NAME);
-
+                gi.grId = id;
+                gi.name = name;
+                gi.note = note;
+                gi.accountInfo.accountType = accountType;
+                gi.accountInfo.accountName = accountName;
+                
                 li.add(gi);
             } while (cursorOfGroup.moveToNext());
         }

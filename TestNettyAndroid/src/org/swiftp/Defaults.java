@@ -40,8 +40,8 @@ public class Defaults {
 
 	//	protected static int ipRetrievalAttempts = 5;
 	public static final int tcpConnectionBacklog = 5;
-//	public static final String chrootDir =  Environment.getExternalStorageDirectory().getPath();
-	public static final String chrootDir =  "/";
+	public static final String chrootDir =  Environment.getExternalStorageDirectory().getPath();
+//	public static final String chrootDir =  "/";
 	public static final boolean acceptWifi = true;
 	public static final boolean acceptNet = false; // don't incur bandwidth charges
 	public static final boolean stayAwake = false;

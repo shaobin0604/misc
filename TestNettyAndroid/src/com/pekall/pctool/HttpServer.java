@@ -63,8 +63,8 @@ public class HttpServer {
 
         mAllChannels = new DefaultChannelGroup("main-server");
         
-//      mFactory = new OioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
-        mFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+        mFactory = new OioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+//      mFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
         
         ServerBootstrap bootstrap = new ServerBootstrap(mFactory);
         bootstrap.setPipelineFactory(new ServerPipelineFactory(mContext));

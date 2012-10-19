@@ -262,13 +262,13 @@ public class CalendarUtil {
                 .withValues(eventValues).build());
 
         // reminder
-        if (eventInfo.alertTime != 0) {
-            ops.add(ContentProviderOperation
-                    .newUpdate(Reminders.CONTENT_URI)
-                    .withValue(Reminders.MINUTES, eventInfo.alertTime)
-                    .withSelection(Reminders.EVENT_ID + "=?", new String[] {String.valueOf(eventInfo.id)})
-                    .build());
-        }
+        ops.add(ContentProviderOperation
+                .newUpdate(Reminders.CONTENT_URI)
+                .withValue(Reminders.MINUTES, eventInfo.alertTime)
+                .withSelection(Reminders.EVENT_ID + "=?", new String[] {
+                    String.valueOf(eventInfo.id)
+                })
+                .build());
 
         ContentProviderResult[] results;
         try {
