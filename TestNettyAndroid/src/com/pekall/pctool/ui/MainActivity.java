@@ -149,7 +149,7 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onStart() {
         super.onStart();
-        Slog.d("onStart E");
+        Slog.d("onStart E, server state: " + ServerController.getServerState());
         
         mDisplayUsbMode = false;
         
@@ -178,12 +178,9 @@ public class MainActivity extends Activity implements OnClickListener {
             }
             case STATE_DISCONNECTED:
             case STATE_STOP: {
-                mDisplayUsbMode = ServerController.isUsbMode();
-                if (!mDisplayUsbMode) {
-                    mTvWifiStatus.setText(R.string.text_wifi_tips);
-                    mTvWifiSecret.setVisibility(View.INVISIBLE);
-                    setWifiModeState(false);
-                }
+                 mTvWifiStatus.setText(R.string.text_wifi_tips);
+                 mTvWifiSecret.setVisibility(View.INVISIBLE);
+                 setWifiModeState(false);
                 break;
             }
             default:

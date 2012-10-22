@@ -22,7 +22,7 @@ public class ServerController {
     public static final int STATE_DISCONNECTED = 4;
     
     // Server state
-    private static int sServerState;
+    private static int sServerState = STATE_STOP;
     
     // Server connection mode: usb or wifi
     private static boolean sIsUsbMode;
