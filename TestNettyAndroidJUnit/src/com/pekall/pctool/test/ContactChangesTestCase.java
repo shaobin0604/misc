@@ -63,7 +63,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
         
         contact.addImInfo(imInfo);
         
-        mFirstContactId = ContactUtil.addContact(getContext(), contact);
+        mFirstContactId = ContactUtil.addContact(getContext(), contact, false);
         assertTrue(mFirstContactId > 0);
         
         
@@ -86,14 +86,14 @@ public class ContactChangesTestCase extends AndroidTestCase {
         
         contact.addImInfo(imInfo);
         
-        mSecondContactId = ContactUtil.addContact(getContext(), contact);
+        mSecondContactId = ContactUtil.addContact(getContext(), contact, true);
         assertTrue(mSecondContactId > 0);
     }
 
     protected void setUp() throws Exception {
         super.setUp();
         
-        ContactUtil.deleteContactAll(getContext());
+        ContactUtil.deleteAllContacts(getContext());
         
         populateContacts();
 
@@ -119,7 +119,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
 
             contact.name = "add";
             
-            boolean success = ContactUtil.addContact(getContext(), contact) > 0;
+            boolean success = ContactUtil.addContact(getContext(), contact, true) > 0;
             
             Slog.d("add success = " + success);
         }
@@ -140,8 +140,8 @@ public class ContactChangesTestCase extends AndroidTestCase {
         }
         
 
-        List<ContactVersion> contactVersions = FastSyncUtils.calculateContactChanges(
-                ContactUtil.getAllContactVersions(getContext()), mDatabaseHelper.getLastSyncContactVersions());
+        List<ContactVersion> contactVersions = FastSyncUtils.calculatePhoneContactChanges(
+                ContactUtil.getAllContactVersions(getContext()), mDatabaseHelper.getLastSyncPhoneContactVersions());
 
         Slog.d(contactVersions.toString());
     }

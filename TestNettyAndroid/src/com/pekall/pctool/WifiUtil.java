@@ -45,7 +45,14 @@ public class WifiUtil {
         return host;
 	}
 	
-    public static byte[] getWifiAddress(Context context) {
+	public static int getWifiAddressInt(Context context) {
+	    WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        
+        DhcpInfo dhcp = wifiManager.getDhcpInfo();
+        return dhcp.ipAddress;
+	}
+	
+    public static byte[] getWifiAddressBytes(Context context) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         
         DhcpInfo dhcp = wifiManager.getDhcpInfo();
@@ -62,26 +69,33 @@ public class WifiUtil {
     }
     
     public static String getWifiAddressBase64(Context context) {
-        byte[] address = getWifiAddress(context);
+        byte[] address = getWifiAddressBytes(context);
         
         return Base64.encodeToString(address, Base64.DEFAULT);
     }
     
-    public static byte[] getWifiHostAddress(Context context) {
+    public static byte[] getWifiHostAddressBytes(Context context) {
+        Slog.d("getWifiHostAddressBytes E");
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         DhcpInfo dhcp = wifiManager.getDhcpInfo();
 
+        Slog.d("dhcpinfo = " + dhcp);
+        
         int host = (dhcp.ipAddress & ~dhcp.netmask);
         
         byte[] quads = new byte[4];
         for (int k = 0; k < 4; k++) {
             quads[k] = (byte) ((host >> k * 8) & 0xFF);
         }
+        Slog.d("getWifiHostAddressBytes X");
         return quads;
     }
     
     public static String getWifiHostAddressBase64(Context context) {
-        byte[] address = getWifiHostAddress(context);
+        Slog.d("getWifiHostAddressBase64 E");
+        byte[] address = getWifiHostAddressBytes(context);
+        
+        Slog.d("wifi host address bytes = " + Arrays.toString(address));
         
         List<Byte> input = new ArrayList<Byte>();
         for (byte segment : address) {
@@ -95,8 +109,11 @@ public class WifiUtil {
         for (int i = 0; i < inputBytes.length; i++) {
             inputBytes[i] = input.get(i);
         }
+        Slog.d("inputBytes: " + Arrays.toString(inputBytes));
         
-        return Base64.encodeToString(inputBytes, Base64.DEFAULT).trim();
+        String base64 = Base64.encodeToString(inputBytes, Base64.DEFAULT).trim();
+        Slog.d("getWifiHostAddressBase64 X, base64 = " + base64);
+        return base64;
     }
     
     public static int decodeWifiHostAddressBase64(String base64Str) {

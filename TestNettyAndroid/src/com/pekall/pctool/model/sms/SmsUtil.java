@@ -55,15 +55,155 @@ public class SmsUtil {
     private static final Uri SMS_FAIL_URI = Uri.parse(SMS_FAIL);
     private static final Uri SMS_QUEUED_URI = Uri.parse(SMS_QUEUED);
 
+    private static final Uri ICC_URI = Uri.parse("content://sms/icc");
+    private static final Uri ICC2_URI = Uri.parse("content://sms/icc2"); // this
+                                                                         // uri
+                                                                         // is
+                                                                         // valid
+                                                                         // only
+                                                                         // on
+                                                                         // dual
+                                                                         // sim
+                                                                         // phone
+
     private static final String DEFAULT_SORT_ORDER = "date DESC";
 
-    private static final String[] DEFAULT_PROJECTION = {
+    private static final String[] PHONE_SMS_PROJECTION = {
             _ID, THREAD_ID, PERSON, ADDRESS, DATE, PROTOCOL, READ, STATUS, TYPE, BODY, SERVICE_CENTER, LOCKED,
             ERROR_CODE,
+    };
+    
+    private static final String[] SIM_SMS_PROJECTION = {
+        _ID, THREAD_ID, ADDRESS, DATE, PROTOCOL, READ, STATUS, TYPE, BODY, SERVICE_CENTER, LOCKED,
+        ERROR_CODE,
     };
 
     // prevent this class being instantiated
     private SmsUtil() {
+    }
+    
+    /**
+     * Get {@link Sms} list on Sim2
+     * 
+     * @param context
+     * @return List of {@link Sms}
+     */
+    public static List<Sms> querySim2SmsList(Context context) {
+        List<Sms> smsList = new ArrayList<Sms>();
+        ContentResolver resolver = context.getContentResolver();
+
+        Cursor cursor = resolver.query(ICC2_URI, SIM_SMS_PROJECTION, null, null, DEFAULT_SORT_ORDER);
+
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    final int rowIdIndex = cursor.getColumnIndex(_ID);
+                    final int threadIdIndex = cursor.getColumnIndex(THREAD_ID);
+                    final int addressIndex = cursor.getColumnIndex(ADDRESS);
+                    final int dateIndex = cursor.getColumnIndex(DATE);
+                    final int protocolIndex = cursor.getColumnIndex(PROTOCOL);
+                    final int readIndex = cursor.getColumnIndex(READ);
+                    final int statusIndex = cursor.getColumnIndex(STATUS);
+                    final int typeIndex = cursor.getColumnIndex(TYPE);
+                    final int bodyIndex = cursor.getColumnIndex(BODY);
+                    final int serviceCenterIndex = cursor.getColumnIndex(SERVICE_CENTER);
+                    final int lockedIndex = cursor.getColumnIndex(LOCKED);
+                    final int errorCodeIndex = cursor.getColumnIndex(ERROR_CODE);
+
+                    do {
+                        Sms sms = new Sms();
+
+                        sms.rowId = cursor.getLong(rowIdIndex);
+                        sms.threadId = cursor.getLong(threadIdIndex);
+                        sms.address = cursor.getString(addressIndex);
+                        if (sms.person <= 0) {
+                            sms.person = ContactUtil.getRawContactId(context, sms.address);
+                        }
+                        sms.date = cursor.getLong(dateIndex);
+                        sms.protocol = cursor.getInt(protocolIndex);
+                        sms.read = cursor.getInt(readIndex);
+                        sms.status = cursor.getInt(statusIndex);
+                        sms.type = cursor.getInt(typeIndex);
+                        sms.body = cursor.getString(bodyIndex);
+                        String serviceCenter = cursor.getString(serviceCenterIndex);
+                        if (serviceCenter == null) {
+                            serviceCenter = "";
+                        }
+                        sms.serviceCenter = serviceCenter;
+                        sms.locked = cursor.getInt(lockedIndex);
+                        sms.errorCode = cursor.getInt(errorCodeIndex);
+
+                        smsList.add(sms);
+                    } while (cursor.moveToNext());
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+
+        return smsList;
+    }
+
+    /**
+     * Get {@link Sms} list on Sim1
+     * 
+     * @param context
+     * @return List of {@link Sms}
+     */
+    public static List<Sms> querySim1SmsList(Context context) {
+        List<Sms> smsList = new ArrayList<Sms>();
+        ContentResolver resolver = context.getContentResolver();
+
+        Cursor cursor = resolver.query(ICC_URI, SIM_SMS_PROJECTION, null, null, DEFAULT_SORT_ORDER);
+
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    final int rowIdIndex = cursor.getColumnIndex(_ID);
+                    final int threadIdIndex = cursor.getColumnIndex(THREAD_ID);
+                    final int addressIndex = cursor.getColumnIndex(ADDRESS);
+                    final int dateIndex = cursor.getColumnIndex(DATE);
+                    final int protocolIndex = cursor.getColumnIndex(PROTOCOL);
+                    final int readIndex = cursor.getColumnIndex(READ);
+                    final int statusIndex = cursor.getColumnIndex(STATUS);
+                    final int typeIndex = cursor.getColumnIndex(TYPE);
+                    final int bodyIndex = cursor.getColumnIndex(BODY);
+                    final int serviceCenterIndex = cursor.getColumnIndex(SERVICE_CENTER);
+                    final int lockedIndex = cursor.getColumnIndex(LOCKED);
+                    final int errorCodeIndex = cursor.getColumnIndex(ERROR_CODE);
+
+                    do {
+                        Sms sms = new Sms();
+
+                        sms.rowId = cursor.getLong(rowIdIndex);
+                        sms.threadId = cursor.getLong(threadIdIndex);
+                        sms.address = cursor.getString(addressIndex);
+                        if (sms.person <= 0) {
+                            sms.person = ContactUtil.getRawContactId(context, sms.address);
+                        }
+                        sms.date = cursor.getLong(dateIndex);
+                        sms.protocol = cursor.getInt(protocolIndex);
+                        sms.read = cursor.getInt(readIndex);
+                        sms.status = cursor.getInt(statusIndex);
+                        sms.type = cursor.getInt(typeIndex);
+                        sms.body = cursor.getString(bodyIndex);
+                        String serviceCenter = cursor.getString(serviceCenterIndex);
+                        if (serviceCenter == null) {
+                            serviceCenter = "";
+                        }
+                        sms.serviceCenter = serviceCenter;
+                        sms.locked = cursor.getInt(lockedIndex);
+                        sms.errorCode = cursor.getInt(errorCodeIndex);
+
+                        smsList.add(sms);
+                    } while (cursor.moveToNext());
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+
+        return smsList;
     }
 
     /**
@@ -76,7 +216,7 @@ public class SmsUtil {
         List<Sms> smsList = new ArrayList<Sms>();
         ContentResolver resolver = context.getContentResolver();
 
-        Cursor cursor = resolver.query(SMS_ALL_URI, DEFAULT_PROJECTION, null, null, DEFAULT_SORT_ORDER);
+        Cursor cursor = resolver.query(SMS_ALL_URI, PHONE_SMS_PROJECTION, null, null, DEFAULT_SORT_ORDER);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -133,11 +273,11 @@ public class SmsUtil {
      * @param rowId
      * @return true if success, otherwise false
      */
-    public static boolean deleteSms(Context context, long rowId) {
+    public static boolean deletePhoneSms(Context context, long rowId) {
         return context.getContentResolver().delete(Uri.parse(SMS_ALL + "/" + rowId), null, null) > 0;
     }
 
-    public static boolean deleteSms(Context context, List<Long> rowIds) {
+    public static boolean deletePhoneSms(Context context, List<Long> rowIds) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         for (long rowId : rowIds) {
@@ -155,7 +295,7 @@ public class SmsUtil {
         return false;
     }
 
-    public static boolean deleteSmsAll(Context context) {
+    public static boolean deletePhoneSmsAll(Context context) {
         return context.getContentResolver().delete(SMS_ALL_URI, null, null) > 0;
     }
 
@@ -164,11 +304,11 @@ public class SmsUtil {
             Slog.e("address invalid: " + sms.address);
             return INVALID_ROW_ID;
         }
-        
+
         SmsManager smsManager = SmsManager.getDefault();
         ArrayList<String> messages = smsManager.divideMessage(sms.body);
         smsManager.sendMultipartTextMessage(sms.address, null, messages, null, null);
-        
+
         ContentValues values = new ContentValues();
         values.put(ADDRESS, sms.address);
         /** one phoneNum only has one draft sms, discard exceed body **/
@@ -187,7 +327,7 @@ public class SmsUtil {
      * @param sms
      * @return
      */
-    public static long importSms(Context context, Sms sms) {
+    public static long importPhoneSms(Context context, Sms sms) {
 
         ContentValues values = new ContentValues();
         values.put(ADDRESS, sms.address);

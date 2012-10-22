@@ -20,9 +20,13 @@ public class WifiUtilTestCase extends AndroidTestCase {
 		
 		Slog.d("transcode: " + Arrays.toString(transcode));
 	}
+	
+	public void testGetWifiAddressInt() throws Exception {
+	    Slog.d(Integer.toString(WifiUtil.getWifiAddressInt(getContext())));
+	}
 
-    public void testGetWifiAddress() throws Exception {
-        Slog.d(Arrays.toString(WifiUtil.getWifiAddress(getContext())));
+    public void testGetWifiAddressBytes() throws Exception {
+        Slog.d(Arrays.toString(WifiUtil.getWifiAddressBytes(getContext())));
     }
     
     public void testGetWifiAddressBase64() throws Exception {
@@ -30,7 +34,7 @@ public class WifiUtilTestCase extends AndroidTestCase {
     }
     
     public void testGetWifiHostAddress() throws Exception {
-        Slog.d(Arrays.toString(WifiUtil.getWifiHostAddress(getContext())));
+        Slog.d(Arrays.toString(WifiUtil.getWifiHostAddressBytes(getContext())));
     }
     
     public void testGetWifiHostAddressBase64() throws Exception {

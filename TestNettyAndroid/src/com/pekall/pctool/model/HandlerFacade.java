@@ -442,7 +442,7 @@ public class HandlerFacade {
         List<Long> recordIdList = request.getRecordIdList();
 
         if (recordIdList != null && recordIdList.size() > 0) {
-            if (SmsUtil.deleteSms(mContext, recordIdList)) {
+            if (SmsUtil.deletePhoneSms(mContext, recordIdList)) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder, "SmsUtil.deleteSms");
@@ -475,7 +475,7 @@ public class HandlerFacade {
             sms.type = msgOriginTypeToSmsType(msgOriginType);
             sms.date = msgTime;
 
-            if (SmsUtil.importSms(mContext, sms) > 0) {
+            if (SmsUtil.importPhoneSms(mContext, sms) > 0) {
                 setResultOK(responseBuilder);
             } else {
                 setResultErrorInternal(responseBuilder, "SmsUtil.importSms");
@@ -1494,7 +1494,7 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CONTACTS);
 
-        Collection<Contact> contactList = ContactUtil.getContactsAll(mContext);
+        Collection<Contact> contactList = ContactUtil.getAllContacts(mContext);
         
         Slog.d("Contacts number: " + contactList.size());
         
@@ -1662,7 +1662,7 @@ public class HandlerFacade {
 
             if (contactRecord != null) {
                 Contact contact = contactRecordToContactForAdd(contactRecord);
-                final long newContactId = ContactUtil.addContact(mContext, contact);
+                final long newContactId = ContactUtil.addContact(mContext, contact, false);
                 if (newContactId > 0) {
                     
                     // return the new created contact
@@ -2127,9 +2127,9 @@ public class HandlerFacade {
         }
         
         //
-        // 1. delete all contacts
+        // 1. delete phone contacts
         //
-        final int count = ContactUtil.deleteContactAll(mContext);
+        final int count = ContactUtil.deletePhoneContacts(mContext);
         Slog.d("delete count = " + count);
         
         //
@@ -2150,7 +2150,7 @@ public class HandlerFacade {
                 case PC_ADD: {
                     Contact contact = contactRecordToContactForAdd(contactRecord);
                     
-                    final long contactId = ContactUtil.addContact(mContext, contact);
+                    final long contactId = ContactUtil.addContact(mContext, contact, true);
                     if (contactId > 0) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
@@ -2200,7 +2200,8 @@ public class HandlerFacade {
     private void handleSyncContactPhoneRefresh(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleSyncContactPhoneRefresh E");
         
-        Collection<Contact> contactList = ContactUtil.getContactsAll(mContext);
+        // only sync phone contacts
+        Collection<Contact> contactList = ContactUtil.getPhoneContacts(mContext);
 
         ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder();
         AccountRecord.Builder accountRecordBuilder = AccountRecord.newBuilder();
@@ -2251,9 +2252,9 @@ public class HandlerFacade {
         
         Collection<Contact> contactList = null;
         if (fastSync) {
-            contactList = FastSyncUtils.findChangedContacts(mContext);
+            contactList = FastSyncUtils.findChangedPhoneContacts(mContext);
         } else {
-            contactList = ContactUtil.getContactsAll(mContext);
+            contactList = ContactUtil.getPhoneContacts(mContext);
         }
         
         Slog.d("Contacts number: " + contactList.size());
@@ -2329,7 +2330,7 @@ public class HandlerFacade {
                 case PC_ADD: {
                     Contact contact = contactRecordToContactForAdd(contactRecord);
                     
-                    final long contactId = ContactUtil.addContact(mContext, contact);
+                    final long contactId = ContactUtil.addContact(mContext, contact, true);
                     if (contactId > 0) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         

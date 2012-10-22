@@ -53,7 +53,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
         
         contact.addImInfo(imInfo);
         
-        mContactId = ContactUtil.addContact(getContext(), contact);
+        mContactId = ContactUtil.addContact(getContext(), contact, true);
         
         assertTrue(mContactId > 0);
     }
@@ -62,7 +62,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        ContactUtil.deleteContactAll(getContext());
+        ContactUtil.deleteAllContacts(getContext());
         
 //        populateContacts();
     }
@@ -83,7 +83,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
     }
 
     public void testQueryContact() throws Exception {
-        Collection<Contact> contacts = ContactUtil.getContactsAll(getContext());
+        Collection<Contact> contacts = ContactUtil.getAllContacts(getContext());
         for (Contact contact : contacts) {
             Slog.d(contact.toString());
         }

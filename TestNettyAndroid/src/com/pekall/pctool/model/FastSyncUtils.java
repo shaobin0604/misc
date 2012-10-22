@@ -34,18 +34,18 @@ public class FastSyncUtils {
         Slog.d("notifyUpdateContactVersionDB X");
     }
     
-    public static List<Contact> findChangedContacts(Context context) {
+    public static List<Contact> findChangedPhoneContacts(Context context) {
         Slog.d("findChangedContacts E");
         
         DatabaseHelper databaseHelper = new DatabaseHelper(context);
         
         databaseHelper.open();
-        Map<Long, Integer> lastSyncVersions = databaseHelper.getLastSyncContactVersions();
+        Map<Long, Integer> lastSyncVersions = databaseHelper.getLastSyncPhoneContactVersions();
         databaseHelper.close();
 
-        List<ContactVersion> currentVersions = ContactUtil.getAllContactVersions(context);
+        List<ContactVersion> currentVersions = ContactUtil.getPhoneContactVersions(context);
         
-        List<ContactVersion> changedVersions = calculateContactChanges(currentVersions, lastSyncVersions);
+        List<ContactVersion> changedVersions = calculatePhoneContactChanges(currentVersions, lastSyncVersions);
         
         //
         // Get the changed(add, update, delete) contacts
@@ -79,7 +79,7 @@ public class FastSyncUtils {
         return changedContacts;
     }
     
-    public static List<ContactVersion> calculateContactChanges(List<ContactVersion> currentVersions, Map<Long, Integer> lastSyncVersions) {
+    public static List<ContactVersion> calculatePhoneContactChanges(List<ContactVersion> currentVersions, Map<Long, Integer> lastSyncVersions) {
         
         List<ContactVersion> changes = new ArrayList<ContactVersion>();
         

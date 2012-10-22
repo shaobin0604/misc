@@ -1,6 +1,9 @@
 package com.pekall.pctool.model.sms;
 
 public class Sms {
+    public static final int STORAGE_PHONE = 0;
+    public static final int STORAGE_SIM1 = 1;
+    public static final int STORAGE_SIM2 = 2;
     
     /* @see frameworks/base/core/java/android/provider/Telephony.java */
     
@@ -39,13 +42,14 @@ public class Sms {
     public String serviceCenter;   // The service center for the received message, null in case of sent messages.
     public int locked;
     public int errorCode;
+    public int storage;        // where the sms is stored, see STORAGE_XXX
     
     @Override
     public String toString() {
         return "Sms [rowId=" + rowId + ", threadId=" + threadId + ", person=" + person + ", address=" + address
                 + ", date=" + date + ", protocol=" + protocol + ", read=" + read + ", status=" + status + ", type="
                 + type + ", body=" + body + ", serviceCenter=" + serviceCenter + ", locked=" + locked + ", errorCode="
-                + errorCode + "]";
+                + errorCode + ", storage=" + storage + "]";
     }
 
     @Override

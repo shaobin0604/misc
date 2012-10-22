@@ -19,12 +19,15 @@ along with SwiFTP.  If not, see <http://www.gnu.org/licenses/>.
 
 package org.swiftp;
 
+import com.pekall.pctool.Slog;
+
 
 public class CmdSTOR extends CmdAbstractStore implements Runnable {
 	protected String input;
 	
 	public CmdSTOR(SessionThread sessionThread, String input) {
 		super(sessionThread, CmdSTOR.class.toString());
+		Slog.d("CmdSTOR, input = " + input);
 		this.input = input;
 	}
 	

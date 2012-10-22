@@ -33,6 +33,22 @@ public class SmsUtilTestCase extends AndroidTestCase {
         }
     }
     
+    public void testQuerySim1Sms() throws Exception {
+        List<Sms> smsList = SmsUtil.querySim1SmsList(getContext());
+        
+        for (Sms sms : smsList) {
+            Slog.d(sms.toString());
+        }
+    }
+    
+    public void testQuerySim2Sms() throws Exception {
+        List<Sms> smsList = SmsUtil.querySim2SmsList(getContext());
+        
+        for (Sms sms : smsList) {
+            Slog.d(sms.toString());
+        }
+    }
+    
     public void testSmsOperation() throws Exception {
         Sms importSms = new Sms();
         importSms.address = "18601219014";
@@ -45,7 +61,7 @@ public class SmsUtilTestCase extends AndroidTestCase {
         importSms.date = calendar.getTimeInMillis();
         importSms.type = Sms.TYPE_RECEIVED;
         
-        long rowId = SmsUtil.importSms(getContext(), importSms);
+        long rowId = SmsUtil.importPhoneSms(getContext(), importSms);
         Slog.d("rowId - " + rowId);
         
         assertTrue(rowId > 0);
@@ -61,7 +77,7 @@ public class SmsUtilTestCase extends AndroidTestCase {
         importSms.date = calendar.getTimeInMillis();
         importSms.type = Sms.TYPE_SENT;
         
-        rowId = SmsUtil.importSms(getContext(), importSms);
+        rowId = SmsUtil.importPhoneSms(getContext(), importSms);
         Slog.d("rowId - " + rowId);
         
         assertTrue(rowId > 0);
@@ -69,7 +85,7 @@ public class SmsUtilTestCase extends AndroidTestCase {
         List<Sms> smsList = SmsUtil.querySmsList(getContext());
         assertEquals(2, smsList.size());
         
-        SmsUtil.deleteSms(getContext(), rowId);
+        SmsUtil.deletePhoneSms(getContext(), rowId);
         
         smsList = SmsUtil.querySmsList(getContext());
         assertEquals(1, smsList.size());
@@ -89,7 +105,7 @@ public class SmsUtilTestCase extends AndroidTestCase {
         importSms.date = calendar.getTimeInMillis();
         importSms.type = Sms.TYPE_RECEIVED;
         
-        long rowId = SmsUtil.importSms(getContext(), importSms);
+        long rowId = SmsUtil.importPhoneSms(getContext(), importSms);
         Slog.d("rowId - " + rowId);
         
         assertTrue(rowId > 0);
@@ -113,7 +129,7 @@ public class SmsUtilTestCase extends AndroidTestCase {
         importSms.date = calendar.getTimeInMillis();
         importSms.type = Sms.TYPE_SENT;
         
-        long rowId = SmsUtil.importSms(getContext(), importSms);
+        long rowId = SmsUtil.importPhoneSms(getContext(), importSms);
         Slog.d("rowId - " + rowId);
         
         assertTrue(rowId > 0);

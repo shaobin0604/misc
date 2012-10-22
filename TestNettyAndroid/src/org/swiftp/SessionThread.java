@@ -253,7 +253,7 @@ public class SessionThread extends Thread {
         // Main loop: read an incoming line and process it
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(cmdSocket
-                    .getInputStream()), 8192); // use 8k buffer
+                    .getInputStream()), 8192); // use 8k buffer, default utf-8 on linux
             while (true) {
                 String line;
                 line = in.readLine(); // will accept \r\n or \n for terminator

@@ -25,12 +25,15 @@ import java.lang.reflect.Constructor;
 
 import android.util.Log;
 
+import com.pekall.pctool.Slog;
+
 public abstract class FtpCmd implements Runnable {
 	protected SessionThread sessionThread;
 	protected MyLog myLog;
 	protected static MyLog staticLog = new MyLog(FtpCmd.class.toString());
 	
 	private static FtpCmd getCmd(String cmd, SessionThread sessionThread, String input) {
+//	    Slog.d("getCmd input = " + input);
 		if ("SYST".equals(cmd))
 			return new CmdSYST(sessionThread, input);
 		if ("USER".equals(cmd))
@@ -99,6 +102,7 @@ public abstract class FtpCmd implements Runnable {
 	
 	protected static void dispatchCommand(SessionThread session, 
 	                                      String inputString) {
+	    Slog.d("dispatchCommand, inputString = " + inputString);
 		String[] strings = inputString.split(" ");
 		String unrecognizedCmdMsg = "502 Command not recognized\r\n";
 		if(strings == null) {
@@ -150,6 +154,7 @@ public abstract class FtpCmd implements Runnable {
 	 * so the caller can use silent==true in that case.
 	 */
 	static public String getParameter(String input, boolean silent) {
+	    Slog.d("input = " + input);
 		if(input == null) {
 			return "";
 		}

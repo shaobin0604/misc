@@ -23,6 +23,8 @@ import java.io.File;
 
 import android.util.Log;
 
+import com.pekall.pctool.Slog;
+
 public class CmdDELE extends FtpCmd implements Runnable {
 	protected String input; 
 	
@@ -34,6 +36,7 @@ public class CmdDELE extends FtpCmd implements Runnable {
 	public void run() {
 		myLog.l(Log.INFO, "DELE executing");
 		String param = getParameter(input);
+		Slog.d("param = " + param);
 		File storeFile = inputPathToChrootedFile(sessionThread.getWorkingDir(), param);
 		String errString = null;
 		if(violatesChroot(storeFile)) {

@@ -31,6 +31,8 @@ import java.io.IOException;
 
 import android.util.Log;
 
+import com.pekall.pctool.Slog;
+
 
 abstract public class CmdAbstractStore extends FtpCmd {
 	public static final String message = "TEMPLATE!!"; 
@@ -42,6 +44,8 @@ abstract public class CmdAbstractStore extends FtpCmd {
 	public void doStorOrAppe(String param, boolean append) {
 		myLog.l(Log.DEBUG, "STOR/APPE executing with append=" + append);
 		File storeFile = inputPathToChrootedFile(sessionThread.getWorkingDir(), param);
+		
+		Slog.d("param = " + param);
 		
 		String errString = null;
 		FileOutputStream out = null;

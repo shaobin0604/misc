@@ -135,19 +135,13 @@ public class ContactUtil {
         }
         return version;
     }
-
-    /**
-     * get all version of contacts
-     * 
-     * @param context
-     * @return
-     */
-    public static List<ContactVersion> getAllContactVersions(Context context) {
+    
+    public static List<ContactVersion> getContactVersions(Context context, String selection, String[] selectionArgs) {
         List<ContactVersion> contactVersions = new ArrayList<ContactVersion>();
 
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
                 RawContacts._ID, RawContacts.VERSION
-        }, RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG, null, null);
+        }, selection, selectionArgs, null);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -166,6 +160,34 @@ public class ContactUtil {
             cursor.close();
         }
         return contactVersions;
+    }
+
+    /**
+     * Get version of all contacts
+     * 
+     * @param context
+     * @return
+     */
+    public static List<ContactVersion> getAllContactVersions(Context context) {
+        String selection = RawContacts.DELETED + "!=?";
+        String[] selectionArgs = {
+                String.valueOf(RAW_CONTACT_DELETE_FLAG)
+        };
+        return getContactVersions(context, selection, selectionArgs);
+    }
+    
+    /**
+     * Get version of phone contacts
+     * 
+     * @param context
+     * @return
+     */
+    public static List<ContactVersion> getPhoneContactVersions(Context context) {
+        String selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_NAME + "=? AND " + RawContacts.ACCOUNT_TYPE + "=?";
+        String[] selectionArgs = {
+                String.valueOf(RAW_CONTACT_DELETE_FLAG), LENOVO_S868T_LOCAL_ACCOUNT_NAME, LENOVO_S868T_LOCAL_ACCOUNT_TYPE,
+        };
+        return getContactVersions(context, selection, selectionArgs);
     }
 
     /**
@@ -300,8 +322,17 @@ public class ContactUtil {
         }
     }
 
-    public static int deleteContactAll(Context context) {
+    public static int deleteAllContacts(Context context) {
         return context.getContentResolver().delete(RawContacts.CONTENT_URI, null, null);
+    }
+    
+    
+    public static int deletePhoneContacts(Context context) {
+        String selection = RawContacts.ACCOUNT_NAME + "=? AND " + RawContacts.ACCOUNT_TYPE + "=?";
+        String[] selectionArgs = {
+                LENOVO_S868T_LOCAL_ACCOUNT_NAME, LENOVO_S868T_LOCAL_ACCOUNT_TYPE,
+        };
+        return context.getContentResolver().delete(RawContacts.CONTENT_URI, selection, selectionArgs);
     }
 
     /**
@@ -865,7 +896,7 @@ public class ContactUtil {
      * @param AccountInfo
      * @return the id of the new created contact, or -1 if failed
      */
-    public static long addContact(Context context, Contact contact) {
+    public static long addContact(Context context, Contact contact, boolean isAddToLocalAccount) {
         if (DUMP_PARAMS) {
             Slog.d("+++++ DUMP CONTACT +++++");
 
@@ -873,10 +904,15 @@ public class ContactUtil {
 
             Slog.d("----- DUMP CONTACT -----");
         }
+        
+        if (isAddToLocalAccount) {
+            contact.accountInfo.accountType = LENOVO_S868T_LOCAL_ACCOUNT_TYPE;
+            contact.accountInfo.accountName = LENOVO_S868T_LOCAL_ACCOUNT_NAME;
+        }
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
-        // rawcontacts'account
+        // RawContact's account
         // don't give c._Id value because it is automatically increased
         ops.add(ContentProviderOperation
                 .newInsert(ContactsContract.RawContacts.CONTENT_URI)
@@ -1165,8 +1201,22 @@ public class ContactUtil {
         }
         return null;
     }
+    
+    /**
+     * Get Contact in local account, used for outlook sync
+     * 
+     * @param context
+     * @return
+     */
+    public static Collection<Contact> getPhoneContacts(Context context) {
+        String selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_NAME + "=? AND " + RawContacts.ACCOUNT_TYPE + "=?";
+        String[] selectionArgs = {
+                String.valueOf(RAW_CONTACT_DELETE_FLAG), LENOVO_S868T_LOCAL_ACCOUNT_NAME, LENOVO_S868T_LOCAL_ACCOUNT_TYPE, 
+        };
+        return getContactsFast(context, selection, selectionArgs);
+    }
 
-    public static Collection<Contact> getContactsAll(Context context) {
+    public static Collection<Contact> getAllContacts(Context context) {
         String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG;
         String[] selectionArgs = null;
 

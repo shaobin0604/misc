@@ -71,7 +71,7 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         
         contact.addImInfo(imInfo);
         
-        mContactId = ContactUtil.addContact(getContext(), contact);
+        mContactId = ContactUtil.addContact(getContext(), contact, true);
         
         assertTrue(mContactId > 0);
     }
@@ -84,7 +84,7 @@ public class HandlerFacadeTestCase extends AndroidTestCase {
         
         mHandlerFacade = new HandlerFacade(getContext());
         
-        ContactUtil.deleteContactAll(getContext());
+        ContactUtil.deleteAllContacts(getContext());
         
         populateContacts();
     }

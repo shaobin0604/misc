@@ -63,7 +63,7 @@ public class DatabaseHelper {
         return mDb.isOpen();
     }
 
-    public Map<Long, Integer> getLastSyncContactVersions() {
+    public Map<Long, Integer> getLastSyncPhoneContactVersions() {
         if (!isOpen()) {
             throw new IllegalStateException("database is not open");
         }
