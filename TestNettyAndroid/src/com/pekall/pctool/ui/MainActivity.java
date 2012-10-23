@@ -162,6 +162,8 @@ public class MainActivity extends Activity implements OnClickListener {
                 } else {
                     setWifiModeState(true);
                     mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                    mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
+                    mTvWifiSecret.setVisibility(View.VISIBLE);
                 }
                 break;
             }

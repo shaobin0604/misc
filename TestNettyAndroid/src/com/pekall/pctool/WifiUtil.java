@@ -97,9 +97,10 @@ public class WifiUtil {
         
         Slog.d("wifi host address bytes = " + Arrays.toString(address));
         
+        // skip subnet masked bytes
         List<Byte> input = new ArrayList<Byte>();
         for (byte segment : address) {
-            if (segment > 0) {
+            if (segment != 0) {
                 input.add(segment);
             }
         }
