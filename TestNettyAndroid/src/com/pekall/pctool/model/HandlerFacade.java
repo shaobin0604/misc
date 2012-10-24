@@ -980,6 +980,9 @@ public class HandlerFacade {
         return responseBuilder.build();
     }
     
+    /*
+     * Only sync with local account
+     */
     private void handleSyncAgendaWithOutlook(AgendaSync agendaSync, Builder responseBuilder) {
         Slog.d("handleSyncAgendaWithOutlook E");
         
@@ -2071,6 +2074,9 @@ public class HandlerFacade {
         return responseBuilder.build();
     }
 
+    /*
+     * only sync with local account
+     */
     private void handleSyncContactWithOutlook(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleSyncContactWithOutlook E");
         

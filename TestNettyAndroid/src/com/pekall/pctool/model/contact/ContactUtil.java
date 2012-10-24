@@ -53,9 +53,14 @@ import java.util.Set;
 
 public class ContactUtil {
     
+    private static final String CONTACTS_ACCOUNT_TYPE_SIM = "contacts.account.type.sim";
+
+    private static final boolean DUMP_PARAMS = true;
+    
     private static final String GOOGLE_GROUP_STARRED_IN_ANDROID = "Starred in Android";
     private static final String GOOGLE_GROUP_MY_CONTACTS = "My Contacts";
     private static final String ACCOUNT_TYPE_GOOGLE = "com.google";
+    
     private static final String HUAWEI_T8808D_MODEL = "HUAWEI T8808D";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_NAME = "Phone";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_TYPE = "com.android.huawei.phone";
@@ -64,7 +69,8 @@ public class ContactUtil {
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_NAME = "contacts.account.name.local";
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_TYPE = "contacts.account.type.local";
     
-    private static final boolean DUMP_PARAMS = true;
+    
+    private static final boolean DISABLE_SIM_CONTACTS = true; // FIXME: disable sim contacts for bug 9863
 
     //
     //
@@ -1217,8 +1223,16 @@ public class ContactUtil {
     }
 
     public static Collection<Contact> getAllContacts(Context context) {
-        String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG;
+        String selection = null;
         String[] selectionArgs = null;
+        
+        if (DISABLE_SIM_CONTACTS) {
+            selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_TYPE + "!=?";
+            selectionArgs = new String[] {String.valueOf(RAW_CONTACT_DELETE_FLAG), CONTACTS_ACCOUNT_TYPE_SIM};
+        } else {
+            selection = RawContacts.DELETED + "!=?";
+            selectionArgs = new String[] {String.valueOf(RAW_CONTACT_DELETE_FLAG)};
+        }
 
         return getContactsFast(context, selection, selectionArgs);
     }

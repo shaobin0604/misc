@@ -54,7 +54,7 @@ public class Defaults {
 	public static final String SESSION_ENCODING = "UTF-8"; 
 	
 	// This is a flag that should be true for public builds and false for dev builds
-	public static final boolean release = true;
+	public static final boolean release = false;
 	
 	// Try to fix the transfer stall bug, reopen the destination file periodically
 	//public static final boolean do_reopen_hack = false;

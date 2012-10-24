@@ -1,18 +1,5 @@
 package cn.yo2.aquarium.example.viewpager;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-
-import nl.matshofman.saxrssreader.RssFeed;
-import nl.matshofman.saxrssreader.RssItem;
-import nl.matshofman.saxrssreader.RssReader;
-
-import org.xml.sax.SAXException;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -24,9 +11,24 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import nl.matshofman.saxrssreader.RssFeed;
+import nl.matshofman.saxrssreader.RssItem;
+import nl.matshofman.saxrssreader.RssReader;
+
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class ViewPagerDemoActivity extends Activity implements OnPageChangeListener {
 	private static final String TAG = ViewPagerDemoActivity.class.getSimpleName();
@@ -47,7 +49,11 @@ public class ViewPagerDemoActivity extends Activity implements OnPageChangeListe
         
         mTitle = (TextView) findViewById(R.id.title);
         
-        new LoadFeedTask().execute("http://www.ifanr.com/feed");
+        new LoadFeedTask().execute("http://tech2ipo.com/feed");
+//        new LoadFeedTask().execute("http://www.ifanr.com/feed");
+//        new LoadFeedTask().execute("http://feed.cnblogs.com/blog/sitehome/rss");
+//        new LoadFeedTask().execute("http://www.cnbeta.com/backend.php");
+//        new LoadFeedTask().execute("http://blog.csdn.net/rss.html?type=Home&channel=");
     }
     
     
@@ -84,6 +90,7 @@ public class ViewPagerDemoActivity extends Activity implements OnPageChangeListe
 			URL url;
 			try {
 				url = new URL(params[0]);
+				Log.d(TAG, "url - " + url);
 				return RssReader.read(url);
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
@@ -148,6 +155,8 @@ public class ViewPagerDemoActivity extends Activity implements OnPageChangeListe
     		mWebViews = new LinkedList<WebView>();
     		for (int i = 0; i < 4; i++) {
             	WebView webView = new WebView(context);
+            	WebSettings webSettings = webView.getSettings();
+            	webSettings.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
             	mWebViews.add(webView);
             }
     		mFeed = feed;
@@ -171,7 +180,11 @@ public class ViewPagerDemoActivity extends Activity implements OnPageChangeListe
 			
 			WebView webView = mWebViews.remove();
 			
-			webView.loadDataWithBaseURL(null, HtmlBuilder.buildHtml(item.getContent()), "text/html", "utf-8", null);
+			final String html = HtmlBuilder.buildHtml(item.getContent());
+			
+			Log.d(TAG, html);
+			
+            webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
 			container.addView(webView);
 			return webView;
 		}

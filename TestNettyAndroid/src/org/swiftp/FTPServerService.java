@@ -70,6 +70,7 @@ public class FTPServerService extends Service implements Runnable {
     protected ServerSocket listenSocket;
 
     protected static WifiLock wifiLock = null;
+    PowerManager.WakeLock wakeLock;
 
     // protected static InetAddress serverAddress = null;
 
@@ -100,8 +101,6 @@ public class FTPServerService extends Service implements Runnable {
     private List<SessionThread> sessionThreads = new ArrayList<SessionThread>();
 
     private static SharedPreferences settings = null;
-
-    PowerManager.WakeLock wakeLock;
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -208,10 +207,9 @@ public class FTPServerService extends Service implements Runnable {
         }
 
         UiUpdater.updateClients();
-        if (wifiLock != null) {
-            wifiLock.release();
-            wifiLock = null;
-        }
+        
+        releaseWifiLock();
+        
         clearNotification();
         unregisterReceiver(mReceiver);
         myLog.d("FTPServerService.onDestroy() finished");
@@ -449,54 +447,59 @@ public class FTPServerService extends Service implements Runnable {
     }
 
     private void takeWakeLock() {
-        if (wakeLock == null) {
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-
-            // Many (all?) devices seem to not properly honor a
-            // PARTIAL_WAKE_LOCK,
-            // which should prevent CPU throttling. This has been
-            // well-complained-about on android-developers.
-            // For these devices, we have a config option to force the phone
-            // into a
-            // full wake lock.
-            if (fullWake) {
-                wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, WAKE_LOCK_TAG);
-            } else {
-                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG);
-            }
-            wakeLock.setReferenceCounted(false);
-        }
-        myLog.d("Acquiring wake lock");
-        wakeLock.acquire();
+//        if (wakeLock == null) {
+//            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+//
+//            // Many (all?) devices seem to not properly honor a
+//            // PARTIAL_WAKE_LOCK,
+//            // which should prevent CPU throttling. This has been
+//            // well-complained-about on android-developers.
+//            // For these devices, we have a config option to force the phone
+//            // into a
+//            // full wake lock.
+//            if (fullWake) {
+//                wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, WAKE_LOCK_TAG);
+//            } else {
+//                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG);
+//            }
+//            wakeLock.setReferenceCounted(false);
+//            myLog.d("Acquiring wake lock");
+//            wakeLock.acquire();
+//            myLog.d("Acquired wake lock");
+//        }
     }
 
     private void releaseWakeLock() {
-        myLog.d("Releasing wake lock");
-        if (wakeLock != null) {
-            wakeLock.release();
-            wakeLock = null;
-            myLog.d("Finished releasing wake lock");
-        } else {
-            myLog.i("Couldn't release null wake lock");
-        }
+//        myLog.d("Releasing wake lock");
+//        if (wakeLock != null && wakeLock.isHeld()) {
+//            wakeLock.release();
+//            wakeLock = null;
+//            myLog.d("Finished releasing wake lock");
+//        } else {
+//            myLog.i("Couldn't release null wake lock");
+//        }
     }
 
     private void takeWifiLock() {
-        myLog.d("Taking wifi lock");
-        if (wifiLock == null) {
-            WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-            wifiLock = manager.createWifiLock("SwiFTP");
-            wifiLock.setReferenceCounted(false);
-        }
-        wifiLock.acquire();
+//        if (wifiLock == null) {
+//            WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+//            wifiLock = manager.createWifiLock("SwiFTP");
+//            wifiLock.setReferenceCounted(false);
+//            myLog.d("Taking wifi lock");
+//            wifiLock.acquire();
+//            myLog.d("Taked wifi lock");
+//        }
     }
 
     private void releaseWifiLock() {
-        myLog.d("Releasing wifi lock");
-        if (wifiLock != null) {
-            wifiLock.release();
-            wifiLock = null;
-        }
+//        myLog.d("Releasing wifi lock");
+//        if (wifiLock != null && wifiLock.isHeld()) {
+//            wifiLock.release();
+//            wifiLock = null;
+//            myLog.d("Finished releasing wifi lock");
+//        } else {
+//            myLog.i("Couldn't release null wifi lock");
+//        }
     }
 
     public void errorShutdown() {
