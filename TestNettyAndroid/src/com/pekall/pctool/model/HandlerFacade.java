@@ -754,7 +754,7 @@ public class HandlerFacade {
         Slog.d("queryCalendar E");
 
         List<CalendarInfo> calendarInfoList = CalendarUtil
-                .queryCalendarAll(mContext);
+                .queryAllCalendars(mContext);
 
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CALENDAR);
@@ -798,7 +798,7 @@ public class HandlerFacade {
             eventInfoList = CalendarUtil.queryEventsByCalendarId(mContext, calendarId);
         } else {
             Slog.i("calendar id not provided");
-            eventInfoList = CalendarUtil.queryEvents(mContext);
+            eventInfoList = CalendarUtil.queryAllEvents(mContext);
         }
 
         AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
@@ -844,7 +844,7 @@ public class HandlerFacade {
 
             EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
 
-            final long newEventId = CalendarUtil.addEvent(mContext, eventInfo);
+            final long newEventId = CalendarUtil.addEvent(mContext, eventInfo, /* don't add to default calendar */false);
             if (newEventId > 0) {
                 AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder(agendaRecord);
                 agendaRecordBuilder.setId(newEventId);
@@ -1063,7 +1063,7 @@ public class HandlerFacade {
                 case PC_ADD: {
                     EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
                     
-                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo, /* add to default calendar */true);
                     if (eventInfoId > 0) {
                         long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
                         
@@ -1122,7 +1122,7 @@ public class HandlerFacade {
         
         AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
         
-        List<EventInfo> eventInfos = CalendarUtil.queryEvents(mContext);
+        List<EventInfo> eventInfos = CalendarUtil.queryAllEvents(mContext);
         
         Slog.d("eventInfos count = " + eventInfos.size());
 
@@ -1156,7 +1156,7 @@ public class HandlerFacade {
         if (fastSync) {
             eventInfos = FastSyncUtils.findChangedEvents(mContext);
         } else {
-            eventInfos = CalendarUtil.queryEvents(mContext);
+            eventInfos = CalendarUtil.queryAllEvents(mContext);
         }
         
         AgendaSync.Builder agendaSyncBuilder = AgendaSync.newBuilder();
@@ -1219,7 +1219,7 @@ public class HandlerFacade {
                 case PC_ADD: {
                     EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
                     
-                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo, /* add to default calendar */true);
                     if (eventInfoId > 0) {
                         long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
                         

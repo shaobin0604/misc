@@ -91,27 +91,28 @@ public class ContactUtil {
      * @return {@link Contact} id or zero if cannot find the {@link Contact}
      */
     public static long getRawContactId(Context context, String number) {
-        Cursor c = null;
+        // TODO: filter deleted contacts
+        Cursor cursor = null;
         try {
-            c = context.getContentResolver().query(Phone.CONTENT_URI,
+            cursor = context.getContentResolver().query(Phone.CONTENT_URI,
                     new String[] {
                             Phone.RAW_CONTACT_ID, Phone.NUMBER
                     }, null, null, null);
-            if (c != null && c.moveToFirst()) {
-                while (!c.isAfterLast()) {
-                    if (PhoneNumberUtils.compare(number, c.getString(/*
-                                                                      * Phone.NUMBER
-                                                                      */1))) {
-                        return c.getLong(/* Phone.RAW_CONTACT_ID */0);
+            if (cursor != null && cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    final String phoneNumber = cursor.getString(1);
+                    if (PhoneNumberUtils.compare(number, phoneNumber)) {
+                        final long rawContactId = cursor.getLong(/* Phone.RAW_CONTACT_ID */0);
+                        return rawContactId;
                     }
-                    c.moveToNext();
+                    cursor.moveToNext();
                 }
             }
         } catch (Exception e) {
-            Slog.e("getContactId error:", e);
+            Slog.e("getRawContactId error:", e);
         } finally {
-            if (c != null) {
-                c.close();
+            if (cursor != null) {
+                cursor.close();
             }
         }
         return 0;

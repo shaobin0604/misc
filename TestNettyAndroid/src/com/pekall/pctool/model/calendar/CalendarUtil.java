@@ -34,6 +34,9 @@ public class CalendarUtil {
     private static final String DEFAULT_TIME_ZONE = TimeZone.getDefault().getID();
 
     public static final int INVALID_CALENDAR_ID = -1;
+    
+    private static final String SYNC_CALENDAR_ACCOUNT_TYPE_GOOGLE = "com.google";
+    private static final String SYNC_CALENDAR_ACCOUNT_TYPE_EXCHANGE = "com.android.exchange";
 
     /**
      * account
@@ -42,10 +45,13 @@ public class CalendarUtil {
     private static final String CALENDAR_DEFAULT_NAME = "local calendar";
 
     public static long getDefaultCalendarId(Context context) {
-        List<CalendarInfo> calendarInfos = queryCalendarAll(context);
+        List<CalendarInfo> calendarInfos = queryAllCalendars(context);
         if (calendarInfos.size() > 0) {
             // get the first calendar as default calendar for outlook sync 
             CalendarInfo calendarInfo = calendarInfos.get(0);
+            
+            Slog.d("get default calendar: " + calendarInfo);
+            
             return calendarInfo.caId;
         } else {
             // add a calendar as default calendar for outlook sync
@@ -55,41 +61,30 @@ public class CalendarUtil {
             return addCalendar(context, calendarInfo);
         }
     }
+    
+    /**
+     * Query all non-sync calendars
+     * 
+     * @param context
+     * @return all non-sync calendars
+     */
+    public static List<CalendarInfo> queryPhoneCalendars(Context context) {
+        StringBuilder selectionBuilder = new StringBuilder();
+        selectionBuilder.append(Calendars.ACCOUNT_TYPE);
+        selectionBuilder.append(" NOT IN ('");
+        selectionBuilder.append(SYNC_CALENDAR_ACCOUNT_TYPE_GOOGLE);
+        selectionBuilder.append("', '");
+        selectionBuilder.append(SYNC_CALENDAR_ACCOUNT_TYPE_EXCHANGE);
+        selectionBuilder.append("')");
+        
+        return queryCalendars(context, selectionBuilder.toString(), null);
+    }
 
     /**
      * 查询所有日历(所有账户的日历)
      */
-    public static List<CalendarInfo> queryCalendarAll(Context context) {
-        List<CalendarInfo> calendarInfoList = new ArrayList<CalendarInfo>();
-        
-        Cursor cursor = context.getContentResolver().query(Calendars.CONTENT_URI, new String[] {
-                Calendars._ID, Calendars.CALENDAR_DISPLAY_NAME, Calendars.ACCOUNT_NAME, Calendars.ACCOUNT_TYPE
-        }, null, null, null);
-        
-        if (cursor != null) {
-            try {
-                if (cursor.moveToFirst()) {
-                    final int PROJECTION_CALENDAR_ID_INDEX = cursor.getColumnIndex(Calendars._ID);
-                    final int PROJECTION_CALENDAR_NAME_INDEX = cursor.getColumnIndex(Calendars.CALENDAR_DISPLAY_NAME);
-                    final int PROJECTION_ACCOUNT_NAME_INDEX = cursor.getColumnIndex(Calendars.ACCOUNT_NAME);
-                    final int PROJECTION_ACCOUNT_TYPE_INDEX = cursor.getColumnIndex(Calendars.ACCOUNT_TYPE);
-                    
-                    do {
-                        CalendarInfo ci = new CalendarInfo();
-                        
-                        ci.caId = cursor.getLong(PROJECTION_CALENDAR_ID_INDEX);
-                        ci.name = cursor.getString(PROJECTION_CALENDAR_NAME_INDEX);
-                        ci.accountInfo.accountName = cursor.getString(PROJECTION_ACCOUNT_NAME_INDEX);
-                        ci.accountInfo.accountType = cursor.getString(PROJECTION_ACCOUNT_TYPE_INDEX);
-                        
-                        calendarInfoList.add(ci);
-                    } while (cursor.moveToNext());
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        return calendarInfoList;
+    public static List<CalendarInfo> queryAllCalendars(Context context) {
+        return queryCalendars(context, null, null);
     }
 
     /**
@@ -130,6 +125,42 @@ public class CalendarUtil {
         }
         return calendarInfoList;
     }
+    
+    public static List<CalendarInfo> queryCalendars(Context context, String selection, String[] selectionArgs) {
+        List<CalendarInfo> calendars = new ArrayList<CalendarInfo>();
+
+        final String[] projection = {
+                Calendars._ID, Calendars.CALENDAR_DISPLAY_NAME, Calendars.ACCOUNT_NAME, Calendars.ACCOUNT_TYPE
+        };
+        
+        final String sortOrder = Calendars._ID + " ASC";
+        Cursor cursor = context.getContentResolver().query(Calendars.CONTENT_URI, projection, selection, selectionArgs, sortOrder);
+        
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    final int PROJECTION_CALENDAR_ID_INDEX = cursor.getColumnIndex(Calendars._ID);
+                    final int PROJECTION_CALENDAR_NAME_INDEX = cursor.getColumnIndex(Calendars.CALENDAR_DISPLAY_NAME);
+                    final int PROJECTION_ACCOUNT_NAME_INDEX = cursor.getColumnIndex(Calendars.ACCOUNT_NAME);
+                    final int PROJECTION_ACCOUNT_TYPE_INDEX = cursor.getColumnIndex(Calendars.ACCOUNT_TYPE);
+                    
+                    do {
+                        CalendarInfo ci = new CalendarInfo();
+                        
+                        ci.caId = cursor.getLong(PROJECTION_CALENDAR_ID_INDEX);
+                        ci.name = cursor.getString(PROJECTION_CALENDAR_NAME_INDEX);
+                        ci.accountInfo.accountName = cursor.getString(PROJECTION_ACCOUNT_NAME_INDEX);
+                        ci.accountInfo.accountType = cursor.getString(PROJECTION_ACCOUNT_TYPE_INDEX);
+                        
+                        calendars.add(ci);
+                    } while (cursor.moveToNext());
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        return calendars;
+    }
 
     /**
      * 修改一个日历
@@ -153,23 +184,33 @@ public class CalendarUtil {
      * 
      * @param context
      * @param eventInfo
+     * @param isAddToDefaultCalendar
+     * 
      * @return the new created Event id or -1 if error
      */
-    public static long addEvent(Context context, EventInfo eventInfo) {
+    public static long addEvent(Context context, EventInfo eventInfo, boolean isAddToDefaultCalendar) {
         Slog.d("addEvent E");
 
         // Slog.d("===== dump EventInfo =====");
         // Slog.d(eventInfo.toString());
+        
+        long calendarId = -1;
+        
+        if (isAddToDefaultCalendar) {
+            calendarId = getDefaultCalendarId(context);
+        } else {
+            calendarId = eventInfo.calendarId;
+        }
 
-        if (eventInfo.calendarId < 0) {
-            Slog.e("Error calendarId: " + eventInfo.calendarId);
+        if (calendarId < 0) {
+            Slog.e("Error calendarId: " + calendarId);
             return -1;
         }
         ContentValues eventValues = new ContentValues();
         eventValues.put(Events.TITLE, eventInfo.title);
         eventValues.put(Events.DESCRIPTION, eventInfo.note);
         eventValues.put(Events.EVENT_LOCATION, eventInfo.place);
-        eventValues.put(Events.CALENDAR_ID, eventInfo.calendarId);
+        eventValues.put(Events.CALENDAR_ID, calendarId);
         eventValues.put(Events.EVENT_TIMEZONE, DEFAULT_TIME_ZONE);
         eventValues.put(Events.DTSTART, eventInfo.startTime);
         eventValues.put(Events.RRULE, eventInfo.rrule);
@@ -360,7 +401,7 @@ public class CalendarUtil {
     }
 
     public static List<EventVersion> getEventVersions(Context context) {
-        List<EventInfo> eventInfos = queryEvents(context);
+        List<EventInfo> eventInfos = queryAllEvents(context);
 
         List<EventVersion> eventVersions = new ArrayList<EventInfo.EventVersion>();
 
@@ -396,8 +437,19 @@ public class CalendarUtil {
         }
         return ids;
     }
+    
+    /**
+     * Query all local calendar events, exclude following sync calendar: google, exchange
+     * 
+     * @param context
+     * @return
+     */
+    public static List<EventInfo> queryPhoneEvents(Context context) {
+        
+        return null;
+    }
 
-    public static List<EventInfo> queryEvents(Context context) {
+    public static List<EventInfo> queryAllEvents(Context context) {
         return queryEventsByCalendarId(context, 0);
     }
 
@@ -406,8 +458,8 @@ public class CalendarUtil {
      * Note: synchronization when only set an account can query the account the
      * following event
      * 
-     * @param cr
      * @param context
+     * @param calendarId
      * @return
      */
     public static List<EventInfo> queryEventsByCalendarId(Context context, long calendarId) {

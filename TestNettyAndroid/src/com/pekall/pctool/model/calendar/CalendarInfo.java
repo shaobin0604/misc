@@ -7,4 +7,10 @@ public class CalendarInfo {
     public long caId;
     public String name;
     public AccountInfo accountInfo = new AccountInfo();
+    
+    @Override
+    public String toString() {
+        return "CalendarInfo [caId=" + caId + ", name=" + name + ", accountInfo=" + accountInfo + "]";
+    }
+    
 }
