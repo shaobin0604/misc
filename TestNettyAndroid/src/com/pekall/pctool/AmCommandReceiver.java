@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.pekall.pctool.util.Slog;
+
 public class AmCommandReceiver extends BroadcastReceiver {
     public static final String ACTION_MAIN_SERVER_START = "com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_START";
     public static final String ACTION_MAIN_SERVER_STOP  = "com.pekall.pctool.AmCommandReceiver.ACTION_MAIN_SERVER_STOP";

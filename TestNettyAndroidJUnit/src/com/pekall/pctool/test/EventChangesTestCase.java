@@ -2,12 +2,12 @@ package com.pekall.pctool.test;
 
 import android.test.AndroidTestCase;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.DatabaseHelper;
 import com.pekall.pctool.model.FastSyncUtils;
 import com.pekall.pctool.model.calendar.CalendarUtil;
 import com.pekall.pctool.model.calendar.EventInfo;
 import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
+import com.pekall.pctool.util.Slog;
 
 import java.util.Date;
 import java.util.List;

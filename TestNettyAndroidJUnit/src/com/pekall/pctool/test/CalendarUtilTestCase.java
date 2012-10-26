@@ -3,10 +3,10 @@ package com.pekall.pctool.test;
 
 import android.test.AndroidTestCase;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.calendar.CalendarInfo;
 import com.pekall.pctool.model.calendar.CalendarUtil;
 import com.pekall.pctool.model.calendar.EventInfo;
+import com.pekall.pctool.util.Slog;
 
 import junit.framework.Assert;
 

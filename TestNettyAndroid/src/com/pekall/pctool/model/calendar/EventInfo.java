@@ -3,8 +3,8 @@ package com.pekall.pctool.model.calendar;
 
 import android.provider.BaseColumns;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
+import com.pekall.pctool.util.Slog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -2,8 +2,8 @@ package com.pekall.pctool.test;
 
 import android.test.AndroidTestCase;
 
-import com.pekall.pctool.Slog;
-import com.pekall.pctool.WifiUtil;
+import com.pekall.pctool.util.Slog;
+import com.pekall.pctool.util.WifiUtil;
 
 import java.util.Arrays;
 

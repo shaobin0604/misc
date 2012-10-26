@@ -10,7 +10,6 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 import com.google.protobuf.ByteString;
 import com.pekall.pctool.ServerController;
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.app.AppInfo;
 import com.pekall.pctool.model.app.AppUtil;
@@ -68,6 +67,8 @@ import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy;
 import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
 import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
+import com.pekall.pctool.util.DeviceInfoUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -307,15 +308,23 @@ public class HandlerFacade {
         responseBuilder.setCmdType(cmdRequest.getCmdType());
         
         if (cmdRequest.hasConnectParam()) {
-            
             ConnectParam connectParam = cmdRequest.getConnectParam();
             final ConnectType connectType = connectParam.getConnectType();
             String hostname = connectParam.getHostName();
+            
+            ConnectParam.Builder connectResultBuilder = ConnectParam.newBuilder();
+            connectResultBuilder.setConnectType(connectType);
+            connectResultBuilder.setDeviceModel(DeviceInfoUtil.getDeviceModel());
+            connectResultBuilder.setDeviceImei(DeviceInfoUtil.getDeviceUuid(mContext));
+            
             switch (connectType) {
                 case USB: {
                     ServerController.setServiceState(ServerController.STATE_CONNECTED);
                     ServerController.setHostname(hostname);
                     ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
+                    
+                    responseBuilder.setConnectResult(connectResultBuilder);
+                    
                     setResultOK(responseBuilder);
                     break;
                 }
@@ -326,6 +335,9 @@ public class HandlerFacade {
                             ServerController.setServiceState(ServerController.STATE_CONNECTED);
                             ServerController.setHostname(hostname);
                             ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
+                            
+                            responseBuilder.setConnectResult(connectResultBuilder);
+                            
                             setResultOK(responseBuilder);
                         } else {
                             setResultErrorAuthFail(responseBuilder, "secret");

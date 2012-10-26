@@ -30,7 +30,6 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact.AddressInfo;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
@@ -41,6 +40,7 @@ import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.Contact.RawContact;
+import com.pekall.pctool.util.Slog;
 
 import java.util.ArrayList;
 import java.util.Collection;

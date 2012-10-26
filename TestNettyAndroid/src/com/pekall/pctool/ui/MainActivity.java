@@ -27,8 +27,8 @@ import android.widget.ViewFlipper;
 
 import com.pekall.pctool.R;
 import com.pekall.pctool.ServerController;
-import com.pekall.pctool.Slog;
-import com.pekall.pctool.WifiUtil;
+import com.pekall.pctool.util.Slog;
+import com.pekall.pctool.util.WifiUtil;
 
 public class MainActivity extends Activity implements OnClickListener {
     private static final int FRAME_USB = 0;

@@ -4,7 +4,6 @@ package com.pekall.pctool.test;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.test.AndroidTestCase;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.GroupInfo;
@@ -13,6 +12,7 @@ import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.util.Collection;
 import java.util.List;

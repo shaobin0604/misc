@@ -25,7 +25,7 @@ import java.lang.reflect.Constructor;
 
 import android.util.Log;
 
-import com.pekall.pctool.Slog;
+import com.pekall.pctool.util.Slog;
 
 public abstract class FtpCmd implements Runnable {
 	protected SessionThread sessionThread;

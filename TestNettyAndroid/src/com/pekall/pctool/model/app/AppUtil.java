@@ -14,7 +14,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
-import com.pekall.pctool.Slog;
+import com.pekall.pctool.util.Slog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

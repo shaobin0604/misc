@@ -13,8 +13,8 @@ import android.os.RemoteException;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.util.ArrayList;
 import java.util.List;

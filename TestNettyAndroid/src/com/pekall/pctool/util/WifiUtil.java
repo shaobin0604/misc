@@ -1,4 +1,4 @@
-package com.pekall.pctool;
+package com.pekall.pctool.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

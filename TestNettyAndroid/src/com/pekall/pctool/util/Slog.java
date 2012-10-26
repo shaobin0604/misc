@@ -1,4 +1,4 @@
-package com.pekall.pctool;
+package com.pekall.pctool.util;
 
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;

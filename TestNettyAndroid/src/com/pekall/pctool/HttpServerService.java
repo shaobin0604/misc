@@ -20,6 +20,8 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
 import com.pekall.pctool.ui.MainActivity;
+import com.pekall.pctool.util.Slog;
+import com.pekall.pctool.util.VersionUtil;
 
 public class HttpServerService extends Service {
 
@@ -33,6 +35,10 @@ public class HttpServerService extends Service {
     public void onCreate() {
         Slog.d("onCreate E");
         super.onCreate();
+
+        Slog.d(String.format("PekallPhoneManager, versionName: %s, versionCode: %d", VersionUtil.getVersionName(this),
+                VersionUtil.getVersionCode(this)));
+
         Slog.d("onCreate X");
     }
 
@@ -50,7 +56,7 @@ public class HttpServerService extends Service {
             } else {
                 acquireWifiLock();
             }
-            
+
             acquireWakeLock();
 
             int noteTickerResId = isUsbMode ? R.string.note_ticker_usb_start : R.string.note_ticker_wifi_start;
@@ -94,7 +100,7 @@ public class HttpServerService extends Service {
         } else {
             releaseWifiLock();
         }
-        
+
         releaseWakeLock();
 
         ServerController.setServiceState(STATE_STOP);
@@ -170,7 +176,7 @@ public class HttpServerService extends Service {
             Slog.d("Released wake lock");
         }
     }
-    
+
     private void acquireWifiLock() {
         if (mWifiLock == null) {
             Slog.d("Acquiring wifi lock");

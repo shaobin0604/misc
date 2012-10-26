@@ -23,7 +23,7 @@ import java.io.File;
 
 import android.util.Log;
 
-import com.pekall.pctool.Slog;
+import com.pekall.pctool.util.Slog;
 
 public class CmdDELE extends FtpCmd implements Runnable {
 	protected String input; 

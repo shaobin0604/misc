@@ -3,7 +3,6 @@ package com.pekall.pctool.model;
 import android.content.Context;
 import android.content.Intent;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.UpdateVersionDBService;
 import com.pekall.pctool.model.calendar.CalendarUtil;
 import com.pekall.pctool.model.calendar.EventInfo;
@@ -12,6 +11,7 @@ import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.util.ArrayList;
 import java.util.List;

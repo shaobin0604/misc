@@ -25,10 +25,10 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.ContactUtil;
 import com.pekall.pctool.model.mms.Mms.Attachment;
 import com.pekall.pctool.model.mms.Mms.Slide;
+import com.pekall.pctool.util.Slog;
 
 public class MmsUtil {
     static final Uri MAIN_MMS_URI = Uri.parse("content://mms");
