@@ -1,4 +1,4 @@
-package com.pekall.pctool;
+package com.pekall.pctool.util;
 
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
@@ -10,7 +10,7 @@ import static android.util.Log.WARN;
  */
 
 public final class Slog {
-	private static String TAG = "TestNettyAndroid";
+	private static String TAG = "PekallPhoneManager";
 
 	private static boolean USE_DETAIL_LOG = true;	
 	private static boolean USE_IS_LOGGABLE = false;

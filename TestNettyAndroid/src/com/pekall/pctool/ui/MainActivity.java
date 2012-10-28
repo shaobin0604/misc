@@ -27,8 +27,8 @@ import android.widget.ViewFlipper;
 
 import com.pekall.pctool.R;
 import com.pekall.pctool.ServerController;
-import com.pekall.pctool.Slog;
-import com.pekall.pctool.WifiUtil;
+import com.pekall.pctool.util.Slog;
+import com.pekall.pctool.util.WifiUtil;
 
 public class MainActivity extends Activity implements OnClickListener {
     private static final int FRAME_USB = 0;
@@ -88,6 +88,8 @@ public class MainActivity extends Activity implements OnClickListener {
                         } else {
                         	setWifiModeState(true);
                             mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
+                            mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
+                            mTvWifiSecret.setVisibility(View.VISIBLE);
                             mViewFlipper.setDisplayedChild(FRAME_WIFI);
                         }
                         break;
@@ -175,10 +177,21 @@ public class MainActivity extends Activity implements OnClickListener {
                 } else {
                     setWifiModeState(true);
                     mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
+                    mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
+                    mTvWifiSecret.setVisibility(View.VISIBLE);
                 }
                 break;
             }
-            case STATE_DISCONNECTED:
+            case STATE_DISCONNECTED: {
+                if (ServerController.isUsbMode()) {
+                    setUsbModeState(true);
+                    mTvUsbStatus.setText(R.string.text_usb_in_service);
+                } else {
+                    setWifiModeState(true);
+                    mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                }
+                break;
+            }
             case STATE_STOP: {
                  mTvWifiStatus.setText(R.string.text_wifi_tips);
                  mTvWifiSecret.setVisibility(View.INVISIBLE);

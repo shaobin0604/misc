@@ -61,11 +61,13 @@ public class Main {
     // private static final String HOME_DIR = "/home/shaobin";
 
     public static void main(String[] args) throws Exception {
-        setup();
+        //setup();
         
-        testUninstallAppInWifiMode();
+        //testUninstallAppInWifiMode();
         
-        teardown();
+        //teardown();
+        
+        testConnectViaWifi();
     }
     
     private static void setup() throws Exception {
@@ -445,11 +447,11 @@ public class Main {
 
         ConnectParam.Builder connectParamBuilder = ConnectParam.newBuilder();
         connectParamBuilder.setConnectType(ConnectType.WIFI);
-        connectParamBuilder.setSecret("Zw==");
+        connectParamBuilder.setSecret("Zg==");
 
         cmdRequestBuilder.setConnectParam(connectParamBuilder);
 
-        String address = "192.168.40.103";
+        String address = "192.168.40.102";
 
         postCmdRequest(address, cmdRequestBuilder, true);
     }

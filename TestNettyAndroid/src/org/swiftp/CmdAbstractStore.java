@@ -31,7 +31,7 @@ import java.io.IOException;
 
 import android.util.Log;
 
-import com.pekall.pctool.Slog;
+import com.pekall.pctool.util.Slog;
 
 
 abstract public class CmdAbstractStore extends FtpCmd {

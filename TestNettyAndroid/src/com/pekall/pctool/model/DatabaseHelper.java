@@ -9,9 +9,9 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
+import com.pekall.pctool.util.Slog;
 
 import java.util.Collections;
 import java.util.HashMap;

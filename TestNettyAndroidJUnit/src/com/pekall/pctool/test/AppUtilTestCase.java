@@ -3,10 +3,10 @@ package com.pekall.pctool.test;
 import java.io.File;
 import java.util.List;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.app.AppInfo;
 import com.pekall.pctool.model.app.AppUtil;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
+import com.pekall.pctool.util.Slog;
 
 import android.test.AndroidTestCase;
 

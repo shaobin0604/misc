@@ -57,7 +57,9 @@ message ConnectParam
 	}
 	required ConnectType		connect_type = 1;
 	optional string				secret = 2;			// 配对码，仅在WIFI模式下需要
-	optional string				host_name = 3;		// PC 主机名
+    optional string				host_name = 3;		// PC 主机名
+	optional string				device_model = 4;	// 手机名
+	optional string				device_imei = 5;	// 手机IMEI号码
 }
 
 message AppRecord
@@ -417,4 +419,5 @@ message CmdResponse
 	repeated GroupRecord	group_record = 11;		//联系人分组记录列表
 	optional ContactsSync	contacts_sync = 12; 	//联系人同步
 	optional AgendaSync		agenda_sync = 13;  		//日程同步
+	optional ConnectParam	connect_result = 14;    //返回的连接信息
 }

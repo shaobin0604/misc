@@ -25,7 +25,6 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.RawContacts;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact.AddressInfo;
 import com.pekall.pctool.model.contact.Contact.EmailInfo;
@@ -33,6 +32,7 @@ import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
+import com.pekall.pctool.util.Slog;
 
 import java.util.ArrayList;
 import java.util.Iterator;

@@ -8,6 +8,8 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.IBinder;
 
+import com.pekall.pctool.util.Slog;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

@@ -5,9 +5,9 @@ package com.pekall.pctool.test;
 
 import android.test.AndroidTestCase;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.ContactUtilOld1;
+import com.pekall.pctool.util.Slog;
 
 import java.util.List;
 

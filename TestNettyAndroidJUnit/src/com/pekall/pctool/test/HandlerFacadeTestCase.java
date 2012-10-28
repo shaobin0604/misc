@@ -4,7 +4,6 @@ import android.provider.ContactsContract.CommonDataKinds;
 import android.test.AndroidTestCase;
 import android.text.format.Time;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.HandlerFacade;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.ContactUtil;
@@ -30,6 +29,7 @@ import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
 import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
 import com.pekall.pctool.protos.MsgDefProtos.SyncType;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
+import com.pekall.pctool.util.Slog;
 
 import java.io.FileOutputStream;
 import java.util.Date;

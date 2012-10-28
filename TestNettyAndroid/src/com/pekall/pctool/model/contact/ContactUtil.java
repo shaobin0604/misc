@@ -30,7 +30,6 @@ import android.provider.ContactsContract.RawContactsEntity;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact.AddressInfo;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
@@ -39,6 +38,7 @@ import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
+import com.pekall.pctool.util.Slog;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,9 +53,14 @@ import java.util.Set;
 
 public class ContactUtil {
     
+    private static final String CONTACTS_ACCOUNT_TYPE_SIM = "contacts.account.type.sim";
+
+    private static final boolean DUMP_PARAMS = true;
+    
     private static final String GOOGLE_GROUP_STARRED_IN_ANDROID = "Starred in Android";
     private static final String GOOGLE_GROUP_MY_CONTACTS = "My Contacts";
     private static final String ACCOUNT_TYPE_GOOGLE = "com.google";
+    
     private static final String HUAWEI_T8808D_MODEL = "HUAWEI T8808D";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_NAME = "Phone";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_TYPE = "com.android.huawei.phone";
@@ -64,7 +69,8 @@ public class ContactUtil {
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_NAME = "contacts.account.name.local";
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_TYPE = "contacts.account.type.local";
     
-    private static final boolean DUMP_PARAMS = true;
+    
+    private static final boolean DISABLE_SIM_CONTACTS = true; // FIXME: disable sim contacts for bug 9863
 
     //
     //
@@ -85,27 +91,28 @@ public class ContactUtil {
      * @return {@link Contact} id or zero if cannot find the {@link Contact}
      */
     public static long getRawContactId(Context context, String number) {
-        Cursor c = null;
+        // TODO: filter deleted contacts
+        Cursor cursor = null;
         try {
-            c = context.getContentResolver().query(Phone.CONTENT_URI,
+            cursor = context.getContentResolver().query(Phone.CONTENT_URI,
                     new String[] {
                             Phone.RAW_CONTACT_ID, Phone.NUMBER
                     }, null, null, null);
-            if (c != null && c.moveToFirst()) {
-                while (!c.isAfterLast()) {
-                    if (PhoneNumberUtils.compare(number, c.getString(/*
-                                                                      * Phone.NUMBER
-                                                                      */1))) {
-                        return c.getLong(/* Phone.RAW_CONTACT_ID */0);
+            if (cursor != null && cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    final String phoneNumber = cursor.getString(1);
+                    if (PhoneNumberUtils.compare(number, phoneNumber)) {
+                        final long rawContactId = cursor.getLong(/* Phone.RAW_CONTACT_ID */0);
+                        return rawContactId;
                     }
-                    c.moveToNext();
+                    cursor.moveToNext();
                 }
             }
         } catch (Exception e) {
-            Slog.e("getContactId error:", e);
+            Slog.e("getRawContactId error:", e);
         } finally {
-            if (c != null) {
-                c.close();
+            if (cursor != null) {
+                cursor.close();
             }
         }
         return 0;
@@ -1217,8 +1224,16 @@ public class ContactUtil {
     }
 
     public static Collection<Contact> getAllContacts(Context context) {
-        String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG;
+        String selection = null;
         String[] selectionArgs = null;
+        
+        if (DISABLE_SIM_CONTACTS) {
+            selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_TYPE + "!=?";
+            selectionArgs = new String[] {String.valueOf(RAW_CONTACT_DELETE_FLAG), CONTACTS_ACCOUNT_TYPE_SIM};
+        } else {
+            selection = RawContacts.DELETED + "!=?";
+            selectionArgs = new String[] {String.valueOf(RAW_CONTACT_DELETE_FLAG)};
+        }
 
         return getContactsFast(context, selection, selectionArgs);
     }

@@ -10,7 +10,6 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
 import com.google.protobuf.ByteString;
 import com.pekall.pctool.ServerController;
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.app.AppInfo;
 import com.pekall.pctool.model.app.AppUtil;
@@ -68,6 +67,8 @@ import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy;
 import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
 import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
+import com.pekall.pctool.util.DeviceInfoUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -307,15 +308,23 @@ public class HandlerFacade {
         responseBuilder.setCmdType(cmdRequest.getCmdType());
         
         if (cmdRequest.hasConnectParam()) {
-            
             ConnectParam connectParam = cmdRequest.getConnectParam();
             final ConnectType connectType = connectParam.getConnectType();
             String hostname = connectParam.getHostName();
+            
+            ConnectParam.Builder connectResultBuilder = ConnectParam.newBuilder();
+            connectResultBuilder.setConnectType(connectType);
+            connectResultBuilder.setDeviceModel(DeviceInfoUtil.getDeviceModel());
+            connectResultBuilder.setDeviceImei(DeviceInfoUtil.getDeviceUuid(mContext));
+            
             switch (connectType) {
                 case USB: {
                     ServerController.setServiceState(ServerController.STATE_CONNECTED);
                     ServerController.setHostname(hostname);
                     ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
+                    
+                    responseBuilder.setConnectResult(connectResultBuilder);
+                    
                     setResultOK(responseBuilder);
                     break;
                 }
@@ -326,6 +335,9 @@ public class HandlerFacade {
                             ServerController.setServiceState(ServerController.STATE_CONNECTED);
                             ServerController.setHostname(hostname);
                             ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
+                            
+                            responseBuilder.setConnectResult(connectResultBuilder);
+                            
                             setResultOK(responseBuilder);
                         } else {
                             setResultErrorAuthFail(responseBuilder, "secret");
@@ -754,7 +766,7 @@ public class HandlerFacade {
         Slog.d("queryCalendar E");
 
         List<CalendarInfo> calendarInfoList = CalendarUtil
-                .queryCalendarAll(mContext);
+                .queryAllCalendars(mContext);
 
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_CALENDAR);
@@ -798,7 +810,7 @@ public class HandlerFacade {
             eventInfoList = CalendarUtil.queryEventsByCalendarId(mContext, calendarId);
         } else {
             Slog.i("calendar id not provided");
-            eventInfoList = CalendarUtil.queryEvents(mContext);
+            eventInfoList = CalendarUtil.queryAllEvents(mContext);
         }
 
         AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
@@ -844,7 +856,7 @@ public class HandlerFacade {
 
             EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
 
-            final long newEventId = CalendarUtil.addEvent(mContext, eventInfo);
+            final long newEventId = CalendarUtil.addEvent(mContext, eventInfo, /* don't add to default calendar */false);
             if (newEventId > 0) {
                 AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder(agendaRecord);
                 agendaRecordBuilder.setId(newEventId);
@@ -980,6 +992,9 @@ public class HandlerFacade {
         return responseBuilder.build();
     }
     
+    /*
+     * Only sync with local account
+     */
     private void handleSyncAgendaWithOutlook(AgendaSync agendaSync, Builder responseBuilder) {
         Slog.d("handleSyncAgendaWithOutlook E");
         
@@ -1060,7 +1075,7 @@ public class HandlerFacade {
                 case PC_ADD: {
                     EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
                     
-                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo, /* add to default calendar */true);
                     if (eventInfoId > 0) {
                         long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
                         
@@ -1119,7 +1134,7 @@ public class HandlerFacade {
         
         AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder();
         
-        List<EventInfo> eventInfos = CalendarUtil.queryEvents(mContext);
+        List<EventInfo> eventInfos = CalendarUtil.queryAllEvents(mContext);
         
         Slog.d("eventInfos count = " + eventInfos.size());
 
@@ -1153,7 +1168,7 @@ public class HandlerFacade {
         if (fastSync) {
             eventInfos = FastSyncUtils.findChangedEvents(mContext);
         } else {
-            eventInfos = CalendarUtil.queryEvents(mContext);
+            eventInfos = CalendarUtil.queryAllEvents(mContext);
         }
         
         AgendaSync.Builder agendaSyncBuilder = AgendaSync.newBuilder();
@@ -1216,7 +1231,7 @@ public class HandlerFacade {
                 case PC_ADD: {
                     EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
                     
-                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo, /* add to default calendar */true);
                     if (eventInfoId > 0) {
                         long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
                         
@@ -2071,6 +2086,9 @@ public class HandlerFacade {
         return responseBuilder.build();
     }
 
+    /*
+     * only sync with local account
+     */
     private void handleSyncContactWithOutlook(ContactsSync contactsSync, Builder responseBuilder) {
         Slog.d("handleSyncContactWithOutlook E");
         

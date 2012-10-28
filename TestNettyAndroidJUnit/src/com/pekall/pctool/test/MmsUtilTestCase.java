@@ -2,10 +2,10 @@ package com.pekall.pctool.test;
 
 import android.test.AndroidTestCase;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.mms.Mms;
 import com.pekall.pctool.model.mms.Mms.Attachment;
 import com.pekall.pctool.model.mms.MmsUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.io.FileOutputStream;
 import java.util.List;

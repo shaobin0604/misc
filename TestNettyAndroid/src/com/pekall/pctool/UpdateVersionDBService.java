@@ -11,6 +11,7 @@ import com.pekall.pctool.model.calendar.CalendarUtil;
 import com.pekall.pctool.model.calendar.EventInfo.EventVersion;
 import com.pekall.pctool.model.contact.Contact.ContactVersion;
 import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.util.List;
 
@@ -46,10 +47,10 @@ public class UpdateVersionDBService extends IntentService {
         Slog.d("action = " + action);
 
         if (FastSyncUtils.ACTION_UPDATE_CONTACT_VERSION.equals(action)) {
-            List<ContactVersion> contactVersions = ContactUtil.getAllContactVersions(this);
+            List<ContactVersion> contactVersions = ContactUtil.getPhoneContactVersions(this);
             boolean success = mDatabaseHelper.updateContactVersions(contactVersions);
             if (success) {
-                Slog.d("update contact version OK");
+                Slog.d("update phone contact version OK");
             } else {
                 Slog.e("Error update contact version");
             }

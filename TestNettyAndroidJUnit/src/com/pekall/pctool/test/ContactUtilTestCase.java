@@ -4,7 +4,6 @@ package com.pekall.pctool.test;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.test.AndroidTestCase;
 
-import com.pekall.pctool.Slog;
 import com.pekall.pctool.model.account.AccountInfo;
 import com.pekall.pctool.model.contact.Contact;
 import com.pekall.pctool.model.contact.GroupInfo;
@@ -13,6 +12,7 @@ import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
 import com.pekall.pctool.model.contact.ContactUtil;
+import com.pekall.pctool.util.Slog;
 
 import java.util.Collection;
 import java.util.List;
@@ -62,7 +62,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        ContactUtil.deleteAllContacts(getContext());
+//        ContactUtil.deleteAllContacts(getContext());
         
 //        populateContacts();
     }
@@ -82,7 +82,7 @@ public class ContactUtilTestCase extends AndroidTestCase {
         Slog.d(accounts.toString());
     }
 
-    public void testQueryContact() throws Exception {
+    public void testQueryContacts() throws Exception {
         Collection<Contact> contacts = ContactUtil.getAllContacts(getContext());
         for (Contact contact : contacts) {
             Slog.d(contact.toString());
@@ -90,6 +90,13 @@ public class ContactUtilTestCase extends AndroidTestCase {
         assertEquals(COUNT_OF_INITIAL_CONTACT, contacts.size());
         
         Slog.d("count = " + contacts.size());
+    }
+    
+    public void testQueryPhoneContacts() throws Exception {
+        Collection<Contact> contacts = ContactUtil.getPhoneContacts(getContext());
+        for (Contact contact : contacts) {
+            Slog.d(contact.toString());
+        }
     }
     
     

@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.pekall.pctool.ui.MainActivity;
+import com.pekall.pctool.util.Slog;
 
 public class ServerStateReceiver extends BroadcastReceiver {
 
