@@ -15,7 +15,6 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
@@ -48,6 +47,8 @@ public class HttpServer {
             // Create a default pipeline implementation.
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("decoder", new HttpRequestDecoder());
+            pipeline.addLast("aggregator", new ConditionalHttpChunkAggregator(1048576));
+            
             pipeline.addLast("encoder", new HttpResponseEncoder());
 
             pipeline.addLast("handler", new HttpServerHandler(new HandlerFacade(mContext)));

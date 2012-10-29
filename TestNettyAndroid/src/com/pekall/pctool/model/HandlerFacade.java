@@ -856,7 +856,7 @@ public class HandlerFacade {
 
             EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
 
-            final long newEventId = CalendarUtil.addEvent(mContext, eventInfo, /* don't add to default calendar */false);
+            final long newEventId = CalendarUtil.addEvent(mContext, eventInfo);
             if (newEventId > 0) {
                 AgendaRecord.Builder agendaRecordBuilder = AgendaRecord.newBuilder(agendaRecord);
                 agendaRecordBuilder.setId(newEventId);
@@ -880,6 +880,20 @@ public class HandlerFacade {
         EventInfo eventInfo = new EventInfo();
         
         eventInfo.calendarId = agendaRecord.getCalendarId();
+        eventInfo.title = agendaRecord.getSubject();
+        eventInfo.place = agendaRecord.getLocation();
+        eventInfo.startTime = agendaRecord.getStartTime();
+        eventInfo.endTime = agendaRecord.getEndTime();
+        eventInfo.alertTime = agendaRecord.getAlertTime();
+        eventInfo.rrule = agendaRecord.getRepeatRule();
+        eventInfo.note = agendaRecord.getNote();
+        return eventInfo;
+    }
+    
+    private EventInfo agendaRecordToEventInfoForSyncAdd(AgendaRecord agendaRecord, long calendarId) {
+        EventInfo eventInfo = new EventInfo();
+        
+        eventInfo.calendarId = calendarId;
         eventInfo.title = agendaRecord.getSubject();
         eventInfo.place = agendaRecord.getLocation();
         eventInfo.startTime = agendaRecord.getStartTime();
@@ -1066,6 +1080,8 @@ public class HandlerFacade {
         
         Slog.d("agendaRecordList size = " + agendaRecordList.size());
         
+        long defaultCalendarId = CalendarUtil.getDefaultCalendarId(mContext);
+        
         for (AgendaRecord agendaRecord : agendaRecordList) {
             final SyncResult syncResult = agendaRecord.getSyncResult();
             final String pcId = agendaRecord.getPcId();
@@ -1073,9 +1089,9 @@ public class HandlerFacade {
             
             switch (syncResult) {
                 case PC_ADD: {
-                    EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
+                    EventInfo eventInfo = agendaRecordToEventInfoForSyncAdd(agendaRecord, defaultCalendarId);
                     
-                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo, /* add to default calendar */true);
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
                     if (eventInfoId > 0) {
                         long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
                         
@@ -1222,6 +1238,8 @@ public class HandlerFacade {
         
         Slog.d("agendaRecordList size = " + agendaRecordList.size());
         
+        long defaultCalendarId = CalendarUtil.getDefaultCalendarId(mContext);
+        
         for (AgendaRecord agendaRecord : agendaRecordList) {
             final SyncResult syncResult = agendaRecord.getSyncResult();
             final String pcId = agendaRecord.getPcId();
@@ -1229,9 +1247,9 @@ public class HandlerFacade {
             
             switch (syncResult) {
                 case PC_ADD: {
-                    EventInfo eventInfo = agendaRecordToEventInfoForAdd(agendaRecord);
+                    EventInfo eventInfo = agendaRecordToEventInfoForSyncAdd(agendaRecord, defaultCalendarId);
                     
-                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo, /* add to default calendar */true);
+                    final long eventInfoId = CalendarUtil.addEvent(mContext, eventInfo);
                     if (eventInfoId > 0) {
                         long eventVersion = CalendarUtil.queryEventVersion(mContext, eventInfoId);
                         
@@ -1677,7 +1695,7 @@ public class HandlerFacade {
 
             if (contactRecord != null) {
                 Contact contact = contactRecordToContactForAdd(contactRecord);
-                final long newContactId = ContactUtil.addContact(mContext, contact, false);
+                final long newContactId = ContactUtil.addContact(mContext, contact);
                 if (newContactId > 0) {
                     
                     // return the new created contact
@@ -1716,6 +1734,92 @@ public class HandlerFacade {
         Slog.d("addContact X");
 
         return responseBuilder.build();
+    }
+    
+    private Contact contactRecordToContactForSyncAdd(ContactRecord contactRecord, String accountName, String accountType) {
+        Contact contact = new Contact();
+
+        contact.name = contactRecord.getName();
+        contact.nickname = contactRecord.getNickname();
+
+        if (contactRecord.hasPhoto()) {
+            contact.photo = contactRecord.getPhoto().toByteArray();
+        } else {
+            contact.photo = null;
+        }
+
+        contact.setAccountInfo(accountName, accountType);
+
+        // group
+        for (GroupRecord groupRecord : contactRecord.getGroupList()) {
+            GroupInfo groupInfo = new GroupInfo();
+
+            // only group id is required
+            groupInfo.grId = groupRecord.getId();
+
+            contact.addGroupInfo(groupInfo);
+        }
+
+        // phone
+        for (PhoneRecord phoneRecord : contactRecord.getPhoneList()) {
+            PhoneInfo phoneInfo = new PhoneInfo();
+
+            phoneInfo.type = toCommonDataKindsPhoneType(phoneRecord.getType());
+            phoneInfo.number = phoneRecord.getNumber();
+            phoneInfo.customName = phoneRecord.getName();
+
+            contact.addPhoneInfo(phoneInfo);
+        }
+
+        // email
+        for (EmailRecord emailRecord : contactRecord.getEmailList()) {
+            EmailInfo emailInfo = new EmailInfo();
+
+            emailInfo.type = toCommonDataKindsEmailType(emailRecord.getType());
+            emailInfo.address = emailRecord.getEmail();
+            emailInfo.customName = emailRecord.getName();
+
+            contact.addEmailInfo(emailInfo);
+        }
+
+        // im
+        for (IMRecord imRecord : contactRecord.getImList()) {
+            ImInfo imInfo = new ImInfo();
+
+            imInfo.protocol = toCommonDataKindsImType(imRecord.getType());
+            imInfo.account = imRecord.getAccount();
+            imInfo.customProtocol = imRecord.getName();
+
+            contact.addImInfo(imInfo);
+        }
+
+        // address
+        for (AddressRecord addressRecord : contactRecord.getAddressList()) {
+            AddressInfo addressInfo = new AddressInfo();
+
+            addressInfo.type = toCommonDataKindsAddressType(addressRecord.getAddressType());
+            addressInfo.address = addressRecord.getAddress();
+            addressInfo.customName = addressRecord.getName();
+            addressInfo.country = addressRecord.getCountry();
+            addressInfo.region = addressRecord.getProvince();
+            addressInfo.city = addressRecord.getCity();
+            addressInfo.street = addressRecord.getRoad();
+            addressInfo.postcode = addressRecord.getPostCode();
+
+            contact.addAddressInfo(addressInfo);
+        }
+
+        // organization
+        for (OrgRecord orgRecord : contactRecord.getOrgList()) {
+            OrgInfo orgInfo = new OrgInfo();
+
+            orgInfo.type = toCommonDataKindsOrganizationType(orgRecord.getType());
+            orgInfo.company = orgRecord.getOrgName();
+            orgInfo.customName = orgRecord.getName();
+
+            contact.addOrgInfo(orgInfo);
+        }
+        return contact;
     }
 
     private Contact contactRecordToContactForAdd(ContactRecord contactRecord) {
@@ -2160,15 +2264,19 @@ public class HandlerFacade {
         final List<ContactRecord> contactRecordList = contactsSync.getContactRecordList();
         
         Slog.d("contactRecordList size = " + contactRecordList.size());
+        
+        String defaultAccountName = ContactUtil.getDefaultAccountName();
+        String defaultAccountType = ContactUtil.getDefaultAccountType();
+        
         for (ContactRecord contactRecord : contactRecordList) {
             String pcId = contactRecord.getPcId();
             SyncResult syncResult = contactRecord.getSyncResult();
             
             switch (syncResult) {
                 case PC_ADD: {
-                    Contact contact = contactRecordToContactForAdd(contactRecord);
+                    Contact contact = contactRecordToContactForSyncAdd(contactRecord, defaultAccountName, defaultAccountType);
                     
-                    final long contactId = ContactUtil.addContact(mContext, contact, true);
+                    final long contactId = ContactUtil.addContact(mContext, contact);
                     if (contactId > 0) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         
@@ -2339,6 +2447,9 @@ public class HandlerFacade {
         
         Slog.d("contactRecordList size = " + contactRecordList.size());
         
+        String defaultAccountName = ContactUtil.getDefaultAccountName();
+        String defaultAccountType = ContactUtil.getDefaultAccountType();
+        
         for (ContactRecord contactRecord : contactRecordList) {
             final SyncResult syncResult = contactRecord.getSyncResult();
             final String pcId = contactRecord.getPcId();
@@ -2346,9 +2457,9 @@ public class HandlerFacade {
             
             switch (syncResult) {
                 case PC_ADD: {
-                    Contact contact = contactRecordToContactForAdd(contactRecord);
+                    Contact contact = contactRecordToContactForSyncAdd(contactRecord, defaultAccountName, defaultAccountType);
                     
-                    final long contactId = ContactUtil.addContact(mContext, contact, true);
+                    final long contactId = ContactUtil.addContact(mContext, contact);
                     if (contactId > 0) {
                         int contactVersion = ContactUtil.getContactVersion(mContext, contactId);
                         

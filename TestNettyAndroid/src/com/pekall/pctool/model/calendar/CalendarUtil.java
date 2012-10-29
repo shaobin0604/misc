@@ -45,7 +45,7 @@ public class CalendarUtil {
     private static final String CALENDAR_DEFAULT_NAME = "local calendar";
 
     public static long getDefaultCalendarId(Context context) {
-        List<CalendarInfo> calendarInfos = queryAllCalendars(context);
+        List<CalendarInfo> calendarInfos = queryCalendars(context, null, null, true);
         if (calendarInfos.size() > 0) {
             // get the first calendar as default calendar for outlook sync 
             CalendarInfo calendarInfo = calendarInfos.get(0);
@@ -77,14 +77,14 @@ public class CalendarUtil {
         selectionBuilder.append(SYNC_CALENDAR_ACCOUNT_TYPE_EXCHANGE);
         selectionBuilder.append("')");
         
-        return queryCalendars(context, selectionBuilder.toString(), null);
+        return queryCalendars(context, selectionBuilder.toString(), null, false);
     }
-
+    
     /**
      * 查询所有日历(所有账户的日历)
      */
     public static List<CalendarInfo> queryAllCalendars(Context context) {
-        return queryCalendars(context, null, null);
+        return queryCalendars(context, null, null, false);
     }
 
     /**
@@ -126,15 +126,21 @@ public class CalendarUtil {
         return calendarInfoList;
     }
     
-    public static List<CalendarInfo> queryCalendars(Context context, String selection, String[] selectionArgs) {
+    public static List<CalendarInfo> queryCalendars(Context context, String selection, String[] selectionArgs, boolean selectOne) {
         List<CalendarInfo> calendars = new ArrayList<CalendarInfo>();
 
         final String[] projection = {
                 Calendars._ID, Calendars.CALENDAR_DISPLAY_NAME, Calendars.ACCOUNT_NAME, Calendars.ACCOUNT_TYPE
         };
         
-        final String sortOrder = Calendars._ID + " ASC";
-        Cursor cursor = context.getContentResolver().query(Calendars.CONTENT_URI, projection, selection, selectionArgs, sortOrder);
+        StringBuilder sortOrder = new StringBuilder(Calendars._ID);
+        sortOrder.append(" ASC");
+        
+        if (selectOne) {
+            sortOrder.append(" LIMIT 1");
+        }
+        
+        Cursor cursor = context.getContentResolver().query(Calendars.CONTENT_URI, projection, selection, selectionArgs, sortOrder.toString());
         
         if (cursor != null) {
             try {
@@ -184,23 +190,16 @@ public class CalendarUtil {
      * 
      * @param context
      * @param eventInfo
-     * @param isAddToDefaultCalendar
      * 
      * @return the new created Event id or -1 if error
      */
-    public static long addEvent(Context context, EventInfo eventInfo, boolean isAddToDefaultCalendar) {
+    public static long addEvent(Context context, EventInfo eventInfo) {
         Slog.d("addEvent E");
 
         // Slog.d("===== dump EventInfo =====");
         // Slog.d(eventInfo.toString());
         
-        long calendarId = -1;
-        
-        if (isAddToDefaultCalendar) {
-            calendarId = getDefaultCalendarId(context);
-        } else {
-            calendarId = eventInfo.calendarId;
-        }
+        long calendarId = eventInfo.calendarId;
 
         if (calendarId < 0) {
             Slog.e("Error calendarId: " + calendarId);

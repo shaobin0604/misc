@@ -32,7 +32,7 @@ public class EventChangesTestCase extends AndroidTestCase {
         eventInfo.startTime = new Date().getTime() + 1000;
         eventInfo.endTime = eventInfo.startTime + 1000;
 //        eventInfo.rrule = "FREQ=DAILY;WKST=SU";
-        mFirstEventId = CalendarUtil.addEvent(mContext, eventInfo, false);
+        mFirstEventId = CalendarUtil.addEvent(mContext, eventInfo);
         
         assertTrue(mFirstEventId > 0);
         
@@ -47,7 +47,7 @@ public class EventChangesTestCase extends AndroidTestCase {
         eventInfo.startTime = new Date().getTime() + 2000;
         eventInfo.endTime = eventInfo.startTime + 2000;
 //        eventInfo.rrule = "FREQ=DAILY;WKST=SU";
-        mSecondEventId = CalendarUtil.addEvent(mContext, eventInfo, false);
+        mSecondEventId = CalendarUtil.addEvent(mContext, eventInfo);
         
         assertTrue(mSecondEventId > 0);
     }
@@ -87,7 +87,7 @@ public class EventChangesTestCase extends AndroidTestCase {
             eventInfo.startTime = new Date().getTime() + 3000;
             eventInfo.endTime = eventInfo.startTime + 3000;
 //            eventInfo.rrule = "FREQ=DAILY;WKST=SU";
-            boolean success = CalendarUtil.addEvent(mContext, eventInfo, false) > 0;
+            boolean success = CalendarUtil.addEvent(mContext, eventInfo) > 0;
 
             Slog.d("add event success = " + success);
         }

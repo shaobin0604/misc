@@ -7,7 +7,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_0;
 
 import android.content.Context;
 import android.content.Intent;
@@ -144,13 +144,13 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         }
         
         HttpRequest request = (HttpRequest) e.getMessage();
-
+        
         String path = request.getUri();
         HttpMethod method = request.getMethod();
-
         path = sanitizeUri(path);
 
         Slog.d("path:" + path + ", method: " + method);
+        
 
         Uri url = Uri.parse("content://localhost" + path);
 
@@ -205,9 +205,20 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
     private HttpResponseWrapper handleRPC(HttpRequest request) {
         Slog.d("\n==================== handleRPC E ====================\n\n");
 
+        String contentLength = request.getHeader(CONTENT_LENGTH);
+        
+        Slog.d("header: Content-Length = " + contentLength);
+        
+        boolean isChunked = request.isChunked();
+        
+        Slog.d("isChunked: " + isChunked);
+        
         ChannelBuffer content = request.getContent();
+        
+        Slog.d("body: length = " + content.readableBytes());
+        
         ChannelBufferInputStream cbis = new ChannelBufferInputStream(content);
-        HttpResponse httpResponse = new DefaultHttpResponse(HTTP_1_1, OK);
+        HttpResponse httpResponse = new DefaultHttpResponse(HTTP_1_0, OK);
         boolean shutdownServer = false;
         try {
             CmdRequest cmdRequest = CmdRequest.parseFrom(cbis);
@@ -242,7 +253,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             if (is instanceof FileInputStream) {
                 Slog.d("use zero-copy");
 
-                HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+                HttpResponse response = new DefaultHttpResponse(HTTP_1_0, OK);
 
                 FileChannel src = ((FileInputStream) is).getChannel();
 
@@ -273,7 +284,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             }
         } catch (AppNotExistException e) {
             Slog.e("Error app not exist", e);
-            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, NOT_FOUND);
 
             response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
             response.setContent(ChannelBuffers.copiedBuffer(
@@ -284,7 +295,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
         } catch (IOException e) {
             Slog.e("Error when export app", e);
-            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, INTERNAL_SERVER_ERROR);
 
             response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
             response.setContent(ChannelBuffers.copiedBuffer(
@@ -550,7 +561,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                         .getHeader(HttpHeaders.Names.CONNECTION));
 
         // Build the response object.
-        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_0,
                 HttpResponseStatus.OK);
         response.setContent(buf);
         response.setHeader(HttpHeaders.Names.CONTENT_TYPE,
@@ -620,7 +631,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_0, status);
         response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
         response.setContent(ChannelBuffers.copiedBuffer(
                 "Failure: " + status.toString() + "\r\n", CharsetUtil.UTF_8));

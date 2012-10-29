@@ -63,7 +63,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
         
         contact.addImInfo(imInfo);
         
-        mFirstContactId = ContactUtil.addContact(getContext(), contact, false);
+        mFirstContactId = ContactUtil.addContact(getContext(), contact);
         assertTrue(mFirstContactId > 0);
         
         
@@ -86,7 +86,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
         
         contact.addImInfo(imInfo);
         
-        mSecondContactId = ContactUtil.addContact(getContext(), contact, true);
+        mSecondContactId = ContactUtil.addContact(getContext(), contact);
         assertTrue(mSecondContactId > 0);
     }
 
@@ -119,7 +119,7 @@ public class ContactChangesTestCase extends AndroidTestCase {
 
             contact.name = "add";
             
-            boolean success = ContactUtil.addContact(getContext(), contact, true) > 0;
+            boolean success = ContactUtil.addContact(getContext(), contact) > 0;
             
             Slog.d("add success = " + success);
         }

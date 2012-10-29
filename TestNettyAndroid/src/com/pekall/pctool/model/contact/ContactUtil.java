@@ -82,6 +82,14 @@ public class ContactUtil {
      */
     private ContactUtil() {
     }
+    
+    public static String getDefaultAccountName() {
+        return LENOVO_S868T_LOCAL_ACCOUNT_NAME;
+    }
+    
+    public static String getDefaultAccountType() {
+        return LENOVO_S868T_LOCAL_ACCOUNT_TYPE;
+    }
 
     /**
      * Get the {@link Contact} id by phone number
@@ -903,7 +911,7 @@ public class ContactUtil {
      * @param AccountInfo
      * @return the id of the new created contact, or -1 if failed
      */
-    public static long addContact(Context context, Contact contact, boolean isAddToLocalAccount) {
+    public static long addContact(Context context, Contact contact) {
         if (DUMP_PARAMS) {
             Slog.d("+++++ DUMP CONTACT +++++");
 
@@ -912,10 +920,6 @@ public class ContactUtil {
             Slog.d("----- DUMP CONTACT -----");
         }
         
-        if (isAddToLocalAccount) {
-            contact.accountInfo.accountType = LENOVO_S868T_LOCAL_ACCOUNT_TYPE;
-            contact.accountInfo.accountName = LENOVO_S868T_LOCAL_ACCOUNT_NAME;
-        }
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -967,7 +971,7 @@ public class ContactUtil {
                                 ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)
                         .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, or.company)
                         .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, or.type)
-                        .withValue(ContactsContract.CommonDataKinds.Organization.DATA3, or.customName).build());
+                        .withValue(ContactsContract.CommonDataKinds.Organization.LABEL, or.customName).build());
             }
         }
         // phone number
@@ -981,7 +985,7 @@ public class ContactUtil {
                                 ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                         .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, pr.number)
                         .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, pr.type)
-                        .withValue(ContactsContract.CommonDataKinds.Phone.DATA3, pr.customName).build());
+                        .withValue(ContactsContract.CommonDataKinds.Phone.LABEL, pr.customName).build());
             }
         }
         // email
@@ -995,7 +999,7 @@ public class ContactUtil {
                                 ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                         .withValue(ContactsContract.CommonDataKinds.Email.DATA, er.address)
                         .withValue(ContactsContract.CommonDataKinds.Email.TYPE, er.type)
-                        .withValue(ContactsContract.CommonDataKinds.Email.DATA3, er.customName).build());
+                        .withValue(ContactsContract.CommonDataKinds.Email.LABEL, er.customName).build());
             }
         }
         // address
@@ -1014,7 +1018,7 @@ public class ContactUtil {
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.REGION, ar.region)
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, ar.postcode)
                         .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, ar.address)
-                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.DATA3, ar.customName).build());
+                        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.LABEL, ar.customName).build());
             }
         }
         // IM
@@ -1026,9 +1030,9 @@ public class ContactUtil {
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Im.DATA1, ir.account)
+                        .withValue(ContactsContract.CommonDataKinds.Im.DATA, ir.account)
                         .withValue(ContactsContract.CommonDataKinds.Im.PROTOCOL, ir.protocol)
-                        .withValue(ContactsContract.CommonDataKinds.Im.DATA3, ir.customProtocol).build());
+                        .withValue(ContactsContract.CommonDataKinds.Im.CUSTOM_PROTOCOL, ir.customProtocol).build());
             }
         }
 
