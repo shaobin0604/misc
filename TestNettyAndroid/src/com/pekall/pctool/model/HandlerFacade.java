@@ -608,6 +608,7 @@ public class HandlerFacade {
             mmsRecordBuilder.setSubject(normalizeStr(mms.subject));
             mmsRecordBuilder.setMsgTime(mms.date);
             mmsRecordBuilder.setReadTag(mms.isReaded == Mms.READ_TRUE);
+            mmsRecordBuilder.setSize(mms.size);
 
             ArrayList<Slide> slides = mms.slides;
             ArrayList<Attachment> attachments = mms.attachments;

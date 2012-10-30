@@ -23,6 +23,7 @@ public class Mms {
     public String subject;
     public long date;
     public int isReaded;
+    public int size;
     public ArrayList<Slide> slides = new ArrayList<Slide>();
     public ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 
@@ -60,7 +61,7 @@ public class Mms {
 
     @Override
     public String toString() {
-        return "Mms [rowId=" + rowId + ", msgBoxIndex=" + msgBoxIndex + ", phoneNum=" + phoneNum + ", subject="
+        return "Mms [rowId=" + rowId + ", size=" + size + ", msgBoxIndex=" + msgBoxIndex + ", phoneNum=" + phoneNum + ", subject="
                 + subject + ", date=" + toDateStr(date) + ", isReaded=" + isReaded + ", slides=" + slides + ", attachments="
                 + attachments + "]";
     }

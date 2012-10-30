@@ -33,13 +33,11 @@ import com.pekall.pctool.util.Slog;
 public class MmsUtil {
     static final Uri MAIN_MMS_URI = Uri.parse("content://mms");
     private static final String MMS_AUTHORITY = "mms";
-//    static Slide slideForParse;
-//    static ArrayList<String> slideTxtFileNames;
 
     public static List<Mms> query(Context cxt) {
         List<Mms> mmsList = new ArrayList<Mms>();
         Cursor cursor = cxt.getContentResolver().query(MAIN_MMS_URI, new String[] {
-                "_id", "thread_id", "msg_box", "sub", "date", "read"
+                "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
         }, null, null, "_id desc");
 
         while (cursor.moveToNext()) {
@@ -48,6 +46,7 @@ public class MmsUtil {
             mms.rowId = cursor.getLong(cursor.getColumnIndex("_id"));
             mms.threadId = cursor.getLong(cursor.getColumnIndex("thread_id"));
             mms.msgBoxIndex = cursor.getInt(cursor.getColumnIndex("msg_box"));
+            mms.size = cursor.getInt(cursor.getColumnIndex("m_size"));
 
             Cursor cursorAddress = cxt.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
                     null, null, null, null);
@@ -200,10 +199,10 @@ public class MmsUtil {
             Slide slide = null;
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_DOCUMENT) {
-                    Slog.d("Start document");
+//                    Slog.d("Start document");
                 } else if (eventType == XmlPullParser.START_TAG) {
                     elementName = xpp.getName();
-                    Slog.d("Start tag " + elementName);
+//                    Slog.d("Start tag " + elementName);
                     if ("par".equals(elementName)) {
                         int slideDuration = parseDuration(xpp.getAttributeValue(null, "dur"));
                         slide = new Slide(slideDuration);
@@ -229,17 +228,17 @@ public class MmsUtil {
                     }
                 } else if (eventType == XmlPullParser.END_TAG) {
                     elementName = xpp.getName();
-                    Slog.d("End tag " + elementName);
+//                    Slog.d("End tag " + elementName);
                     if ("par".equals(elementName) && slide != null) {
                         mms.slides.add(slide);
                         slide = null;
                     }
                 } else if (eventType == XmlPullParser.TEXT) {
-                    Slog.d("Text " + xpp.getText());
+//                    Slog.d("Text " + xpp.getText());
                 }
                 eventType = xpp.next();
             }
-            Slog.d("End document");
+//            Slog.d("End document");
         } catch (XmlPullParserException e) {
             Slog.e("Error parse smil", e);
         } catch (IOException e) {

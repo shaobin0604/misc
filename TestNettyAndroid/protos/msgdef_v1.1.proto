@@ -147,8 +147,9 @@ message MMSRecord
 	optional string				subject = 5;	//主题
 	optional int64				msg_time = 6; 	//接收时间或发送时间
 	optional bool				read_tag = 7;	//是否已读
-	repeated SlideRecord		slide = 8;	 	//幻灯片
-	repeated AttachmentRecord 	attachment = 9; //非幻灯片附件
+	optional int32				size = 8;		//彩信的大小
+	repeated SlideRecord		slide = 9;	 	//幻灯片
+	repeated AttachmentRecord 	attachment = 10; //非幻灯片附件
 }
 
 //编辑动作类型
