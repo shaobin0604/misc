@@ -25,6 +25,7 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
+import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.RawContactsEntity;
 import android.telephony.PhoneNumberUtils;
@@ -52,24 +53,23 @@ import java.util.Queue;
 import java.util.Set;
 
 public class ContactUtil {
-    
+
     private static final String CONTACTS_ACCOUNT_TYPE_SIM = "contacts.account.type.sim";
 
     private static final boolean DUMP_PARAMS = true;
-    
+
     private static final String GOOGLE_GROUP_STARRED_IN_ANDROID = "Starred in Android";
     private static final String GOOGLE_GROUP_MY_CONTACTS = "My Contacts";
     private static final String ACCOUNT_TYPE_GOOGLE = "com.google";
-    
+
     private static final String HUAWEI_T8808D_MODEL = "HUAWEI T8808D";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_NAME = "Phone";
     private static final String HUAWEI_T8808D_LOCAL_ACCOUNT_TYPE = "com.android.huawei.phone";
-    
+
     private static final String LENOVO_S868T_MODEL = "Lenovo S868t";
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_NAME = "contacts.account.name.local";
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_TYPE = "contacts.account.type.local";
-    
-    
+
     private static final boolean DISABLE_SIM_CONTACTS = true; // FIXME: disable sim contacts for bug 9863
 
     //
@@ -82,11 +82,11 @@ public class ContactUtil {
      */
     private ContactUtil() {
     }
-    
+
     public static String getDefaultAccountName() {
         return LENOVO_S868T_LOCAL_ACCOUNT_NAME;
     }
-    
+
     public static String getDefaultAccountType() {
         return LENOVO_S868T_LOCAL_ACCOUNT_TYPE;
     }
@@ -101,6 +101,7 @@ public class ContactUtil {
     public static long getRawContactId(Context context, String number) {
         // TODO: filter deleted contacts
         Cursor cursor = null;
+        long rawContactId = 0;
         try {
             cursor = context.getContentResolver().query(Phone.CONTENT_URI,
                     new String[] {
@@ -110,20 +111,42 @@ public class ContactUtil {
                 while (!cursor.isAfterLast()) {
                     final String phoneNumber = cursor.getString(1);
                     if (PhoneNumberUtils.compare(number, phoneNumber)) {
-                        final long rawContactId = cursor.getLong(/* Phone.RAW_CONTACT_ID */0);
-                        return rawContactId;
+                        rawContactId = cursor.getLong(0); // Phone.RAW_CONTACT_ID
+                        break;
                     }
                     cursor.moveToNext();
                 }
             }
-        } catch (Exception e) {
-            Slog.e("getRawContactId error:", e);
+            return rawContactId;
         } finally {
             if (cursor != null) {
                 cursor.close();
             }
         }
-        return 0;
+    }
+
+    public static String getContactDisplayName(Context context, String phoneNumber) {
+        Cursor cursor = null;
+        String displayName = null;
+        String[] selection = {
+                PhoneLookup.DISPLAY_NAME
+        };
+
+        Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+
+        try {
+            cursor = context.getContentResolver().query(uri, selection, null, null, null);
+            
+            if (cursor != null && cursor.moveToFirst()) {
+                displayName = cursor.getString(0);     // PhoneLookup.DISPLAY_NAME
+            }
+            
+            return displayName;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
 
     /**
@@ -150,7 +173,7 @@ public class ContactUtil {
         }
         return version;
     }
-    
+
     public static List<ContactVersion> getContactVersions(Context context, String selection, String[] selectionArgs) {
         List<ContactVersion> contactVersions = new ArrayList<ContactVersion>();
 
@@ -190,7 +213,7 @@ public class ContactUtil {
         };
         return getContactVersions(context, selection, selectionArgs);
     }
-    
+
     /**
      * Get version of phone contacts
      * 
@@ -198,9 +221,11 @@ public class ContactUtil {
      * @return
      */
     public static List<ContactVersion> getPhoneContactVersions(Context context) {
-        String selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_NAME + "=? AND " + RawContacts.ACCOUNT_TYPE + "=?";
+        String selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_NAME + "=? AND "
+                + RawContacts.ACCOUNT_TYPE + "=?";
         String[] selectionArgs = {
-                String.valueOf(RAW_CONTACT_DELETE_FLAG), LENOVO_S868T_LOCAL_ACCOUNT_NAME, LENOVO_S868T_LOCAL_ACCOUNT_TYPE,
+                String.valueOf(RAW_CONTACT_DELETE_FLAG), LENOVO_S868T_LOCAL_ACCOUNT_NAME,
+                LENOVO_S868T_LOCAL_ACCOUNT_TYPE,
         };
         return getContactVersions(context, selection, selectionArgs);
     }
@@ -213,17 +238,18 @@ public class ContactUtil {
      */
     public static List<GroupInfo> getAllGroups(Context context) {
         List<GroupInfo> li = new ArrayList<GroupInfo>();
-        
+
         final String[] projection = {
                 Groups._ID, Groups.TITLE, Groups.NOTES, Groups.ACCOUNT_TYPE, Groups.ACCOUNT_NAME
-        };                
-        
+        };
+
         final String selection = Groups.DELETED + "=?";
-        
+
         final String[] selectionArgs = {
                 String.valueOf(0),
         };
-        Cursor cursorOfGroup = context.getContentResolver().query(Groups.CONTENT_URI, projection, selection, selectionArgs, null);
+        Cursor cursorOfGroup = context.getContentResolver().query(Groups.CONTENT_URI, projection, selection,
+                selectionArgs, null);
         if (cursorOfGroup.moveToFirst()) {
             final int GROUP_ID = cursorOfGroup.getColumnIndex(Groups._ID);
             final int GROUP_TITLE = cursorOfGroup.getColumnIndex(Groups.TITLE);
@@ -231,28 +257,28 @@ public class ContactUtil {
             final int GROUP_ACCOUNT_TYPE = cursorOfGroup.getColumnIndex(Groups.ACCOUNT_TYPE);
             final int GROUP_ACCOUNT_NAME = cursorOfGroup.getColumnIndex(Groups.ACCOUNT_NAME);
             do {
-                
 
                 long id = cursorOfGroup.getLong(GROUP_ID);
                 String name = cursorOfGroup.getString(GROUP_TITLE);
                 String note = cursorOfGroup.getString(GROUP_NOTES);
                 String accountType = cursorOfGroup.getString(GROUP_ACCOUNT_TYPE);
                 String accountName = cursorOfGroup.getString(GROUP_ACCOUNT_NAME);
-                
-                // FIXME: skip 'My Contacts' & 'Starred in Android' group in google account 
+
+                // FIXME: skip 'My Contacts' & 'Starred in Android' group in
+                // google account
                 if (ACCOUNT_TYPE_GOOGLE.equals(accountType)) {
                     if (GOOGLE_GROUP_MY_CONTACTS.equals(name) || GOOGLE_GROUP_STARRED_IN_ANDROID.equals(name)) {
                         continue;
                     }
                 }
-                
+
                 GroupInfo gi = new GroupInfo();
                 gi.grId = id;
                 gi.name = name;
                 gi.note = note;
                 gi.accountInfo.accountType = accountType;
                 gi.accountInfo.accountName = accountName;
-                
+
                 li.add(gi);
             } while (cursorOfGroup.moveToNext());
         }
@@ -276,11 +302,11 @@ public class ContactUtil {
             ai.accountType = accounts[i].type;
             accountInfos.add(ai);
         }
-        
+
         String model = android.os.Build.MODEL;
-        
+
         Slog.d("model: " + model);
-        
+
         if (HUAWEI_T8808D_MODEL.equals(model)) {
             AccountInfo ai = new AccountInfo();
             ai.accountName = HUAWEI_T8808D_LOCAL_ACCOUNT_NAME;
@@ -292,7 +318,7 @@ public class ContactUtil {
             ai.accountType = LENOVO_S868T_LOCAL_ACCOUNT_TYPE;
             accountInfos.add(ai);
         }
-        
+
         return accountInfos;
     }
 
@@ -340,8 +366,7 @@ public class ContactUtil {
     public static int deleteAllContacts(Context context) {
         return context.getContentResolver().delete(RawContacts.CONTENT_URI, null, null);
     }
-    
-    
+
     public static int deletePhoneContacts(Context context) {
         String selection = RawContacts.ACCOUNT_NAME + "=? AND " + RawContacts.ACCOUNT_TYPE + "=?";
         String[] selectionArgs = {
@@ -639,7 +664,7 @@ public class ContactUtil {
         ops.add(ContentProviderOperation
                 .newUpdate(RawContacts.CONTENT_URI)
                 .withSelection(RawContacts._ID + "=?", new String[] {
-                    String.valueOf(contact.id)
+                        String.valueOf(contact.id)
                 })
                 .withValue(RawContacts.ACCOUNT_TYPE, contact.accountInfo.accountType)
                 .withValue(RawContacts.ACCOUNT_NAME, contact.accountInfo.accountName).build());
@@ -736,7 +761,8 @@ public class ContactUtil {
                         .withValue(Data.MIMETYPE, GroupMembership.CONTENT_ITEM_TYPE)
                         .withValue(GroupMembership.GROUP_ROW_ID, gi.grId).build());
             } else if (gi.modifyFlag == ModifyTag.del) {
-                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId)).build());
+                ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(Data.CONTENT_URI, gi.dataId))
+                        .build());
             } else if (gi.modifyFlag == ModifyTag.edit) {
                 ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
                         .withSelection(Data._ID + "=?", new String[] {
@@ -876,10 +902,10 @@ public class ContactUtil {
 
         try {
             // Slog.d(ops.toString());
-        	for (ContentProviderOperation op : ops) {
-        		Slog.d("op: " + op.toString());
-        	}
-        	
+            for (ContentProviderOperation op : ops) {
+                Slog.d("op: " + op.toString());
+            }
+
             ContentProviderResult[] results = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
 
             for (ContentProviderResult result : results) {
@@ -919,7 +945,6 @@ public class ContactUtil {
 
             Slog.d("----- DUMP CONTACT -----");
         }
-        
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -1202,7 +1227,7 @@ public class ContactUtil {
     public static Contact getContactById(Context context, long rawContactId) {
         String selection = RawContacts.DELETED + "!=" + RAW_CONTACT_DELETE_FLAG + " and " + RawContacts._ID + "=?";
         String[] selectionArgs = {
-            String.valueOf(rawContactId)
+                String.valueOf(rawContactId)
         };
 
         Collection<Contact> contacts = getContactsFast(context, selection, selectionArgs);
@@ -1212,7 +1237,7 @@ public class ContactUtil {
         }
         return null;
     }
-    
+
     /**
      * Get Contact in local account, used for outlook sync
      * 
@@ -1220,9 +1245,11 @@ public class ContactUtil {
      * @return
      */
     public static Collection<Contact> getPhoneContacts(Context context) {
-        String selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_NAME + "=? AND " + RawContacts.ACCOUNT_TYPE + "=?";
+        String selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_NAME + "=? AND "
+                + RawContacts.ACCOUNT_TYPE + "=?";
         String[] selectionArgs = {
-                String.valueOf(RAW_CONTACT_DELETE_FLAG), LENOVO_S868T_LOCAL_ACCOUNT_NAME, LENOVO_S868T_LOCAL_ACCOUNT_TYPE, 
+                String.valueOf(RAW_CONTACT_DELETE_FLAG), LENOVO_S868T_LOCAL_ACCOUNT_NAME,
+                LENOVO_S868T_LOCAL_ACCOUNT_TYPE,
         };
         return getContactsFast(context, selection, selectionArgs);
     }
@@ -1230,13 +1257,17 @@ public class ContactUtil {
     public static Collection<Contact> getAllContacts(Context context) {
         String selection = null;
         String[] selectionArgs = null;
-        
+
         if (DISABLE_SIM_CONTACTS) {
             selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_TYPE + "!=?";
-            selectionArgs = new String[] {String.valueOf(RAW_CONTACT_DELETE_FLAG), CONTACTS_ACCOUNT_TYPE_SIM};
+            selectionArgs = new String[] {
+                    String.valueOf(RAW_CONTACT_DELETE_FLAG), CONTACTS_ACCOUNT_TYPE_SIM
+            };
         } else {
             selection = RawContacts.DELETED + "!=?";
-            selectionArgs = new String[] {String.valueOf(RAW_CONTACT_DELETE_FLAG)};
+            selectionArgs = new String[] {
+                String.valueOf(RAW_CONTACT_DELETE_FLAG)
+            };
         }
 
         return getContactsFast(context, selection, selectionArgs);

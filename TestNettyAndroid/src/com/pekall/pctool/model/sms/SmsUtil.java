@@ -240,10 +240,14 @@ public class SmsUtil {
                     sms.rowId = cursor.getLong(rowIdIndex);
                     sms.threadId = cursor.getLong(threadIdIndex);
                     sms.address = cursor.getString(addressIndex);
-                    sms.person = cursor.getLong(personIndex);
-                    if (sms.person <= 0) {
-                        sms.person = ContactUtil.getRawContactId(context, sms.address);
-                    }
+                    
+//                    sms.person = cursor.getLong(personIndex);
+//                    if (sms.person <= 0) {
+//                        sms.person = ContactUtil.getRawContactId(context, sms.address);
+//                    }
+                    
+                    sms.person = ContactUtil.getRawContactId(context, sms.address);
+                    
                     sms.date = cursor.getLong(dateIndex);
                     sms.protocol = cursor.getInt(protocolIndex);
                     sms.read = cursor.getInt(readIndex);

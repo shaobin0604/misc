@@ -72,6 +72,22 @@ public class ContactUtilTestCase extends AndroidTestCase {
         super.tearDown();
     }
     
+    public void testGetRawContactId() throws Exception {
+        String phoneNumber = "8888";
+        
+        long rawContactId = ContactUtil.getRawContactId(getContext(), phoneNumber);
+        
+        Slog.d("rawContactId = " + rawContactId);
+    }
+    
+    public void testGetContactDisplayName() throws Exception {
+        String phoneNumber = "8888";
+        
+        String displayName = ContactUtil.getContactDisplayName(getContext(), phoneNumber);
+        
+        Slog.d("display name = " + displayName);
+    }
+    
     public void testQueryGroups() throws Exception {
         List<GroupInfo> groups = ContactUtil.getAllGroups(getContext());
         Slog.d(groups.toString());
