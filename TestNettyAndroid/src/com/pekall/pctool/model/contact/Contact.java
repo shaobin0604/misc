@@ -11,6 +11,7 @@ import java.util.List;
 public class Contact {
     public long id;                         // rawId
     public String name;
+    public String sortKey;                  // sort key for name
     public String nickname;
     public byte[] photo;
     public boolean shouldUpdatePhoto;       // whether update photo attribute
@@ -37,7 +38,7 @@ public class Contact {
     
     @Override
     public String toString() {
-        return "Contact [id=" + id + ", name=" + name + ", nickname=" + nickname + ", accountInfo=" + accountInfo
+        return "Contact [id=" + id + ", name=" + name + ", sortKey=" + sortKey + ", nickname=" + nickname + ", accountInfo=" + accountInfo
                 + ", groupInfos=" + groupInfos + ", phoneInfos=" + phoneInfos + ", emailInfos=" + emailInfos
                 + ", imInfos=" + imInfos + ", addressInfos=" + addressInfos + ", orgInfos=" + orgInfos + "]";
     }

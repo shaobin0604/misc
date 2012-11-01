@@ -11456,32 +11456,36 @@ public final class MsgDefProtos {
     boolean hasNickname();
     String getNickname();
     
-    // optional bytes photo = 4;
+    // optional string sort_key = 4;
+    boolean hasSortKey();
+    String getSortKey();
+    
+    // optional bytes photo = 5;
     boolean hasPhoto();
     com.google.protobuf.ByteString getPhoto();
     
-    // optional bool photo_modify_tag = 5;
+    // optional bool photo_modify_tag = 6;
     boolean hasPhotoModifyTag();
     boolean getPhotoModifyTag();
     
-    // optional int32 version = 6;
+    // optional int32 version = 7;
     boolean hasVersion();
     int getVersion();
     
-    // optional .pekall.pcsuite.SyncResult sync_result = 7;
+    // optional .pekall.pcsuite.SyncResult sync_result = 8;
     boolean hasSyncResult();
     com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult();
     
-    // optional string pc_id = 8;
+    // optional string pc_id = 9;
     boolean hasPcId();
     String getPcId();
     
-    // optional .pekall.pcsuite.AccountRecord account_info = 9;
+    // optional .pekall.pcsuite.AccountRecord account_info = 10;
     boolean hasAccountInfo();
     com.pekall.pctool.protos.MsgDefProtos.AccountRecord getAccountInfo();
     com.pekall.pctool.protos.MsgDefProtos.AccountRecordOrBuilder getAccountInfoOrBuilder();
     
-    // repeated .pekall.pcsuite.GroupRecord group = 10;
+    // repeated .pekall.pcsuite.GroupRecord group = 11;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> 
         getGroupList();
     com.pekall.pctool.protos.MsgDefProtos.GroupRecord getGroup(int index);
@@ -11491,7 +11495,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.GroupRecordOrBuilder getGroupOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.PhoneRecord phone = 11;
+    // repeated .pekall.pcsuite.PhoneRecord phone = 12;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> 
         getPhoneList();
     com.pekall.pctool.protos.MsgDefProtos.PhoneRecord getPhone(int index);
@@ -11501,7 +11505,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.PhoneRecordOrBuilder getPhoneOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.EmailRecord email = 12;
+    // repeated .pekall.pcsuite.EmailRecord email = 13;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> 
         getEmailList();
     com.pekall.pctool.protos.MsgDefProtos.EmailRecord getEmail(int index);
@@ -11511,7 +11515,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.EmailRecordOrBuilder getEmailOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.IMRecord im = 13;
+    // repeated .pekall.pcsuite.IMRecord im = 14;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> 
         getImList();
     com.pekall.pctool.protos.MsgDefProtos.IMRecord getIm(int index);
@@ -11521,7 +11525,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.IMRecordOrBuilder getImOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.AddressRecord address = 14;
+    // repeated .pekall.pcsuite.AddressRecord address = 15;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> 
         getAddressList();
     com.pekall.pctool.protos.MsgDefProtos.AddressRecord getAddress(int index);
@@ -11531,7 +11535,7 @@ public final class MsgDefProtos {
     com.pekall.pctool.protos.MsgDefProtos.AddressRecordOrBuilder getAddressOrBuilder(
         int index);
     
-    // repeated .pekall.pcsuite.OrgRecord org = 15;
+    // repeated .pekall.pcsuite.OrgRecord org = 16;
     java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> 
         getOrgList();
     com.pekall.pctool.protos.MsgDefProtos.OrgRecord getOrg(int index);
@@ -11644,51 +11648,83 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional bytes photo = 4;
-    public static final int PHOTO_FIELD_NUMBER = 4;
+    // optional string sort_key = 4;
+    public static final int SORT_KEY_FIELD_NUMBER = 4;
+    private java.lang.Object sortKey_;
+    public boolean hasSortKey() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    public String getSortKey() {
+      java.lang.Object ref = sortKey_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          sortKey_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getSortKeyBytes() {
+      java.lang.Object ref = sortKey_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        sortKey_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
+    // optional bytes photo = 5;
+    public static final int PHOTO_FIELD_NUMBER = 5;
     private com.google.protobuf.ByteString photo_;
     public boolean hasPhoto() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     public com.google.protobuf.ByteString getPhoto() {
       return photo_;
     }
     
-    // optional bool photo_modify_tag = 5;
-    public static final int PHOTO_MODIFY_TAG_FIELD_NUMBER = 5;
+    // optional bool photo_modify_tag = 6;
+    public static final int PHOTO_MODIFY_TAG_FIELD_NUMBER = 6;
     private boolean photoModifyTag_;
     public boolean hasPhotoModifyTag() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     public boolean getPhotoModifyTag() {
       return photoModifyTag_;
     }
     
-    // optional int32 version = 6;
-    public static final int VERSION_FIELD_NUMBER = 6;
+    // optional int32 version = 7;
+    public static final int VERSION_FIELD_NUMBER = 7;
     private int version_;
     public boolean hasVersion() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     public int getVersion() {
       return version_;
     }
     
-    // optional .pekall.pcsuite.SyncResult sync_result = 7;
-    public static final int SYNC_RESULT_FIELD_NUMBER = 7;
+    // optional .pekall.pcsuite.SyncResult sync_result = 8;
+    public static final int SYNC_RESULT_FIELD_NUMBER = 8;
     private com.pekall.pctool.protos.MsgDefProtos.SyncResult syncResult_;
     public boolean hasSyncResult() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     public com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult() {
       return syncResult_;
     }
     
-    // optional string pc_id = 8;
-    public static final int PC_ID_FIELD_NUMBER = 8;
+    // optional string pc_id = 9;
+    public static final int PC_ID_FIELD_NUMBER = 9;
     private java.lang.Object pcId_;
     public boolean hasPcId() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     public String getPcId() {
       java.lang.Object ref = pcId_;
@@ -11716,11 +11752,11 @@ public final class MsgDefProtos {
       }
     }
     
-    // optional .pekall.pcsuite.AccountRecord account_info = 9;
-    public static final int ACCOUNT_INFO_FIELD_NUMBER = 9;
+    // optional .pekall.pcsuite.AccountRecord account_info = 10;
+    public static final int ACCOUNT_INFO_FIELD_NUMBER = 10;
     private com.pekall.pctool.protos.MsgDefProtos.AccountRecord accountInfo_;
     public boolean hasAccountInfo() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     public com.pekall.pctool.protos.MsgDefProtos.AccountRecord getAccountInfo() {
       return accountInfo_;
@@ -11729,8 +11765,8 @@ public final class MsgDefProtos {
       return accountInfo_;
     }
     
-    // repeated .pekall.pcsuite.GroupRecord group = 10;
-    public static final int GROUP_FIELD_NUMBER = 10;
+    // repeated .pekall.pcsuite.GroupRecord group = 11;
+    public static final int GROUP_FIELD_NUMBER = 11;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> group_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> getGroupList() {
       return group_;
@@ -11750,8 +11786,8 @@ public final class MsgDefProtos {
       return group_.get(index);
     }
     
-    // repeated .pekall.pcsuite.PhoneRecord phone = 11;
-    public static final int PHONE_FIELD_NUMBER = 11;
+    // repeated .pekall.pcsuite.PhoneRecord phone = 12;
+    public static final int PHONE_FIELD_NUMBER = 12;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> phone_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> getPhoneList() {
       return phone_;
@@ -11771,8 +11807,8 @@ public final class MsgDefProtos {
       return phone_.get(index);
     }
     
-    // repeated .pekall.pcsuite.EmailRecord email = 12;
-    public static final int EMAIL_FIELD_NUMBER = 12;
+    // repeated .pekall.pcsuite.EmailRecord email = 13;
+    public static final int EMAIL_FIELD_NUMBER = 13;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> email_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> getEmailList() {
       return email_;
@@ -11792,8 +11828,8 @@ public final class MsgDefProtos {
       return email_.get(index);
     }
     
-    // repeated .pekall.pcsuite.IMRecord im = 13;
-    public static final int IM_FIELD_NUMBER = 13;
+    // repeated .pekall.pcsuite.IMRecord im = 14;
+    public static final int IM_FIELD_NUMBER = 14;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> im_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> getImList() {
       return im_;
@@ -11813,8 +11849,8 @@ public final class MsgDefProtos {
       return im_.get(index);
     }
     
-    // repeated .pekall.pcsuite.AddressRecord address = 14;
-    public static final int ADDRESS_FIELD_NUMBER = 14;
+    // repeated .pekall.pcsuite.AddressRecord address = 15;
+    public static final int ADDRESS_FIELD_NUMBER = 15;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> address_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> getAddressList() {
       return address_;
@@ -11834,8 +11870,8 @@ public final class MsgDefProtos {
       return address_.get(index);
     }
     
-    // repeated .pekall.pcsuite.OrgRecord org = 15;
-    public static final int ORG_FIELD_NUMBER = 15;
+    // repeated .pekall.pcsuite.OrgRecord org = 16;
+    public static final int ORG_FIELD_NUMBER = 16;
     private java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> org_;
     public java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> getOrgList() {
       return org_;
@@ -11859,6 +11895,7 @@ public final class MsgDefProtos {
       id_ = 0L;
       name_ = "";
       nickname_ = "";
+      sortKey_ = "";
       photo_ = com.google.protobuf.ByteString.EMPTY;
       photoModifyTag_ = false;
       version_ = 0;
@@ -11894,40 +11931,43 @@ public final class MsgDefProtos {
         output.writeBytes(3, getNicknameBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, photo_);
+        output.writeBytes(4, getSortKeyBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBool(5, photoModifyTag_);
+        output.writeBytes(5, photo_);
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeInt32(6, version_);
+        output.writeBool(6, photoModifyTag_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeEnum(7, syncResult_.getNumber());
+        output.writeInt32(7, version_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeBytes(8, getPcIdBytes());
+        output.writeEnum(8, syncResult_.getNumber());
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        output.writeMessage(9, accountInfo_);
+        output.writeBytes(9, getPcIdBytes());
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeMessage(10, accountInfo_);
       }
       for (int i = 0; i < group_.size(); i++) {
-        output.writeMessage(10, group_.get(i));
+        output.writeMessage(11, group_.get(i));
       }
       for (int i = 0; i < phone_.size(); i++) {
-        output.writeMessage(11, phone_.get(i));
+        output.writeMessage(12, phone_.get(i));
       }
       for (int i = 0; i < email_.size(); i++) {
-        output.writeMessage(12, email_.get(i));
+        output.writeMessage(13, email_.get(i));
       }
       for (int i = 0; i < im_.size(); i++) {
-        output.writeMessage(13, im_.get(i));
+        output.writeMessage(14, im_.get(i));
       }
       for (int i = 0; i < address_.size(); i++) {
-        output.writeMessage(14, address_.get(i));
+        output.writeMessage(15, address_.get(i));
       }
       for (int i = 0; i < org_.size(); i++) {
-        output.writeMessage(15, org_.get(i));
+        output.writeMessage(16, org_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -11952,51 +11992,55 @@ public final class MsgDefProtos {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, photo_);
+          .computeBytesSize(4, getSortKeyBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(5, photoModifyTag_);
+          .computeBytesSize(5, photo_);
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(6, version_);
+          .computeBoolSize(6, photoModifyTag_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(7, syncResult_.getNumber());
+          .computeInt32Size(7, version_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(8, getPcIdBytes());
+          .computeEnumSize(8, syncResult_.getNumber());
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(9, accountInfo_);
+          .computeBytesSize(9, getPcIdBytes());
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, accountInfo_);
       }
       for (int i = 0; i < group_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(10, group_.get(i));
+          .computeMessageSize(11, group_.get(i));
       }
       for (int i = 0; i < phone_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(11, phone_.get(i));
+          .computeMessageSize(12, phone_.get(i));
       }
       for (int i = 0; i < email_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(12, email_.get(i));
+          .computeMessageSize(13, email_.get(i));
       }
       for (int i = 0; i < im_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(13, im_.get(i));
+          .computeMessageSize(14, im_.get(i));
       }
       for (int i = 0; i < address_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(14, address_.get(i));
+          .computeMessageSize(15, address_.get(i));
       }
       for (int i = 0; i < org_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(15, org_.get(i));
+          .computeMessageSize(16, org_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -12135,55 +12179,57 @@ public final class MsgDefProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         nickname_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
-        photo_ = com.google.protobuf.ByteString.EMPTY;
+        sortKey_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
-        photoModifyTag_ = false;
+        photo_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000010);
-        version_ = 0;
+        photoModifyTag_ = false;
         bitField0_ = (bitField0_ & ~0x00000020);
-        syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
+        version_ = 0;
         bitField0_ = (bitField0_ & ~0x00000040);
-        pcId_ = "";
+        syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
         bitField0_ = (bitField0_ & ~0x00000080);
+        pcId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000100);
         if (accountInfoBuilder_ == null) {
           accountInfo_ = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance();
         } else {
           accountInfoBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000200);
         if (groupBuilder_ == null) {
           group_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000200);
+          bitField0_ = (bitField0_ & ~0x00000400);
         } else {
           groupBuilder_.clear();
         }
         if (phoneBuilder_ == null) {
           phone_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00000800);
         } else {
           phoneBuilder_.clear();
         }
         if (emailBuilder_ == null) {
           email_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000800);
+          bitField0_ = (bitField0_ & ~0x00001000);
         } else {
           emailBuilder_.clear();
         }
         if (imBuilder_ == null) {
           im_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00002000);
         } else {
           imBuilder_.clear();
         }
         if (addressBuilder_ == null) {
           address_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00002000);
+          bitField0_ = (bitField0_ & ~0x00004000);
         } else {
           addressBuilder_.clear();
         }
         if (orgBuilder_ == null) {
           org_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00004000);
+          bitField0_ = (bitField0_ & ~0x00008000);
         } else {
           orgBuilder_.clear();
         }
@@ -12240,25 +12286,29 @@ public final class MsgDefProtos {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.photo_ = photo_;
+        result.sortKey_ = sortKey_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        result.photoModifyTag_ = photoModifyTag_;
+        result.photo_ = photo_;
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
-        result.version_ = version_;
+        result.photoModifyTag_ = photoModifyTag_;
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000040;
         }
-        result.syncResult_ = syncResult_;
+        result.version_ = version_;
         if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
           to_bitField0_ |= 0x00000080;
         }
-        result.pcId_ = pcId_;
+        result.syncResult_ = syncResult_;
         if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000100;
+        }
+        result.pcId_ = pcId_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
         }
         if (accountInfoBuilder_ == null) {
           result.accountInfo_ = accountInfo_;
@@ -12266,54 +12316,54 @@ public final class MsgDefProtos {
           result.accountInfo_ = accountInfoBuilder_.build();
         }
         if (groupBuilder_ == null) {
-          if (((bitField0_ & 0x00000200) == 0x00000200)) {
+          if (((bitField0_ & 0x00000400) == 0x00000400)) {
             group_ = java.util.Collections.unmodifiableList(group_);
-            bitField0_ = (bitField0_ & ~0x00000200);
+            bitField0_ = (bitField0_ & ~0x00000400);
           }
           result.group_ = group_;
         } else {
           result.group_ = groupBuilder_.build();
         }
         if (phoneBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+          if (((bitField0_ & 0x00000800) == 0x00000800)) {
             phone_ = java.util.Collections.unmodifiableList(phone_);
-            bitField0_ = (bitField0_ & ~0x00000400);
+            bitField0_ = (bitField0_ & ~0x00000800);
           }
           result.phone_ = phone_;
         } else {
           result.phone_ = phoneBuilder_.build();
         }
         if (emailBuilder_ == null) {
-          if (((bitField0_ & 0x00000800) == 0x00000800)) {
+          if (((bitField0_ & 0x00001000) == 0x00001000)) {
             email_ = java.util.Collections.unmodifiableList(email_);
-            bitField0_ = (bitField0_ & ~0x00000800);
+            bitField0_ = (bitField0_ & ~0x00001000);
           }
           result.email_ = email_;
         } else {
           result.email_ = emailBuilder_.build();
         }
         if (imBuilder_ == null) {
-          if (((bitField0_ & 0x00001000) == 0x00001000)) {
+          if (((bitField0_ & 0x00002000) == 0x00002000)) {
             im_ = java.util.Collections.unmodifiableList(im_);
-            bitField0_ = (bitField0_ & ~0x00001000);
+            bitField0_ = (bitField0_ & ~0x00002000);
           }
           result.im_ = im_;
         } else {
           result.im_ = imBuilder_.build();
         }
         if (addressBuilder_ == null) {
-          if (((bitField0_ & 0x00002000) == 0x00002000)) {
+          if (((bitField0_ & 0x00004000) == 0x00004000)) {
             address_ = java.util.Collections.unmodifiableList(address_);
-            bitField0_ = (bitField0_ & ~0x00002000);
+            bitField0_ = (bitField0_ & ~0x00004000);
           }
           result.address_ = address_;
         } else {
           result.address_ = addressBuilder_.build();
         }
         if (orgBuilder_ == null) {
-          if (((bitField0_ & 0x00004000) == 0x00004000)) {
+          if (((bitField0_ & 0x00008000) == 0x00008000)) {
             org_ = java.util.Collections.unmodifiableList(org_);
-            bitField0_ = (bitField0_ & ~0x00004000);
+            bitField0_ = (bitField0_ & ~0x00008000);
           }
           result.org_ = org_;
         } else {
@@ -12344,6 +12394,9 @@ public final class MsgDefProtos {
         if (other.hasNickname()) {
           setNickname(other.getNickname());
         }
+        if (other.hasSortKey()) {
+          setSortKey(other.getSortKey());
+        }
         if (other.hasPhoto()) {
           setPhoto(other.getPhoto());
         }
@@ -12366,7 +12419,7 @@ public final class MsgDefProtos {
           if (!other.group_.isEmpty()) {
             if (group_.isEmpty()) {
               group_ = other.group_;
-              bitField0_ = (bitField0_ & ~0x00000200);
+              bitField0_ = (bitField0_ & ~0x00000400);
             } else {
               ensureGroupIsMutable();
               group_.addAll(other.group_);
@@ -12379,7 +12432,7 @@ public final class MsgDefProtos {
               groupBuilder_.dispose();
               groupBuilder_ = null;
               group_ = other.group_;
-              bitField0_ = (bitField0_ & ~0x00000200);
+              bitField0_ = (bitField0_ & ~0x00000400);
               groupBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getGroupFieldBuilder() : null;
@@ -12392,7 +12445,7 @@ public final class MsgDefProtos {
           if (!other.phone_.isEmpty()) {
             if (phone_.isEmpty()) {
               phone_ = other.phone_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00000800);
             } else {
               ensurePhoneIsMutable();
               phone_.addAll(other.phone_);
@@ -12405,7 +12458,7 @@ public final class MsgDefProtos {
               phoneBuilder_.dispose();
               phoneBuilder_ = null;
               phone_ = other.phone_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00000800);
               phoneBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getPhoneFieldBuilder() : null;
@@ -12418,7 +12471,7 @@ public final class MsgDefProtos {
           if (!other.email_.isEmpty()) {
             if (email_.isEmpty()) {
               email_ = other.email_;
-              bitField0_ = (bitField0_ & ~0x00000800);
+              bitField0_ = (bitField0_ & ~0x00001000);
             } else {
               ensureEmailIsMutable();
               email_.addAll(other.email_);
@@ -12431,7 +12484,7 @@ public final class MsgDefProtos {
               emailBuilder_.dispose();
               emailBuilder_ = null;
               email_ = other.email_;
-              bitField0_ = (bitField0_ & ~0x00000800);
+              bitField0_ = (bitField0_ & ~0x00001000);
               emailBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getEmailFieldBuilder() : null;
@@ -12444,7 +12497,7 @@ public final class MsgDefProtos {
           if (!other.im_.isEmpty()) {
             if (im_.isEmpty()) {
               im_ = other.im_;
-              bitField0_ = (bitField0_ & ~0x00001000);
+              bitField0_ = (bitField0_ & ~0x00002000);
             } else {
               ensureImIsMutable();
               im_.addAll(other.im_);
@@ -12457,7 +12510,7 @@ public final class MsgDefProtos {
               imBuilder_.dispose();
               imBuilder_ = null;
               im_ = other.im_;
-              bitField0_ = (bitField0_ & ~0x00001000);
+              bitField0_ = (bitField0_ & ~0x00002000);
               imBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getImFieldBuilder() : null;
@@ -12470,7 +12523,7 @@ public final class MsgDefProtos {
           if (!other.address_.isEmpty()) {
             if (address_.isEmpty()) {
               address_ = other.address_;
-              bitField0_ = (bitField0_ & ~0x00002000);
+              bitField0_ = (bitField0_ & ~0x00004000);
             } else {
               ensureAddressIsMutable();
               address_.addAll(other.address_);
@@ -12483,7 +12536,7 @@ public final class MsgDefProtos {
               addressBuilder_.dispose();
               addressBuilder_ = null;
               address_ = other.address_;
-              bitField0_ = (bitField0_ & ~0x00002000);
+              bitField0_ = (bitField0_ & ~0x00004000);
               addressBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getAddressFieldBuilder() : null;
@@ -12496,7 +12549,7 @@ public final class MsgDefProtos {
           if (!other.org_.isEmpty()) {
             if (org_.isEmpty()) {
               org_ = other.org_;
-              bitField0_ = (bitField0_ & ~0x00004000);
+              bitField0_ = (bitField0_ & ~0x00008000);
             } else {
               ensureOrgIsMutable();
               org_.addAll(other.org_);
@@ -12509,7 +12562,7 @@ public final class MsgDefProtos {
               orgBuilder_.dispose();
               orgBuilder_ = null;
               org_ = other.org_;
-              bitField0_ = (bitField0_ & ~0x00004000);
+              bitField0_ = (bitField0_ & ~0x00008000);
               orgBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getOrgFieldBuilder() : null;
@@ -12566,36 +12619,41 @@ public final class MsgDefProtos {
             }
             case 34: {
               bitField0_ |= 0x00000008;
-              photo_ = input.readBytes();
+              sortKey_ = input.readBytes();
               break;
             }
-            case 40: {
+            case 42: {
               bitField0_ |= 0x00000010;
-              photoModifyTag_ = input.readBool();
+              photo_ = input.readBytes();
               break;
             }
             case 48: {
               bitField0_ |= 0x00000020;
-              version_ = input.readInt32();
+              photoModifyTag_ = input.readBool();
               break;
             }
             case 56: {
+              bitField0_ |= 0x00000040;
+              version_ = input.readInt32();
+              break;
+            }
+            case 64: {
               int rawValue = input.readEnum();
               com.pekall.pctool.protos.MsgDefProtos.SyncResult value = com.pekall.pctool.protos.MsgDefProtos.SyncResult.valueOf(rawValue);
               if (value == null) {
-                unknownFields.mergeVarintField(7, rawValue);
+                unknownFields.mergeVarintField(8, rawValue);
               } else {
-                bitField0_ |= 0x00000040;
+                bitField0_ |= 0x00000080;
                 syncResult_ = value;
               }
               break;
             }
-            case 66: {
-              bitField0_ |= 0x00000080;
+            case 74: {
+              bitField0_ |= 0x00000100;
               pcId_ = input.readBytes();
               break;
             }
-            case 74: {
+            case 82: {
               com.pekall.pctool.protos.MsgDefProtos.AccountRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.newBuilder();
               if (hasAccountInfo()) {
                 subBuilder.mergeFrom(getAccountInfo());
@@ -12604,37 +12662,37 @@ public final class MsgDefProtos {
               setAccountInfo(subBuilder.buildPartial());
               break;
             }
-            case 82: {
+            case 90: {
               com.pekall.pctool.protos.MsgDefProtos.GroupRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.GroupRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addGroup(subBuilder.buildPartial());
               break;
             }
-            case 90: {
+            case 98: {
               com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addPhone(subBuilder.buildPartial());
               break;
             }
-            case 98: {
+            case 106: {
               com.pekall.pctool.protos.MsgDefProtos.EmailRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.EmailRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addEmail(subBuilder.buildPartial());
               break;
             }
-            case 106: {
+            case 114: {
               com.pekall.pctool.protos.MsgDefProtos.IMRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.IMRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addIm(subBuilder.buildPartial());
               break;
             }
-            case 114: {
+            case 122: {
               com.pekall.pctool.protos.MsgDefProtos.AddressRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.AddressRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addAddress(subBuilder.buildPartial());
               break;
             }
-            case 122: {
+            case 130: {
               com.pekall.pctool.protos.MsgDefProtos.OrgRecord.Builder subBuilder = com.pekall.pctool.protos.MsgDefProtos.OrgRecord.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addOrg(subBuilder.buildPartial());
@@ -12739,10 +12797,46 @@ public final class MsgDefProtos {
         onChanged();
       }
       
-      // optional bytes photo = 4;
+      // optional string sort_key = 4;
+      private java.lang.Object sortKey_ = "";
+      public boolean hasSortKey() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      public String getSortKey() {
+        java.lang.Object ref = sortKey_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          sortKey_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setSortKey(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        sortKey_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSortKey() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        sortKey_ = getDefaultInstance().getSortKey();
+        onChanged();
+        return this;
+      }
+      void setSortKey(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000008;
+        sortKey_ = value;
+        onChanged();
+      }
+      
+      // optional bytes photo = 5;
       private com.google.protobuf.ByteString photo_ = com.google.protobuf.ByteString.EMPTY;
       public boolean hasPhoto() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       public com.google.protobuf.ByteString getPhoto() {
         return photo_;
@@ -12751,64 +12845,64 @@ public final class MsgDefProtos {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
         photo_ = value;
         onChanged();
         return this;
       }
       public Builder clearPhoto() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         photo_ = getDefaultInstance().getPhoto();
         onChanged();
         return this;
       }
       
-      // optional bool photo_modify_tag = 5;
+      // optional bool photo_modify_tag = 6;
       private boolean photoModifyTag_ ;
       public boolean hasPhotoModifyTag() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       public boolean getPhotoModifyTag() {
         return photoModifyTag_;
       }
       public Builder setPhotoModifyTag(boolean value) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         photoModifyTag_ = value;
         onChanged();
         return this;
       }
       public Builder clearPhotoModifyTag() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
         photoModifyTag_ = false;
         onChanged();
         return this;
       }
       
-      // optional int32 version = 6;
+      // optional int32 version = 7;
       private int version_ ;
       public boolean hasVersion() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       public int getVersion() {
         return version_;
       }
       public Builder setVersion(int value) {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000040;
         version_ = value;
         onChanged();
         return this;
       }
       public Builder clearVersion() {
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
         version_ = 0;
         onChanged();
         return this;
       }
       
-      // optional .pekall.pcsuite.SyncResult sync_result = 7;
+      // optional .pekall.pcsuite.SyncResult sync_result = 8;
       private com.pekall.pctool.protos.MsgDefProtos.SyncResult syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
       public boolean hasSyncResult() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       public com.pekall.pctool.protos.MsgDefProtos.SyncResult getSyncResult() {
         return syncResult_;
@@ -12817,22 +12911,22 @@ public final class MsgDefProtos {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000080;
         syncResult_ = value;
         onChanged();
         return this;
       }
       public Builder clearSyncResult() {
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000080);
         syncResult_ = com.pekall.pctool.protos.MsgDefProtos.SyncResult.NO_CHANGE;
         onChanged();
         return this;
       }
       
-      // optional string pc_id = 8;
+      // optional string pc_id = 9;
       private java.lang.Object pcId_ = "";
       public boolean hasPcId() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       public String getPcId() {
         java.lang.Object ref = pcId_;
@@ -12848,29 +12942,29 @@ public final class MsgDefProtos {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000080;
+  bitField0_ |= 0x00000100;
         pcId_ = value;
         onChanged();
         return this;
       }
       public Builder clearPcId() {
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000100);
         pcId_ = getDefaultInstance().getPcId();
         onChanged();
         return this;
       }
       void setPcId(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000100;
         pcId_ = value;
         onChanged();
       }
       
-      // optional .pekall.pcsuite.AccountRecord account_info = 9;
+      // optional .pekall.pcsuite.AccountRecord account_info = 10;
       private com.pekall.pctool.protos.MsgDefProtos.AccountRecord accountInfo_ = com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           com.pekall.pctool.protos.MsgDefProtos.AccountRecord, com.pekall.pctool.protos.MsgDefProtos.AccountRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AccountRecordOrBuilder> accountInfoBuilder_;
       public boolean hasAccountInfo() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       public com.pekall.pctool.protos.MsgDefProtos.AccountRecord getAccountInfo() {
         if (accountInfoBuilder_ == null) {
@@ -12889,7 +12983,7 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000200;
         return this;
       }
       public Builder setAccountInfo(
@@ -12900,12 +12994,12 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000200;
         return this;
       }
       public Builder mergeAccountInfo(com.pekall.pctool.protos.MsgDefProtos.AccountRecord value) {
         if (accountInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000100) == 0x00000100) &&
+          if (((bitField0_ & 0x00000200) == 0x00000200) &&
               accountInfo_ != com.pekall.pctool.protos.MsgDefProtos.AccountRecord.getDefaultInstance()) {
             accountInfo_ =
               com.pekall.pctool.protos.MsgDefProtos.AccountRecord.newBuilder(accountInfo_).mergeFrom(value).buildPartial();
@@ -12916,7 +13010,7 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000200;
         return this;
       }
       public Builder clearAccountInfo() {
@@ -12926,11 +13020,11 @@ public final class MsgDefProtos {
         } else {
           accountInfoBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
       public com.pekall.pctool.protos.MsgDefProtos.AccountRecord.Builder getAccountInfoBuilder() {
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000200;
         onChanged();
         return getAccountInfoFieldBuilder().getBuilder();
       }
@@ -12955,13 +13049,13 @@ public final class MsgDefProtos {
         return accountInfoBuilder_;
       }
       
-      // repeated .pekall.pcsuite.GroupRecord group = 10;
+      // repeated .pekall.pcsuite.GroupRecord group = 11;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.GroupRecord> group_ =
         java.util.Collections.emptyList();
       private void ensureGroupIsMutable() {
-        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
+        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
           group_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.GroupRecord>(group_);
-          bitField0_ |= 0x00000200;
+          bitField0_ |= 0x00000400;
          }
       }
       
@@ -13077,7 +13171,7 @@ public final class MsgDefProtos {
       public Builder clearGroup() {
         if (groupBuilder_ == null) {
           group_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000200);
+          bitField0_ = (bitField0_ & ~0x00000400);
           onChanged();
         } else {
           groupBuilder_.clear();
@@ -13133,7 +13227,7 @@ public final class MsgDefProtos {
           groupBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.GroupRecord, com.pekall.pctool.protos.MsgDefProtos.GroupRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.GroupRecordOrBuilder>(
                   group_,
-                  ((bitField0_ & 0x00000200) == 0x00000200),
+                  ((bitField0_ & 0x00000400) == 0x00000400),
                   getParentForChildren(),
                   isClean());
           group_ = null;
@@ -13141,13 +13235,13 @@ public final class MsgDefProtos {
         return groupBuilder_;
       }
       
-      // repeated .pekall.pcsuite.PhoneRecord phone = 11;
+      // repeated .pekall.pcsuite.PhoneRecord phone = 12;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord> phone_ =
         java.util.Collections.emptyList();
       private void ensurePhoneIsMutable() {
-        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
           phone_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.PhoneRecord>(phone_);
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00000800;
          }
       }
       
@@ -13263,7 +13357,7 @@ public final class MsgDefProtos {
       public Builder clearPhone() {
         if (phoneBuilder_ == null) {
           phone_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00000800);
           onChanged();
         } else {
           phoneBuilder_.clear();
@@ -13319,7 +13413,7 @@ public final class MsgDefProtos {
           phoneBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.PhoneRecord, com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.PhoneRecordOrBuilder>(
                   phone_,
-                  ((bitField0_ & 0x00000400) == 0x00000400),
+                  ((bitField0_ & 0x00000800) == 0x00000800),
                   getParentForChildren(),
                   isClean());
           phone_ = null;
@@ -13327,13 +13421,13 @@ public final class MsgDefProtos {
         return phoneBuilder_;
       }
       
-      // repeated .pekall.pcsuite.EmailRecord email = 12;
+      // repeated .pekall.pcsuite.EmailRecord email = 13;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.EmailRecord> email_ =
         java.util.Collections.emptyList();
       private void ensureEmailIsMutable() {
-        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
+        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
           email_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.EmailRecord>(email_);
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00001000;
          }
       }
       
@@ -13449,7 +13543,7 @@ public final class MsgDefProtos {
       public Builder clearEmail() {
         if (emailBuilder_ == null) {
           email_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000800);
+          bitField0_ = (bitField0_ & ~0x00001000);
           onChanged();
         } else {
           emailBuilder_.clear();
@@ -13505,7 +13599,7 @@ public final class MsgDefProtos {
           emailBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.EmailRecord, com.pekall.pctool.protos.MsgDefProtos.EmailRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.EmailRecordOrBuilder>(
                   email_,
-                  ((bitField0_ & 0x00000800) == 0x00000800),
+                  ((bitField0_ & 0x00001000) == 0x00001000),
                   getParentForChildren(),
                   isClean());
           email_ = null;
@@ -13513,13 +13607,13 @@ public final class MsgDefProtos {
         return emailBuilder_;
       }
       
-      // repeated .pekall.pcsuite.IMRecord im = 13;
+      // repeated .pekall.pcsuite.IMRecord im = 14;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.IMRecord> im_ =
         java.util.Collections.emptyList();
       private void ensureImIsMutable() {
-        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
+        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
           im_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.IMRecord>(im_);
-          bitField0_ |= 0x00001000;
+          bitField0_ |= 0x00002000;
          }
       }
       
@@ -13635,7 +13729,7 @@ public final class MsgDefProtos {
       public Builder clearIm() {
         if (imBuilder_ == null) {
           im_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00002000);
           onChanged();
         } else {
           imBuilder_.clear();
@@ -13691,7 +13785,7 @@ public final class MsgDefProtos {
           imBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.IMRecord, com.pekall.pctool.protos.MsgDefProtos.IMRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.IMRecordOrBuilder>(
                   im_,
-                  ((bitField0_ & 0x00001000) == 0x00001000),
+                  ((bitField0_ & 0x00002000) == 0x00002000),
                   getParentForChildren(),
                   isClean());
           im_ = null;
@@ -13699,13 +13793,13 @@ public final class MsgDefProtos {
         return imBuilder_;
       }
       
-      // repeated .pekall.pcsuite.AddressRecord address = 14;
+      // repeated .pekall.pcsuite.AddressRecord address = 15;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.AddressRecord> address_ =
         java.util.Collections.emptyList();
       private void ensureAddressIsMutable() {
-        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
+        if (!((bitField0_ & 0x00004000) == 0x00004000)) {
           address_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.AddressRecord>(address_);
-          bitField0_ |= 0x00002000;
+          bitField0_ |= 0x00004000;
          }
       }
       
@@ -13821,7 +13915,7 @@ public final class MsgDefProtos {
       public Builder clearAddress() {
         if (addressBuilder_ == null) {
           address_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00002000);
+          bitField0_ = (bitField0_ & ~0x00004000);
           onChanged();
         } else {
           addressBuilder_.clear();
@@ -13877,7 +13971,7 @@ public final class MsgDefProtos {
           addressBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.AddressRecord, com.pekall.pctool.protos.MsgDefProtos.AddressRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.AddressRecordOrBuilder>(
                   address_,
-                  ((bitField0_ & 0x00002000) == 0x00002000),
+                  ((bitField0_ & 0x00004000) == 0x00004000),
                   getParentForChildren(),
                   isClean());
           address_ = null;
@@ -13885,13 +13979,13 @@ public final class MsgDefProtos {
         return addressBuilder_;
       }
       
-      // repeated .pekall.pcsuite.OrgRecord org = 15;
+      // repeated .pekall.pcsuite.OrgRecord org = 16;
       private java.util.List<com.pekall.pctool.protos.MsgDefProtos.OrgRecord> org_ =
         java.util.Collections.emptyList();
       private void ensureOrgIsMutable() {
-        if (!((bitField0_ & 0x00004000) == 0x00004000)) {
+        if (!((bitField0_ & 0x00008000) == 0x00008000)) {
           org_ = new java.util.ArrayList<com.pekall.pctool.protos.MsgDefProtos.OrgRecord>(org_);
-          bitField0_ |= 0x00004000;
+          bitField0_ |= 0x00008000;
          }
       }
       
@@ -14007,7 +14101,7 @@ public final class MsgDefProtos {
       public Builder clearOrg() {
         if (orgBuilder_ == null) {
           org_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00004000);
+          bitField0_ = (bitField0_ & ~0x00008000);
           onChanged();
         } else {
           orgBuilder_.clear();
@@ -14063,7 +14157,7 @@ public final class MsgDefProtos {
           orgBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.pekall.pctool.protos.MsgDefProtos.OrgRecord, com.pekall.pctool.protos.MsgDefProtos.OrgRecord.Builder, com.pekall.pctool.protos.MsgDefProtos.OrgRecordOrBuilder>(
                   org_,
-                  ((bitField0_ & 0x00004000) == 0x00004000),
+                  ((bitField0_ & 0x00008000) == 0x00008000),
                   getParentForChildren(),
                   isClean());
           org_ = null;
@@ -22489,103 +22583,103 @@ public final class MsgDefProtos {
       "rd.OrgType\022\014\n\004name\030\004 \001(\t\022-\n\nmodify_tag\030\005" +
       " \001(\0162\031.pekall.pcsuite.ModifyTag\"3\n\007OrgTy",
       "pe\022\013\n\007COMPANY\020\000\022\t\n\005OTHER\020\001\022\020\n\014USER_DEFIN" +
-      "ED\020c\"\354\003\n\rContactRecord\022\n\n\002id\030\001 \001(\003\022\014\n\004na" +
-      "me\030\002 \001(\t\022\020\n\010nickname\030\003 \001(\t\022\r\n\005photo\030\004 \001(" +
-      "\014\022\030\n\020photo_modify_tag\030\005 \001(\010\022\017\n\007version\030\006" +
-      " \001(\005\022/\n\013sync_result\030\007 \001(\0162\032.pekall.pcsui" +
-      "te.SyncResult\022\r\n\005pc_id\030\010 \001(\t\0223\n\014account_" +
-      "info\030\t \001(\0132\035.pekall.pcsuite.AccountRecor" +
-      "d\022*\n\005group\030\n \003(\0132\033.pekall.pcsuite.GroupR" +
-      "ecord\022*\n\005phone\030\013 \003(\0132\033.pekall.pcsuite.Ph" +
-      "oneRecord\022*\n\005email\030\014 \003(\0132\033.pekall.pcsuit",
-      "e.EmailRecord\022$\n\002im\030\r \003(\0132\030.pekall.pcsui" +
-      "te.IMRecord\022.\n\007address\030\016 \003(\0132\035.pekall.pc" +
-      "suite.AddressRecord\022&\n\003org\030\017 \003(\0132\031.pekal" +
-      "l.pcsuite.OrgRecord\"\332\001\n\014ContactsSync\022&\n\004" +
-      "type\030\001 \002(\0162\030.pekall.pcsuite.SyncType\022-\n\010" +
-      "sub_type\030\002 \002(\0162\033.pekall.pcsuite.SyncSubT" +
-      "ype\022<\n\022sync_conflict_ploy\030\003 \001(\0162 .pekall" +
-      ".pcsuite.SyncConflictPloy\0225\n\016contact_rec" +
-      "ord\030\004 \003(\0132\035.pekall.pcsuite.ContactRecord" +
-      "\"_\n\016CalendarRecord\022\n\n\002id\030\001 \001(\003\0223\n\014accoun",
-      "t_info\030\002 \001(\0132\035.pekall.pcsuite.AccountRec" +
-      "ord\022\014\n\004name\030\003 \001(\t\"\200\002\n\014AgendaRecord\022\n\n\002id" +
-      "\030\001 \001(\003\022\023\n\013calendar_id\030\002 \001(\003\022\017\n\007subject\030\003" +
-      " \001(\t\022\020\n\010location\030\004 \001(\t\022\022\n\nstart_time\030\005 \001" +
-      "(\003\022\020\n\010end_time\030\006 \001(\003\022\023\n\013repeat_rule\030\007 \001(" +
-      "\t\022\022\n\nalert_time\030\010 \001(\005\022\014\n\004note\030\t \001(\t\022\017\n\007v" +
-      "ersion\030\n \001(\003\022/\n\013sync_result\030\013 \001(\0162\032.peka" +
-      "ll.pcsuite.SyncResult\022\r\n\005pc_id\030\014 \001(\t\"\326\001\n" +
-      "\nAgendaSync\022&\n\004type\030\001 \002(\0162\030.pekall.pcsui" +
-      "te.SyncType\022-\n\010sub_type\030\002 \002(\0162\033.pekall.p",
-      "csuite.SyncSubType\022<\n\022sync_conflict_ploy" +
-      "\030\003 \001(\0162 .pekall.pcsuite.SyncConflictPloy" +
-      "\0223\n\ragenda_record\030\004 \003(\0132\034.pekall.pcsuite" +
-      ".AgendaRecord\"\221\004\n\nCmdRequest\022)\n\010cmd_type" +
-      "\030\001 \002(\0162\027.pekall.pcsuite.CmdType\022\021\n\trecor" +
-      "d_id\030\002 \003(\003\022-\n\nsms_params\030\003 \001(\0132\031.pekall." +
-      "pcsuite.SMSRecord\022-\n\nmms_params\030\004 \001(\0132\031." +
-      "pekall.pcsuite.MMSRecord\0221\n\014group_params" +
-      "\030\005 \001(\0132\033.pekall.pcsuite.GroupRecord\0225\n\016c" +
-      "ontact_params\030\006 \001(\0132\035.pekall.pcsuite.Con",
-      "tactRecord\0223\n\ragenda_params\030\007 \001(\0132\034.peka" +
-      "ll.pcsuite.AgendaRecord\022-\n\napp_params\030\010 " +
-      "\001(\0132\031.pekall.pcsuite.AppRecord\0223\n\rcontac" +
-      "ts_sync\030\t \001(\0132\034.pekall.pcsuite.ContactsS" +
-      "ync\022/\n\013agenda_sync\030\n \001(\0132\032.pekall.pcsuit" +
-      "e.AgendaSync\0223\n\rconnect_param\030\013 \001(\0132\034.pe" +
-      "kall.pcsuite.ConnectParam\"\231\005\n\013CmdRespons" +
-      "e\022)\n\010cmd_type\030\001 \002(\0162\027.pekall.pcsuite.Cmd" +
-      "Type\022\023\n\013result_code\030\002 \002(\005\022\022\n\nresult_msg\030" +
-      "\003 \002(\t\022-\n\nsms_record\030\004 \003(\0132\031.pekall.pcsui",
-      "te.SMSRecord\022-\n\nmms_record\030\005 \003(\0132\031.pekal" +
-      "l.pcsuite.MMSRecord\0225\n\016contact_record\030\006 " +
-      "\003(\0132\035.pekall.pcsuite.ContactRecord\0227\n\017ca" +
-      "lendar_record\030\007 \003(\0132\036.pekall.pcsuite.Cal" +
-      "endarRecord\0223\n\ragenda_record\030\010 \003(\0132\034.pek" +
-      "all.pcsuite.AgendaRecord\022-\n\napp_record\030\t" +
-      " \003(\0132\031.pekall.pcsuite.AppRecord\0225\n\016accou" +
-      "nt_record\030\n \003(\0132\035.pekall.pcsuite.Account" +
-      "Record\0221\n\014group_record\030\013 \003(\0132\033.pekall.pc" +
-      "suite.GroupRecord\0223\n\rcontacts_sync\030\014 \001(\013",
-      "2\034.pekall.pcsuite.ContactsSync\022/\n\013agenda" +
-      "_sync\030\r \001(\0132\032.pekall.pcsuite.AgendaSync\022" +
-      "4\n\016connect_result\030\016 \001(\0132\034.pekall.pcsuite" +
-      ".ConnectParam*\261\005\n\007CmdType\022\022\n\016CMD_HEART_B" +
-      "EAT\020\000\022\021\n\rCMD_QUERY_SMS\020\001\022\022\n\016CMD_DELETE_S" +
-      "MS\020\002\022\020\n\014CMD_SEND_SMS\020\003\022\022\n\016CMD_IMPORT_SMS" +
-      "\020\004\022\021\n\rCMD_QUERY_MMS\020\005\022\022\n\016CMD_DELETE_MMS\020" +
-      "\006\022\020\n\014CMD_SEND_MMS\020\007\022\022\n\016CMD_IMPORT_MMS\020\010\022" +
-      "\031\n\025CMD_REICEIVED_NEW_MSG\020\t\022\026\n\022CMD_GET_AL" +
-      "L_GROUPS\020\n\022\021\n\rCMD_ADD_GROUP\020\013\022\024\n\020CMD_DEL",
-      "ETE_GROUP\020\014\022\022\n\016CMD_EDIT_GROUP\020\r\022\030\n\024CMD_G" +
-      "ET_ALL_ACCOUNTS\020\016\022\026\n\022CMD_QUERY_CONTACTS\020" +
-      "\017\022\023\n\017CMD_ADD_CONTACT\020\020\022\026\n\022CMD_DELETE_CON" +
-      "TACT\020\021\022\024\n\020CMD_EDIT_CONTACT\020\022\022\025\n\021CMD_SYNC" +
-      "_CONTACTS\020\023\022\026\n\022CMD_QUERY_CALENDAR\020\024\022\025\n\021C" +
-      "MD_QUERY_AGENDAS\020\025\022\022\n\016CMD_ADD_AGENDA\020\026\022\025" +
-      "\n\021CMD_DELETE_AGENDA\020\027\022\023\n\017CMD_EDIT_AGENDA" +
-      "\020\030\022\024\n\020CMD_SYNC_AGENDAS\020\031\022\021\n\rCMD_QUERY_AP" +
-      "P\020\032\022\025\n\021CMD_UNINSTALL_APP\020\033\022\022\n\016CMD_UPLOAD" +
-      "_APK\020\034\022\024\n\020CMD_DOWNLOAD_APK\020\035\022\017\n\013CMD_CONN",
-      "ECT\020\036\022\022\n\016CMD_DISCONNECT\020\037*b\n\rMsgOriginTy" +
-      "pe\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001\022\013\n\007SENTBOX\020\002\022\014\n\010D" +
-      "RAFTBOX\020\003\022\n\n\006OUTBOX\020\004\022\n\n\006FAILED\020\005\022\n\n\006QUE" +
-      "UED\020\006*1\n\tModifyTag\022\010\n\004SAME\020\000\022\007\n\003ADD\020\001\022\007\n" +
-      "\003DEL\020\002\022\010\n\004EDIT\020\003*+\n\010SyncType\022\014\n\010PC_PHONE" +
-      "\020\000\022\021\n\rOUTLOOK_PHONE\020\001*\313\001\n\013SyncSubType\022\025\n" +
-      "\021TWO_WAY_SLOW_SYNC\020\000\022\025\n\021TWO_WAY_FAST_SYN" +
-      "C\020\001\022\026\n\022PHONE_REFRESH_SYNC\020\002\022\023\n\017PC_REFRES" +
-      "H_SYNC\020\003\022\023\n\017PHONE_FAST_SYNC\020\004\022\020\n\014PC_FAST" +
-      "_SYNC\020\005\022\034\n\030TWO_WAY_SLOW_SYNC_SECOND\020\006\022\034\n",
-      "\030TWO_WAY_FAST_SYNC_SECOND\020\007*\221\001\n\nSyncResu" +
-      "lt\022\r\n\tNO_CHANGE\020\000\022\n\n\006PC_ADD\020\001\022\n\n\006PC_DEL\020" +
-      "\002\022\r\n\tPC_MODIFY\020\003\022\017\n\013BOTH_MODIFY\020\005\022\r\n\tPHO" +
-      "NE_ADD\020\006\022\r\n\tPHONE_DEL\020\007\022\020\n\014PHONE_MODIFY\020" +
-      "\010\022\014\n\010BOTH_DEL\020\t*D\n\020SyncConflictPloy\022\010\n\004S" +
-      "KIP\020\000\022\013\n\007PC_SIDE\020\001\022\016\n\nPHONE_SIDE\020\002\022\t\n\005ME" +
-      "GER\020\003B*\n\030com.pekall.pctool.protosB\014MsgDe" +
-      "fProtosH\001"
+      "ED\020c\"\376\003\n\rContactRecord\022\n\n\002id\030\001 \001(\003\022\014\n\004na" +
+      "me\030\002 \001(\t\022\020\n\010nickname\030\003 \001(\t\022\020\n\010sort_key\030\004" +
+      " \001(\t\022\r\n\005photo\030\005 \001(\014\022\030\n\020photo_modify_tag\030" +
+      "\006 \001(\010\022\017\n\007version\030\007 \001(\005\022/\n\013sync_result\030\010 " +
+      "\001(\0162\032.pekall.pcsuite.SyncResult\022\r\n\005pc_id" +
+      "\030\t \001(\t\0223\n\014account_info\030\n \001(\0132\035.pekall.pc" +
+      "suite.AccountRecord\022*\n\005group\030\013 \003(\0132\033.pek" +
+      "all.pcsuite.GroupRecord\022*\n\005phone\030\014 \003(\0132\033" +
+      ".pekall.pcsuite.PhoneRecord\022*\n\005email\030\r \003",
+      "(\0132\033.pekall.pcsuite.EmailRecord\022$\n\002im\030\016 " +
+      "\003(\0132\030.pekall.pcsuite.IMRecord\022.\n\007address" +
+      "\030\017 \003(\0132\035.pekall.pcsuite.AddressRecord\022&\n" +
+      "\003org\030\020 \003(\0132\031.pekall.pcsuite.OrgRecord\"\332\001" +
+      "\n\014ContactsSync\022&\n\004type\030\001 \002(\0162\030.pekall.pc" +
+      "suite.SyncType\022-\n\010sub_type\030\002 \002(\0162\033.pekal" +
+      "l.pcsuite.SyncSubType\022<\n\022sync_conflict_p" +
+      "loy\030\003 \001(\0162 .pekall.pcsuite.SyncConflictP" +
+      "loy\0225\n\016contact_record\030\004 \003(\0132\035.pekall.pcs" +
+      "uite.ContactRecord\"_\n\016CalendarRecord\022\n\n\002",
+      "id\030\001 \001(\003\0223\n\014account_info\030\002 \001(\0132\035.pekall." +
+      "pcsuite.AccountRecord\022\014\n\004name\030\003 \001(\t\"\200\002\n\014" +
+      "AgendaRecord\022\n\n\002id\030\001 \001(\003\022\023\n\013calendar_id\030" +
+      "\002 \001(\003\022\017\n\007subject\030\003 \001(\t\022\020\n\010location\030\004 \001(\t" +
+      "\022\022\n\nstart_time\030\005 \001(\003\022\020\n\010end_time\030\006 \001(\003\022\023" +
+      "\n\013repeat_rule\030\007 \001(\t\022\022\n\nalert_time\030\010 \001(\005\022" +
+      "\014\n\004note\030\t \001(\t\022\017\n\007version\030\n \001(\003\022/\n\013sync_r" +
+      "esult\030\013 \001(\0162\032.pekall.pcsuite.SyncResult\022" +
+      "\r\n\005pc_id\030\014 \001(\t\"\326\001\n\nAgendaSync\022&\n\004type\030\001 " +
+      "\002(\0162\030.pekall.pcsuite.SyncType\022-\n\010sub_typ",
+      "e\030\002 \002(\0162\033.pekall.pcsuite.SyncSubType\022<\n\022" +
+      "sync_conflict_ploy\030\003 \001(\0162 .pekall.pcsuit" +
+      "e.SyncConflictPloy\0223\n\ragenda_record\030\004 \003(" +
+      "\0132\034.pekall.pcsuite.AgendaRecord\"\221\004\n\nCmdR" +
+      "equest\022)\n\010cmd_type\030\001 \002(\0162\027.pekall.pcsuit" +
+      "e.CmdType\022\021\n\trecord_id\030\002 \003(\003\022-\n\nsms_para" +
+      "ms\030\003 \001(\0132\031.pekall.pcsuite.SMSRecord\022-\n\nm" +
+      "ms_params\030\004 \001(\0132\031.pekall.pcsuite.MMSReco" +
+      "rd\0221\n\014group_params\030\005 \001(\0132\033.pekall.pcsuit" +
+      "e.GroupRecord\0225\n\016contact_params\030\006 \001(\0132\035.",
+      "pekall.pcsuite.ContactRecord\0223\n\ragenda_p" +
+      "arams\030\007 \001(\0132\034.pekall.pcsuite.AgendaRecor" +
+      "d\022-\n\napp_params\030\010 \001(\0132\031.pekall.pcsuite.A" +
+      "ppRecord\0223\n\rcontacts_sync\030\t \001(\0132\034.pekall" +
+      ".pcsuite.ContactsSync\022/\n\013agenda_sync\030\n \001" +
+      "(\0132\032.pekall.pcsuite.AgendaSync\0223\n\rconnec" +
+      "t_param\030\013 \001(\0132\034.pekall.pcsuite.ConnectPa" +
+      "ram\"\231\005\n\013CmdResponse\022)\n\010cmd_type\030\001 \002(\0162\027." +
+      "pekall.pcsuite.CmdType\022\023\n\013result_code\030\002 " +
+      "\002(\005\022\022\n\nresult_msg\030\003 \002(\t\022-\n\nsms_record\030\004 ",
+      "\003(\0132\031.pekall.pcsuite.SMSRecord\022-\n\nmms_re" +
+      "cord\030\005 \003(\0132\031.pekall.pcsuite.MMSRecord\0225\n" +
+      "\016contact_record\030\006 \003(\0132\035.pekall.pcsuite.C" +
+      "ontactRecord\0227\n\017calendar_record\030\007 \003(\0132\036." +
+      "pekall.pcsuite.CalendarRecord\0223\n\ragenda_" +
+      "record\030\010 \003(\0132\034.pekall.pcsuite.AgendaReco" +
+      "rd\022-\n\napp_record\030\t \003(\0132\031.pekall.pcsuite." +
+      "AppRecord\0225\n\016account_record\030\n \003(\0132\035.peka" +
+      "ll.pcsuite.AccountRecord\0221\n\014group_record" +
+      "\030\013 \003(\0132\033.pekall.pcsuite.GroupRecord\0223\n\rc",
+      "ontacts_sync\030\014 \001(\0132\034.pekall.pcsuite.Cont" +
+      "actsSync\022/\n\013agenda_sync\030\r \001(\0132\032.pekall.p" +
+      "csuite.AgendaSync\0224\n\016connect_result\030\016 \001(" +
+      "\0132\034.pekall.pcsuite.ConnectParam*\261\005\n\007CmdT" +
+      "ype\022\022\n\016CMD_HEART_BEAT\020\000\022\021\n\rCMD_QUERY_SMS" +
+      "\020\001\022\022\n\016CMD_DELETE_SMS\020\002\022\020\n\014CMD_SEND_SMS\020\003" +
+      "\022\022\n\016CMD_IMPORT_SMS\020\004\022\021\n\rCMD_QUERY_MMS\020\005\022" +
+      "\022\n\016CMD_DELETE_MMS\020\006\022\020\n\014CMD_SEND_MMS\020\007\022\022\n" +
+      "\016CMD_IMPORT_MMS\020\010\022\031\n\025CMD_REICEIVED_NEW_M" +
+      "SG\020\t\022\026\n\022CMD_GET_ALL_GROUPS\020\n\022\021\n\rCMD_ADD_",
+      "GROUP\020\013\022\024\n\020CMD_DELETE_GROUP\020\014\022\022\n\016CMD_EDI" +
+      "T_GROUP\020\r\022\030\n\024CMD_GET_ALL_ACCOUNTS\020\016\022\026\n\022C" +
+      "MD_QUERY_CONTACTS\020\017\022\023\n\017CMD_ADD_CONTACT\020\020" +
+      "\022\026\n\022CMD_DELETE_CONTACT\020\021\022\024\n\020CMD_EDIT_CON" +
+      "TACT\020\022\022\025\n\021CMD_SYNC_CONTACTS\020\023\022\026\n\022CMD_QUE" +
+      "RY_CALENDAR\020\024\022\025\n\021CMD_QUERY_AGENDAS\020\025\022\022\n\016" +
+      "CMD_ADD_AGENDA\020\026\022\025\n\021CMD_DELETE_AGENDA\020\027\022" +
+      "\023\n\017CMD_EDIT_AGENDA\020\030\022\024\n\020CMD_SYNC_AGENDAS" +
+      "\020\031\022\021\n\rCMD_QUERY_APP\020\032\022\025\n\021CMD_UNINSTALL_A" +
+      "PP\020\033\022\022\n\016CMD_UPLOAD_APK\020\034\022\024\n\020CMD_DOWNLOAD",
+      "_APK\020\035\022\017\n\013CMD_CONNECT\020\036\022\022\n\016CMD_DISCONNEC" +
+      "T\020\037*b\n\rMsgOriginType\022\007\n\003ANY\020\000\022\t\n\005INBOX\020\001" +
+      "\022\013\n\007SENTBOX\020\002\022\014\n\010DRAFTBOX\020\003\022\n\n\006OUTBOX\020\004\022" +
+      "\n\n\006FAILED\020\005\022\n\n\006QUEUED\020\006*1\n\tModifyTag\022\010\n\004" +
+      "SAME\020\000\022\007\n\003ADD\020\001\022\007\n\003DEL\020\002\022\010\n\004EDIT\020\003*+\n\010Sy" +
+      "ncType\022\014\n\010PC_PHONE\020\000\022\021\n\rOUTLOOK_PHONE\020\001*" +
+      "\313\001\n\013SyncSubType\022\025\n\021TWO_WAY_SLOW_SYNC\020\000\022\025" +
+      "\n\021TWO_WAY_FAST_SYNC\020\001\022\026\n\022PHONE_REFRESH_S" +
+      "YNC\020\002\022\023\n\017PC_REFRESH_SYNC\020\003\022\023\n\017PHONE_FAST" +
+      "_SYNC\020\004\022\020\n\014PC_FAST_SYNC\020\005\022\034\n\030TWO_WAY_SLO",
+      "W_SYNC_SECOND\020\006\022\034\n\030TWO_WAY_FAST_SYNC_SEC" +
+      "OND\020\007*\221\001\n\nSyncResult\022\r\n\tNO_CHANGE\020\000\022\n\n\006P" +
+      "C_ADD\020\001\022\n\n\006PC_DEL\020\002\022\r\n\tPC_MODIFY\020\003\022\017\n\013BO" +
+      "TH_MODIFY\020\005\022\r\n\tPHONE_ADD\020\006\022\r\n\tPHONE_DEL\020" +
+      "\007\022\020\n\014PHONE_MODIFY\020\010\022\014\n\010BOTH_DEL\020\t*D\n\020Syn" +
+      "cConflictPloy\022\010\n\004SKIP\020\000\022\013\n\007PC_SIDE\020\001\022\016\n\n" +
+      "PHONE_SIDE\020\002\022\t\n\005MEGER\020\003B*\n\030com.pekall.pc" +
+      "tool.protosB\014MsgDefProtosH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -22701,7 +22795,7 @@ public final class MsgDefProtos {
           internal_static_pekall_pcsuite_ContactRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pekall_pcsuite_ContactRecord_descriptor,
-              new java.lang.String[] { "Id", "Name", "Nickname", "Photo", "PhotoModifyTag", "Version", "SyncResult", "PcId", "AccountInfo", "Group", "Phone", "Email", "Im", "Address", "Org", },
+              new java.lang.String[] { "Id", "Name", "Nickname", "SortKey", "Photo", "PhotoModifyTag", "Version", "SyncResult", "PcId", "AccountInfo", "Group", "Phone", "Email", "Im", "Address", "Org", },
               com.pekall.pctool.protos.MsgDefProtos.ContactRecord.class,
               com.pekall.pctool.protos.MsgDefProtos.ContactRecord.Builder.class);
           internal_static_pekall_pcsuite_ContactsSync_descriptor =

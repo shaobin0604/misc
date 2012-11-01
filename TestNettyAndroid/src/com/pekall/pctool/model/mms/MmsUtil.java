@@ -35,6 +35,8 @@ public class MmsUtil {
     private static final String MMS_AUTHORITY = "mms";
 
     public static List<Mms> query(Context cxt) {
+        Slog.d("query E");
+        
         List<Mms> mmsList = new ArrayList<Mms>();
         Cursor cursor = cxt.getContentResolver().query(MAIN_MMS_URI, new String[] {
                 "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
@@ -49,7 +51,7 @@ public class MmsUtil {
             mms.size = cursor.getInt(cursor.getColumnIndex("m_size"));
 
             Cursor cursorAddress = cxt.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
-                    null, null, null, null);
+                    null, null, null, "_id desc");
 
             if (cursorAddress.moveToFirst()) {
                 mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
@@ -111,11 +113,14 @@ public class MmsUtil {
         } // << end while >>
 
         cursor.close();
+        
+        Slog.d("query X");
 
         return mmsList;
     }
 
     private static void loadAttachment(Context cxt, Mms mms, long partRowId, String type, String fileName) {
+        Slog.d("loadAttachment E");
         Attachment attachment = new Attachment();
 
         InputStream is = null;
@@ -143,6 +148,7 @@ public class MmsUtil {
         }
         attachment.name = fileName;
         mms.attachments.add(attachment);
+        Slog.d("loadAttachment X");
     }
 
     public static boolean delete(Context cxt, long rowId) {
@@ -186,6 +192,7 @@ public class MmsUtil {
     }
 
     private static List<String> parseSmilToSlidePull(Context cxt, String smilContent, Mms mms) {
+        Slog.d("parseSmilToSlidePull E");
         XmlPullParserFactory factory;
         List<String> slideTxtFileNames = new ArrayList<String>();
         try {
@@ -244,6 +251,7 @@ public class MmsUtil {
         } catch (IOException e) {
             Slog.e("Error parse smil", e);
         }
+        Slog.d("parseSmilToSlidePull X");
         return slideTxtFileNames;
     }
 

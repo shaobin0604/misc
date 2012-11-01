@@ -293,18 +293,19 @@ message ContactRecord
 	optional int64								id = 1;
 	optional string 							name = 2;
 	optional string 							nickname = 3;
-	optional bytes								photo = 4;				//头像数据
-	optional bool								photo_modify_tag = 5;	//为true时，需要更新头像数据
-	optional int32								version = 6;
-	optional SyncResult 						sync_result = 7;
-	optional string								pc_id = 8; //pc方的唯一标识		
-	optional AccountRecord 						account_info = 9;
-	repeated GroupRecord						group = 10;				//所属组列表
-	repeated PhoneRecord						phone = 11;
-	repeated EmailRecord						email = 12;
-	repeated IMRecord							im = 13;
-	repeated AddressRecord  					address = 14;
-	repeated OrgRecord							org = 15;
+	optional string								sort_key = 4;			//用于联系人名字排序
+	optional bytes								photo = 5;				//头像数据
+	optional bool								photo_modify_tag = 6;	//为true时，需要更新头像数据
+	optional int32								version = 7;
+	optional SyncResult 						sync_result = 8;
+	optional string								pc_id = 9; //pc方的唯一标识		
+	optional AccountRecord 						account_info = 10;
+	repeated GroupRecord						group = 11;				//所属组列表
+	repeated PhoneRecord						phone = 12;
+	repeated EmailRecord						email = 13;
+	repeated IMRecord							im = 14;
+	repeated AddressRecord  					address = 15;
+	repeated OrgRecord							org = 16;
 }
 
 //同步类型

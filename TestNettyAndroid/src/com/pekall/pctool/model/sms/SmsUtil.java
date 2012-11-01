@@ -56,15 +56,8 @@ public class SmsUtil {
     private static final Uri SMS_QUEUED_URI = Uri.parse(SMS_QUEUED);
 
     private static final Uri ICC_URI = Uri.parse("content://sms/icc");
-    private static final Uri ICC2_URI = Uri.parse("content://sms/icc2"); // this
-                                                                         // uri
-                                                                         // is
-                                                                         // valid
-                                                                         // only
-                                                                         // on
-                                                                         // dual
-                                                                         // sim
-                                                                         // phone
+    // this uri is only valid on dual sim phone
+    private static final Uri ICC2_URI = Uri.parse("content://sms/icc2"); 
 
     private static final String DEFAULT_SORT_ORDER = "date DESC";
 

@@ -70,8 +70,14 @@ public class ContactUtil {
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_NAME = "contacts.account.name.local";
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_TYPE = "contacts.account.type.local";
 
-    private static final boolean DISABLE_SIM_CONTACTS = true; // FIXME: disable sim contacts for bug 9863
+    private static final boolean DISABLE_SIM_CONTACTS = true; // FIXME: disable
+                                                              // sim contacts
+                                                              // for bug 9863
 
+    private static final String RAW_CONTACT_SORT_KEY = "sort_key"; // sort_key
+                                                                   // column in
+                                                                   // table
+                                                                   // 'raw_contacts'
     //
     //
     //
@@ -136,11 +142,11 @@ public class ContactUtil {
 
         try {
             cursor = context.getContentResolver().query(uri, selection, null, null, null);
-            
+
             if (cursor != null && cursor.moveToFirst()) {
-                displayName = cursor.getString(0);     // PhoneLookup.DISPLAY_NAME
+                displayName = cursor.getString(0); // PhoneLookup.DISPLAY_NAME
             }
-            
+
             return displayName;
         } finally {
             if (cursor != null) {
@@ -638,6 +644,34 @@ public class ContactUtil {
             Slog.d("updateContactForce X");
             return false;
         }
+    }
+
+    public static String getRawContactSortKey(Context context, long rawContactId) {
+        String[] projection = {
+                RAW_CONTACT_SORT_KEY,
+        };
+        
+        String selection = RawContacts._ID + "=?";
+        
+        String[] selectionArgs = {
+               String.valueOf(rawContactId),
+        };
+
+        Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, projection,
+                selection, selectionArgs, null);
+
+        String sortKey = "";    // default empty string
+        
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    sortKey = cursor.getString(0);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        return sortKey;
     }
 
     /**
@@ -1232,6 +1266,7 @@ public class ContactUtil {
 
         Collection<Contact> contacts = getContactsFast(context, selection, selectionArgs);
 
+        // retrieve the first contact in result set
         for (Contact contact : contacts) {
             return contact;
         }
@@ -1266,7 +1301,7 @@ public class ContactUtil {
         } else {
             selection = RawContacts.DELETED + "!=?";
             selectionArgs = new String[] {
-                String.valueOf(RAW_CONTACT_DELETE_FLAG)
+                    String.valueOf(RAW_CONTACT_DELETE_FLAG)
             };
         }
 
@@ -1281,7 +1316,8 @@ public class ContactUtil {
                     RawContacts._ID,
                     RawContacts.ACCOUNT_NAME,
                     RawContacts.ACCOUNT_TYPE,
-                    RawContacts.VERSION
+                    RawContacts.VERSION,
+                    RAW_CONTACT_SORT_KEY,
             };
 
             Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, projection,
@@ -1294,6 +1330,7 @@ public class ContactUtil {
                         final int idxForAccountName = cursor.getColumnIndex(RawContacts.ACCOUNT_NAME);
                         final int idxForAccountType = cursor.getColumnIndex(RawContacts.ACCOUNT_TYPE);
                         final int idxForVersion = cursor.getColumnIndex(RawContacts.VERSION);
+                        final int idxForSortKey = cursor.getColumnIndex(RAW_CONTACT_SORT_KEY);
 
                         do {
                             Contact contact = new Contact();
@@ -1301,6 +1338,7 @@ public class ContactUtil {
                             contact.accountInfo.accountName = cursor.getString(idxForAccountName);
                             contact.accountInfo.accountType = cursor.getString(idxForAccountType);
                             contact.version = cursor.getInt(idxForVersion);
+                            contact.sortKey = cursor.getString(idxForSortKey);
 
                             contactsMap.put(contact.id, contact);
                         } while (cursor.moveToNext());

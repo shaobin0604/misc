@@ -3,7 +3,6 @@ package com.pekall.pctool.model.mms;
 import android.text.format.DateFormat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Mms {
     public static final int MESSAGE_BOX_ALL    = 0;

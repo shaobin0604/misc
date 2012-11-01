@@ -1565,6 +1565,7 @@ public class HandlerFacade {
         contactRecordBuilder.setId(contact.id);
         contactRecordBuilder.setVersion(contact.version);
         contactRecordBuilder.setName(normalizeStr(contact.name));
+        contactRecordBuilder.setSortKey(contact.sortKey);
         contactRecordBuilder.setNickname(normalizeStr(contact.nickname));
         if (contact.photo != null && contact.photo.length > 0) {
             contactRecordBuilder.setPhoto(ByteString.copyFrom(contact.photo));
@@ -1931,7 +1932,11 @@ public class HandlerFacade {
                 
                 if ((newDataIds = ContactUtil.updateContact(mContext, contact)) != null) {
                     
+                    String sortKey = ContactUtil.getRawContactSortKey(mContext, contact.id);
+                    
                     ContactRecord.Builder contactRecordBuilder = ContactRecord.newBuilder(contactRecord);
+                    
+                    contactRecordBuilder.setSortKey(sortKey);
                     
                     // groups
                     for (int i = 0; i < contactRecord.getGroupCount(); i++) {
