@@ -31,14 +31,214 @@ import com.pekall.pctool.model.mms.Mms.Slide;
 import com.pekall.pctool.util.Slog;
 
 public class MmsUtil {
-    static final Uri MAIN_MMS_URI = Uri.parse("content://mms");
+    private static final Uri MAIN_MMS_URI = Uri.parse("content://mms");
     private static final String MMS_AUTHORITY = "mms";
+    private static final String[] MMS_PROJECTION = {
+    	"_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
+    };
+    
+    
+    public static Mms queryMms(Context ctx, long mmsId) {
+    	Slog.d("queryMms E, mmsId = " + mmsId);
+    	
+    	String selection = "_id = ?";
+    	
+    	String[] selectionArgs = {
+    			String.valueOf(mmsId)
+    	};
+    	Mms mms = null;
+    	Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, MMS_PROJECTION, selection, selectionArgs, null);
+    	
+    	if (cursor != null) {
+    		try {
+    			if (cursor.moveToFirst()) {
+    				final int idxForId = cursor.getColumnIndex("_id");
+    				final int idxForThreadId = cursor.getColumnIndex("thread_id");
+    				final int idxForMsgBox = cursor.getColumnIndex("msg_box");
+    				final int idxForSub = cursor.getColumnIndex("sub");
+    				final int idxForDate = cursor.getColumnIndex("date");
+    				final int idxForRead = cursor.getColumnIndex("read");
+    				final int idxForSize = cursor.getColumnIndex("m_size");
+    				
+    				mms = new Mms();
+    				
+    				mms.rowId = cursor.getLong(idxForId);
+    				mms.threadId = cursor.getLong(idxForThreadId);
+    				mms.msgBoxIndex = cursor.getInt(idxForMsgBox);
+    				String str = cursor.getString(idxForSub);
+    	            if (str != null) {
+    	                try {
+    	                    str = new String(str.getBytes("ISO-8859-1"), "UTF-8");
+    	                } catch (UnsupportedEncodingException e) {
+    	                    Slog.e("encoding string " + e.getMessage());
+    	                }
+    	            }
+    	            mms.subject = str;
+    	            mms.date = cursor.getLong(idxForDate) * DateUtils.SECOND_IN_MILLIS;
+    	            mms.isReaded = cursor.getInt(idxForRead);
+    	            mms.size = cursor.getInt(idxForSize);
+    	            
+    	            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
+    	                    null, null, null, "_id desc");
+    	            if (cursorAddress != null) {
+    	            	try {
+    	            		if (cursorAddress.moveToFirst()) {
+    	            			mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
+    	            		}
+    	            	} finally {
+    	            		cursorAddress.close();
+    	            	}
+    	            }
+    	            
+    	            /* get smil.xml */
+    	            Cursor cursorSmil = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
+    	                    "text"
+    	            }, "ct='application/smil'", null, null);
+    	            String smilContent = "";
+    	            if (cursorSmil != null) {
+    	            	try {
+		    	            if (cursorSmil.moveToFirst()) {
+		    	                smilContent = cursorSmil.getString(cursorSmil.getColumnIndex("text"));
+		    	                // Log.e("", "smil content = " + smilContent);
+		    	            } else {
+		    	                Slog.e("this mms don't have smil.xml");
+		    	            }
+	    	            } finally {
+	    	            	cursorSmil.close();
+	    	            }
+    	            }
 
-    public static List<Mms> query(Context cxt) {
-        Slog.d("query E");
+    	            /** parse smil.xml and fill slide contents **/
+    	            List<String> slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
+
+    	            /** get attachments **/
+    	            Cursor cursorPart = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
+    	            
+    	            if (cursorPart != null) {
+	    	            try {
+		    	            while (cursorPart.moveToNext()) {
+		    	                String type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
+		    	                long partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
+		    	                String fileName = cursorPart.getString(cursorPart.getColumnIndex("cl"));
+		    	                /** avoid null pointer **/
+		    	                fileName = (fileName == null) ? "" : fileName;
+		    	                type = (type == null) ? "" : type;
+		
+		    	                if (!type.equalsIgnoreCase("application/smil")
+		    	                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
+		    	                        && !isSlideFile(mms.attachments, fileName)) {
+		    	                    loadAttachment(ctx, mms, partRowId, type, fileName);
+		    	                }
+		    	            }
+	    	            } finally {
+	    	            	cursorPart.close();
+	    	            }
+    	            }
+    			}
+    		} finally {
+    			cursor.close();
+    		}
+    	}
+    	
+    	Slog.d("queryMms X");
+    	
+    	return mms;
+    }
+    
+    public static Mms queryMmsAttachment(Context ctx, long mmsId) {
+    	Slog.d("queryMms E, mmsId = " + mmsId);
+    	
+    	String[] projection = {
+    			"_id"
+    	};
+    	
+    	String selection = "_id = ?";
+    	
+    	String[] selectionArgs = {
+    			String.valueOf(mmsId)
+    	};
+    	Mms mms = null;
+    	Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, projection, selection, selectionArgs, null);
+    	
+    	if (cursor != null) {
+    		try {
+    			if (cursor.moveToFirst()) {
+    				final int idxForId = cursor.getColumnIndex("_id");
+    				mms = new Mms();
+    				mms.rowId = cursor.getLong(idxForId);
+    	            
+    	            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
+    	                    null, null, null, "_id desc");
+    	            if (cursorAddress != null) {
+    	            	try {
+    	            		if (cursorAddress.moveToFirst()) {
+    	            			mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
+    	            		}
+    	            	} finally {
+    	            		cursorAddress.close();
+    	            	}
+    	            }
+    	            
+    	            /* get smil.xml */
+    	            Cursor cursorSmil = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
+    	                    "text"
+    	            }, "ct='application/smil'", null, null);
+    	            String smilContent = "";
+    	            if (cursorSmil != null) {
+    	            	try {
+		    	            if (cursorSmil.moveToFirst()) {
+		    	                smilContent = cursorSmil.getString(cursorSmil.getColumnIndex("text"));
+		    	                // Log.e("", "smil content = " + smilContent);
+		    	            } else {
+		    	                Slog.e("this mms don't have smil.xml");
+		    	            }
+	    	            } finally {
+	    	            	cursorSmil.close();
+	    	            }
+    	            }
+
+    	            /** parse smil.xml and fill slide contents **/
+    	            List<String> slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
+
+    	            /** get attachments **/
+    	            Cursor cursorPart = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
+    	            
+    	            if (cursorPart != null) {
+	    	            try {
+		    	            while (cursorPart.moveToNext()) {
+		    	                String type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
+		    	                long partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
+		    	                String fileName = cursorPart.getString(cursorPart.getColumnIndex("cl"));
+		    	                /** avoid null pointer **/
+		    	                fileName = (fileName == null) ? "" : fileName;
+		    	                type = (type == null) ? "" : type;
+		
+		    	                if (!type.equalsIgnoreCase("application/smil")
+		    	                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
+		    	                        && !isSlideFile(mms.attachments, fileName)) {
+		    	                    loadAttachment(ctx, mms, partRowId, type, fileName);
+		    	                }
+		    	            }
+	    	            } finally {
+	    	            	cursorPart.close();
+	    	            }
+    	            }
+    			}
+    		} finally {
+    			cursor.close();
+    		}
+    	}
+    	
+    	Slog.d("queryMms X");
+    	
+    	return mms;
+    }
+    
+    public static List<Mms> queryMmsesWithoutAttachment(Context ctx) {
+    	Slog.d("queryMmsesWithoutAttachment E");
         
         List<Mms> mmsList = new ArrayList<Mms>();
-        Cursor cursor = cxt.getContentResolver().query(MAIN_MMS_URI, new String[] {
+        Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
                 "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
         }, null, null, "_id desc");
 
@@ -50,7 +250,7 @@ public class MmsUtil {
             mms.msgBoxIndex = cursor.getInt(cursor.getColumnIndex("msg_box"));
             mms.size = cursor.getInt(cursor.getColumnIndex("m_size"));
 
-            Cursor cursorAddress = cxt.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
+            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
                     null, null, null, "_id desc");
 
             if (cursorAddress.moveToFirst()) {
@@ -59,7 +259,59 @@ public class MmsUtil {
             cursorAddress.close();
 
             if (!TextUtils.isEmpty(mms.phoneNum)) {
-                mms.person = ContactUtil.getRawContactId(cxt, mms.phoneNum);
+                mms.person = ContactUtil.getRawContactId(ctx, mms.phoneNum);
+            }
+
+            String str = cursor.getString(cursor.getColumnIndex("sub"));
+            if (str != null) {
+                try {
+                    str = new String(str.getBytes("ISO-8859-1"), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    Slog.e("encoding string " + e.getMessage());
+                }
+            }
+            mms.subject = str;
+
+            // the unit of date is second
+            mms.date = cursor.getLong(cursor.getColumnIndex("date")) * DateUtils.SECOND_IN_MILLIS;
+            mms.isReaded = cursor.getInt(cursor.getColumnIndex("read"));
+
+            mmsList.add(mms);
+        } // << end while >>
+
+        cursor.close();
+        
+        Slog.d("queryMmsesWithoutAttachment X");
+
+        return mmsList;
+    }
+
+    public static List<Mms> queryMmses(Context ctx) {
+        Slog.d("queryMmses E");
+        
+        List<Mms> mmsList = new ArrayList<Mms>();
+        Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
+                "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
+        }, null, null, "_id desc");
+
+        while (cursor.moveToNext()) {
+            Mms mms = new Mms();
+
+            mms.rowId = cursor.getLong(cursor.getColumnIndex("_id"));
+            mms.threadId = cursor.getLong(cursor.getColumnIndex("thread_id"));
+            mms.msgBoxIndex = cursor.getInt(cursor.getColumnIndex("msg_box"));
+            mms.size = cursor.getInt(cursor.getColumnIndex("m_size"));
+
+            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
+                    null, null, null, "_id desc");
+
+            if (cursorAddress.moveToFirst()) {
+                mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
+            }
+            cursorAddress.close();
+
+            if (!TextUtils.isEmpty(mms.phoneNum)) {
+                mms.person = ContactUtil.getRawContactId(ctx, mms.phoneNum);
             }
 
             String str = cursor.getString(cursor.getColumnIndex("sub"));
@@ -77,7 +329,7 @@ public class MmsUtil {
             mms.isReaded = cursor.getInt(cursor.getColumnIndex("read"));
 
             /** get smil.xml **/
-            Cursor cursorSmil = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
+            Cursor cursorSmil = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
                     "text"
             }, "ct='application/smil'", null, null);
             String smilContent = "";
@@ -90,10 +342,10 @@ public class MmsUtil {
             cursorSmil.close();
 
             /** parse smil.xml and fill slide contents **/
-            List<String> slideTxtFileNames = parseSmilToSlidePull(cxt, smilContent, mms);
+            List<String> slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
 
             /** get attachments **/
-            Cursor cursorPart = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
+            Cursor cursorPart = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
             while (cursorPart.moveToNext()) {
                 String type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
                 long partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
@@ -105,7 +357,7 @@ public class MmsUtil {
                 if (!type.equalsIgnoreCase("application/smil")
                         && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
                         && !isSlideFile(mms.attachments, fileName))
-                    loadAttachment(cxt, mms, partRowId, type, fileName);
+                    loadAttachment(ctx, mms, partRowId, type, fileName);
             }
             cursorPart.close();
 
@@ -114,7 +366,7 @@ public class MmsUtil {
 
         cursor.close();
         
-        Slog.d("query X");
+        Slog.d("queryMmses X");
 
         return mmsList;
     }

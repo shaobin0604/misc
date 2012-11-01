@@ -592,7 +592,7 @@ public class HandlerFacade {
         SlideRecord.Builder slideRecordBuilder = SlideRecord.newBuilder();
         AttachmentRecord.Builder attachmentRecordBuilder = AttachmentRecord.newBuilder();
 
-        List<Mms> mmsList = MmsUtil.query(mContext);
+        List<Mms> mmsList = MmsUtil.queryMmses(mContext);
         
 
         for (Mms mms : mmsList) {
