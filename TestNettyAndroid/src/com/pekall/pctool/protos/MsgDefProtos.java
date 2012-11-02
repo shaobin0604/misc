@@ -4656,17 +4656,19 @@ public final class MsgDefProtos {
     boolean hasMsgId();
     long getMsgId();
     
-    // optional int64 contact_id = 2;
-    boolean hasContactId();
-    long getContactId();
+    // repeated int64 contact_id = 2;
+    java.util.List<java.lang.Long> getContactIdList();
+    int getContactIdCount();
+    long getContactId(int index);
     
     // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
     boolean hasMsgOrigin();
     com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin();
     
-    // optional string phone_num = 4;
-    boolean hasPhoneNum();
-    String getPhoneNum();
+    // repeated string phone_num = 4;
+    java.util.List<String> getPhoneNumList();
+    int getPhoneNumCount();
+    String getPhoneNum(int index);
     
     // optional string subject = 5;
     boolean hasSubject();
@@ -4743,63 +4745,49 @@ public final class MsgDefProtos {
       return msgId_;
     }
     
-    // optional int64 contact_id = 2;
+    // repeated int64 contact_id = 2;
     public static final int CONTACT_ID_FIELD_NUMBER = 2;
-    private long contactId_;
-    public boolean hasContactId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    public long getContactId() {
+    private java.util.List<java.lang.Long> contactId_;
+    public java.util.List<java.lang.Long>
+        getContactIdList() {
       return contactId_;
+    }
+    public int getContactIdCount() {
+      return contactId_.size();
+    }
+    public long getContactId(int index) {
+      return contactId_.get(index);
     }
     
     // optional .pekall.pcsuite.MsgOriginType msg_origin = 3;
     public static final int MSG_ORIGIN_FIELD_NUMBER = 3;
     private com.pekall.pctool.protos.MsgDefProtos.MsgOriginType msgOrigin_;
     public boolean hasMsgOrigin() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     public com.pekall.pctool.protos.MsgDefProtos.MsgOriginType getMsgOrigin() {
       return msgOrigin_;
     }
     
-    // optional string phone_num = 4;
+    // repeated string phone_num = 4;
     public static final int PHONE_NUM_FIELD_NUMBER = 4;
-    private java.lang.Object phoneNum_;
-    public boolean hasPhoneNum() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+    private com.google.protobuf.LazyStringList phoneNum_;
+    public java.util.List<String>
+        getPhoneNumList() {
+      return phoneNum_;
     }
-    public String getPhoneNum() {
-      java.lang.Object ref = phoneNum_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
-          phoneNum_ = s;
-        }
-        return s;
-      }
+    public int getPhoneNumCount() {
+      return phoneNum_.size();
     }
-    private com.google.protobuf.ByteString getPhoneNumBytes() {
-      java.lang.Object ref = phoneNum_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
-        phoneNum_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public String getPhoneNum(int index) {
+      return phoneNum_.get(index);
     }
     
     // optional string subject = 5;
     public static final int SUBJECT_FIELD_NUMBER = 5;
     private java.lang.Object subject_;
     public boolean hasSubject() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     public String getSubject() {
       java.lang.Object ref = subject_;
@@ -4831,7 +4819,7 @@ public final class MsgDefProtos {
     public static final int MSG_TIME_FIELD_NUMBER = 6;
     private long msgTime_;
     public boolean hasMsgTime() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     public long getMsgTime() {
       return msgTime_;
@@ -4841,7 +4829,7 @@ public final class MsgDefProtos {
     public static final int READ_TAG_FIELD_NUMBER = 7;
     private boolean readTag_;
     public boolean hasReadTag() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     public boolean getReadTag() {
       return readTag_;
@@ -4851,7 +4839,7 @@ public final class MsgDefProtos {
     public static final int SIZE_FIELD_NUMBER = 8;
     private int size_;
     public boolean hasSize() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     public int getSize() {
       return size_;
@@ -4901,9 +4889,9 @@ public final class MsgDefProtos {
     
     private void initFields() {
       msgId_ = 0L;
-      contactId_ = 0L;
+      contactId_ = java.util.Collections.emptyList();;
       msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
-      phoneNum_ = "";
+      phoneNum_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       subject_ = "";
       msgTime_ = 0L;
       readTag_ = false;
@@ -4926,25 +4914,25 @@ public final class MsgDefProtos {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeInt64(1, msgId_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, contactId_);
+      for (int i = 0; i < contactId_.size(); i++) {
+        output.writeInt64(2, contactId_.get(i));
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeEnum(3, msgOrigin_.getNumber());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getPhoneNumBytes());
+      for (int i = 0; i < phoneNum_.size(); i++) {
+        output.writeBytes(4, phoneNum_.getByteString(i));
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(5, getSubjectBytes());
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeInt64(6, msgTime_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBool(7, readTag_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeInt32(8, size_);
       }
       for (int i = 0; i < slide_.size(); i++) {
@@ -4966,31 +4954,41 @@ public final class MsgDefProtos {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(1, msgId_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, contactId_);
+      {
+        int dataSize = 0;
+        for (int i = 0; i < contactId_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt64SizeNoTag(contactId_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getContactIdList().size();
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(3, msgOrigin_.getNumber());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getPhoneNumBytes());
+      {
+        int dataSize = 0;
+        for (int i = 0; i < phoneNum_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(phoneNum_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getPhoneNumList().size();
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(5, getSubjectBytes());
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(6, msgTime_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, readTag_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(8, size_);
       }
@@ -5130,11 +5128,11 @@ public final class MsgDefProtos {
         super.clear();
         msgId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
-        contactId_ = 0L;
+        contactId_ = java.util.Collections.emptyList();;
         bitField0_ = (bitField0_ & ~0x00000002);
         msgOrigin_ = com.pekall.pctool.protos.MsgDefProtos.MsgOriginType.ANY;
         bitField0_ = (bitField0_ & ~0x00000004);
-        phoneNum_ = "";
+        phoneNum_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000008);
         subject_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
@@ -5198,32 +5196,35 @@ public final class MsgDefProtos {
           to_bitField0_ |= 0x00000001;
         }
         result.msgId_ = msgId_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          contactId_ = java.util.Collections.unmodifiableList(contactId_);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.contactId_ = contactId_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
+          to_bitField0_ |= 0x00000002;
         }
         result.msgOrigin_ = msgOrigin_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          phoneNum_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              phoneNum_);
+          bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.phoneNum_ = phoneNum_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
+          to_bitField0_ |= 0x00000004;
         }
         result.subject_ = subject_;
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-          to_bitField0_ |= 0x00000020;
+          to_bitField0_ |= 0x00000008;
         }
         result.msgTime_ = msgTime_;
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
-          to_bitField0_ |= 0x00000040;
+          to_bitField0_ |= 0x00000010;
         }
         result.readTag_ = readTag_;
         if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000080;
+          to_bitField0_ |= 0x00000020;
         }
         result.size_ = size_;
         if (slideBuilder_ == null) {
@@ -5263,14 +5264,28 @@ public final class MsgDefProtos {
         if (other.hasMsgId()) {
           setMsgId(other.getMsgId());
         }
-        if (other.hasContactId()) {
-          setContactId(other.getContactId());
+        if (!other.contactId_.isEmpty()) {
+          if (contactId_.isEmpty()) {
+            contactId_ = other.contactId_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureContactIdIsMutable();
+            contactId_.addAll(other.contactId_);
+          }
+          onChanged();
         }
         if (other.hasMsgOrigin()) {
           setMsgOrigin(other.getMsgOrigin());
         }
-        if (other.hasPhoneNum()) {
-          setPhoneNum(other.getPhoneNum());
+        if (!other.phoneNum_.isEmpty()) {
+          if (phoneNum_.isEmpty()) {
+            phoneNum_ = other.phoneNum_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+          } else {
+            ensurePhoneNumIsMutable();
+            phoneNum_.addAll(other.phoneNum_);
+          }
+          onChanged();
         }
         if (other.hasSubject()) {
           setSubject(other.getSubject());
@@ -5373,8 +5388,17 @@ public final class MsgDefProtos {
               break;
             }
             case 16: {
-              bitField0_ |= 0x00000002;
-              contactId_ = input.readInt64();
+              ensureContactIdIsMutable();
+              contactId_.add(input.readInt64());
+              break;
+            }
+            case 18: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addContactId(input.readInt64());
+              }
+              input.popLimit(limit);
               break;
             }
             case 24: {
@@ -5389,8 +5413,8 @@ public final class MsgDefProtos {
               break;
             }
             case 34: {
-              bitField0_ |= 0x00000008;
-              phoneNum_ = input.readBytes();
+              ensurePhoneNumIsMutable();
+              phoneNum_.add(input.readBytes());
               break;
             }
             case 42: {
@@ -5452,23 +5476,47 @@ public final class MsgDefProtos {
         return this;
       }
       
-      // optional int64 contact_id = 2;
-      private long contactId_ ;
-      public boolean hasContactId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+      // repeated int64 contact_id = 2;
+      private java.util.List<java.lang.Long> contactId_ = java.util.Collections.emptyList();;
+      private void ensureContactIdIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          contactId_ = new java.util.ArrayList<java.lang.Long>(contactId_);
+          bitField0_ |= 0x00000002;
+         }
       }
-      public long getContactId() {
-        return contactId_;
+      public java.util.List<java.lang.Long>
+          getContactIdList() {
+        return java.util.Collections.unmodifiableList(contactId_);
       }
-      public Builder setContactId(long value) {
-        bitField0_ |= 0x00000002;
-        contactId_ = value;
+      public int getContactIdCount() {
+        return contactId_.size();
+      }
+      public long getContactId(int index) {
+        return contactId_.get(index);
+      }
+      public Builder setContactId(
+          int index, long value) {
+        ensureContactIdIsMutable();
+        contactId_.set(index, value);
+        onChanged();
+        return this;
+      }
+      public Builder addContactId(long value) {
+        ensureContactIdIsMutable();
+        contactId_.add(value);
+        onChanged();
+        return this;
+      }
+      public Builder addAllContactId(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        ensureContactIdIsMutable();
+        super.addAll(values, contactId_);
         onChanged();
         return this;
       }
       public Builder clearContactId() {
+        contactId_ = java.util.Collections.emptyList();;
         bitField0_ = (bitField0_ & ~0x00000002);
-        contactId_ = 0L;
         onChanged();
         return this;
       }
@@ -5497,39 +5545,59 @@ public final class MsgDefProtos {
         return this;
       }
       
-      // optional string phone_num = 4;
-      private java.lang.Object phoneNum_ = "";
-      public boolean hasPhoneNum() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+      // repeated string phone_num = 4;
+      private com.google.protobuf.LazyStringList phoneNum_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensurePhoneNumIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          phoneNum_ = new com.google.protobuf.LazyStringArrayList(phoneNum_);
+          bitField0_ |= 0x00000008;
+         }
       }
-      public String getPhoneNum() {
-        java.lang.Object ref = phoneNum_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
-          phoneNum_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
+      public java.util.List<String>
+          getPhoneNumList() {
+        return java.util.Collections.unmodifiableList(phoneNum_);
       }
-      public Builder setPhoneNum(String value) {
+      public int getPhoneNumCount() {
+        return phoneNum_.size();
+      }
+      public String getPhoneNum(int index) {
+        return phoneNum_.get(index);
+      }
+      public Builder setPhoneNum(
+          int index, String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
-        phoneNum_ = value;
+  ensurePhoneNumIsMutable();
+        phoneNum_.set(index, value);
+        onChanged();
+        return this;
+      }
+      public Builder addPhoneNum(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePhoneNumIsMutable();
+        phoneNum_.add(value);
+        onChanged();
+        return this;
+      }
+      public Builder addAllPhoneNum(
+          java.lang.Iterable<String> values) {
+        ensurePhoneNumIsMutable();
+        super.addAll(values, phoneNum_);
         onChanged();
         return this;
       }
       public Builder clearPhoneNum() {
+        phoneNum_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000008);
-        phoneNum_ = getDefaultInstance().getPhoneNum();
         onChanged();
         return this;
       }
-      void setPhoneNum(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000008;
-        phoneNum_ = value;
+      void addPhoneNum(com.google.protobuf.ByteString value) {
+        ensurePhoneNumIsMutable();
+        phoneNum_.add(value);
         onChanged();
       }
       
@@ -22539,8 +22607,8 @@ public final class MsgDefProtos {
       "uration\030\001 \001(\005\022\014\n\004text\030\002 \001(\t\0224\n\nattachmen" +
       "t\030\003 \003(\0132 .pekall.pcsuite.AttachmentRecor" +
       "d\"\232\002\n\tMMSRecord\022\016\n\006msg_id\030\001 \001(\003\022\022\n\nconta" +
-      "ct_id\030\002 \001(\003\0221\n\nmsg_origin\030\003 \001(\0162\035.pekall" +
-      ".pcsuite.MsgOriginType\022\021\n\tphone_num\030\004 \001(" +
+      "ct_id\030\002 \003(\003\0221\n\nmsg_origin\030\003 \001(\0162\035.pekall" +
+      ".pcsuite.MsgOriginType\022\021\n\tphone_num\030\004 \003(" +
       "\t\022\017\n\007subject\030\005 \001(\t\022\020\n\010msg_time\030\006 \001(\003\022\020\n\010",
       "read_tag\030\007 \001(\010\022\014\n\004size\030\010 \001(\005\022*\n\005slide\030\t " +
       "\003(\0132\033.pekall.pcsuite.SlideRecord\0224\n\natta" +

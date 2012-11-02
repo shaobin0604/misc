@@ -13,7 +13,7 @@ import java.util.List;
 public class MmsUtilTestCase extends AndroidTestCase {
     
     public void testQueryMms() throws Exception {
-        List<Mms> mmses = MmsUtil.query(getContext());
+        List<Mms> mmses = MmsUtil.queryMmsFull(getContext());
         
         for (Mms mms : mmses) {
             Slog.d(mms.toString());
@@ -21,7 +21,7 @@ public class MmsUtilTestCase extends AndroidTestCase {
     }
     
     public void testQueryMmsAttachments() throws Exception {
-        List<Mms> mmses = MmsUtil.query(getContext());
+        List<Mms> mmses = MmsUtil.queryMmsFull(getContext());
         
         for (Mms mms : mmses) {
             if (mms.rowId == 51) {

@@ -141,9 +141,9 @@ message SlideRecord
 message MMSRecord
 {
 	optional int64 				msg_id = 1;
-	optional int64				contact_id = 2;
+	repeated int64				contact_id = 2;
 	optional MsgOriginType		msg_origin = 3;
-	optional string 			phone_num = 4;
+	repeated string 			phone_num = 4;
 	optional string				subject = 5;	//主题
 	optional int64				msg_time = 6; 	//接收时间或发送时间
 	optional bool				read_tag = 7;	//是否已读

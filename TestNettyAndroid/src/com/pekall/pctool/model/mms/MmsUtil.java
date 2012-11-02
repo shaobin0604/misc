@@ -21,6 +21,7 @@ import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.provider.ContactsContract.RawContacts;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -38,7 +39,7 @@ public class MmsUtil {
     };
     
     
-    public static Mms queryMms(Context ctx, long mmsId) {
+    public static Mms queryMmsFull(Context ctx, long mmsId) {
     	Slog.d("queryMms E, mmsId = " + mmsId);
     	
     	String selection = "_id = ?";
@@ -78,17 +79,8 @@ public class MmsUtil {
     	            mms.isReaded = cursor.getInt(idxForRead);
     	            mms.size = cursor.getInt(idxForSize);
     	            
-    	            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
-    	                    null, null, null, "_id desc");
-    	            if (cursorAddress != null) {
-    	            	try {
-    	            		if (cursorAddress.moveToFirst()) {
-    	            			mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
-    	            		}
-    	            	} finally {
-    	            		cursorAddress.close();
-    	            	}
-    	            }
+    	            mms.phoneNums = getPhoneNumbers(ctx, mms.threadId);
+    	            mms.rawContactIds = getRawContactIds(ctx, mms.phoneNums);
     	            
     	            /* get smil.xml */
     	            Cursor cursorSmil = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
@@ -166,19 +158,7 @@ public class MmsUtil {
     				final int idxForId = cursor.getColumnIndex("_id");
     				mms = new Mms();
     				mms.rowId = cursor.getLong(idxForId);
-    	            
-    	            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
-    	                    null, null, null, "_id desc");
-    	            if (cursorAddress != null) {
-    	            	try {
-    	            		if (cursorAddress.moveToFirst()) {
-    	            			mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
-    	            		}
-    	            	} finally {
-    	            		cursorAddress.close();
-    	            	}
-    	            }
-    	            
+    	                	            
     	            /* get smil.xml */
     	            Cursor cursorSmil = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
     	                    "text"
@@ -234,8 +214,112 @@ public class MmsUtil {
     	return mms;
     }
     
-    public static List<Mms> queryMmsesWithoutAttachment(Context ctx) {
-    	Slog.d("queryMmsesWithoutAttachment E");
+    /**
+     * Query the {@link RawContacts} id from phone numbers
+     * 
+     * @param ctx
+     * @param phoneNumbers
+     * @return
+     */
+    private static List<Long> getRawContactIds(Context ctx, List<String> phoneNumbers) {
+        List<Long> rawContactIds = new ArrayList<Long>();
+        
+        for (String phoneNumber : phoneNumbers) {
+            if (!TextUtils.isEmpty(phoneNumber)) {
+                long rawContactId = ContactUtil.getRawContactId(ctx, phoneNumber);
+                rawContactIds.add(rawContactId);    // rawContactId 0 for RawContact not found
+            }
+        }
+        
+        return rawContactIds;
+    }
+    
+    private static List<String> getPhoneNumbers(Context ctx, long threadId) {
+        String[] projection = {
+                "recipient_ids",
+        };
+        
+        String selection = "_id=?";
+        
+        String[] selectionArgs = {
+                String.valueOf(threadId),
+        };
+        
+        List<String> phoneNumbers = new ArrayList<String>();
+        
+        String recipientIdsStr = null;
+        
+        String[] recipientIdStrArray = null;
+        
+        Cursor cursor = ctx.getContentResolver().query(Uri.parse("content://mms/threads"), projection, selection, selectionArgs, null);
+        
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    recipientIdsStr = cursor.getString(0);  // recipient_ids
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+                
+        if (recipientIdsStr != null) {
+            recipientIdStrArray = recipientIdsStr.split(" ");
+            
+            String phoneNumber = null;
+            long recipientId = 0;
+            
+            for (String recipientIdStr : recipientIdStrArray) {
+                try {
+                    recipientId = Long.valueOf(recipientIdStr);
+                } catch (NumberFormatException e) {
+                    Slog.e("Cannot convert to long value: " + recipientIdStr, e);
+                    continue;
+                }
+                
+                phoneNumber = getPhoneNumberByCanonicalAddressId(ctx, recipientId);
+                
+                if (phoneNumber != null) {
+                    phoneNumbers.add(phoneNumber);
+                }
+            }
+        }
+        return phoneNumbers;
+    }
+    
+    /**
+     * Query table 'canonical_addresses' to get msg address phone number
+     * 
+     * @param ctx
+     * @param canonicalAddressId
+     * @return phone number, or null if not exist
+     */
+    private static String getPhoneNumberByCanonicalAddressId(Context ctx, long canonicalAddressId) {
+        String[] projection = {
+          "address",
+        };
+        
+        Uri uri = ContentUris.withAppendedId(Uri.parse("content://mms-sms/canonical-address"), canonicalAddressId);
+        
+        Cursor cursor = ctx.getContentResolver().query(uri, projection, null, null, null);
+        
+        String phoneNumber = null;
+        
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    phoneNumber = cursor.getString(0);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        
+        return phoneNumber;
+    }
+    
+    public static List<Mms> queryMmsHead(Context ctx) {
+    	Slog.d("queryMmsHead E");
         
         List<Mms> mmsList = new ArrayList<Mms>();
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
@@ -250,17 +334,8 @@ public class MmsUtil {
             mms.msgBoxIndex = cursor.getInt(cursor.getColumnIndex("msg_box"));
             mms.size = cursor.getInt(cursor.getColumnIndex("m_size"));
 
-            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
-                    null, null, null, "_id desc");
-
-            if (cursorAddress.moveToFirst()) {
-                mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
-            }
-            cursorAddress.close();
-
-            if (!TextUtils.isEmpty(mms.phoneNum)) {
-                mms.person = ContactUtil.getRawContactId(ctx, mms.phoneNum);
-            }
+            mms.phoneNums = getPhoneNumbers(ctx, mms.threadId);
+            mms.rawContactIds = getRawContactIds(ctx, mms.phoneNums);
 
             String str = cursor.getString(cursor.getColumnIndex("sub"));
             if (str != null) {
@@ -281,13 +356,13 @@ public class MmsUtil {
 
         cursor.close();
         
-        Slog.d("queryMmsesWithoutAttachment X");
+        Slog.d("queryMmsHead X");
 
         return mmsList;
     }
 
-    public static List<Mms> queryMmses(Context ctx) {
-        Slog.d("queryMmses E");
+    public static List<Mms> queryMmsFull(Context ctx) {
+        Slog.d("queryMmsFull E");
         
         List<Mms> mmsList = new ArrayList<Mms>();
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
@@ -302,17 +377,8 @@ public class MmsUtil {
             mms.msgBoxIndex = cursor.getInt(cursor.getColumnIndex("msg_box"));
             mms.size = cursor.getInt(cursor.getColumnIndex("m_size"));
 
-            Cursor cursorAddress = ctx.getContentResolver().query(Uri.parse("content://mms/" + mms.rowId + "/addr"),
-                    null, null, null, "_id desc");
-
-            if (cursorAddress.moveToFirst()) {
-                mms.phoneNum = cursorAddress.getString(cursorAddress.getColumnIndex("address"));
-            }
-            cursorAddress.close();
-
-            if (!TextUtils.isEmpty(mms.phoneNum)) {
-                mms.person = ContactUtil.getRawContactId(ctx, mms.phoneNum);
-            }
+            mms.phoneNums = getPhoneNumbers(ctx, mms.threadId);
+            mms.rawContactIds = getRawContactIds(ctx, mms.phoneNums);
 
             String str = cursor.getString(cursor.getColumnIndex("sub"));
             if (str != null) {
@@ -366,7 +432,7 @@ public class MmsUtil {
 
         cursor.close();
         
-        Slog.d("queryMmses X");
+        Slog.d("queryMmsFull X");
 
         return mmsList;
     }

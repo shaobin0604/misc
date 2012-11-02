@@ -3,6 +3,7 @@ package com.pekall.pctool.model.mms;
 import android.text.format.DateFormat;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Mms {
     public static final int MESSAGE_BOX_ALL    = 0;
@@ -17,8 +18,10 @@ public class Mms {
     public long rowId;
     public int msgBoxIndex; // 0: all, 1: inbox, 2: sent, 3: draft, 4: outbox
     public long threadId;
-    public long person;
-    public String phoneNum;
+    
+    public List<Long> rawContactIds;
+    public List<String> phoneNums;
+    
     public String subject;
     public long date;
     public int isReaded;
@@ -57,14 +60,14 @@ public class Mms {
         
         
     }
-
+    
     @Override
     public String toString() {
-        return "Mms [rowId=" + rowId + ", size=" + size + ", msgBoxIndex=" + msgBoxIndex + ", phoneNum=" + phoneNum + ", subject="
-                + subject + ", date=" + toDateStr(date) + ", isReaded=" + isReaded + ", slides=" + slides + ", attachments="
-                + attachments + "]";
+        return "Mms [rowId=" + rowId + ", msgBoxIndex=" + msgBoxIndex + ", threadId=" + threadId + ", rawContactIds="
+                + rawContactIds + ", phoneNums=" + phoneNums + ", subject=" + subject + ", date=" + date + ", isReaded="
+                + isReaded + ", size=" + size + ", slides=" + slides + ", attachments=" + attachments + "]";
     }
-    
+
     private static String toDateStr(long timeInMillis) {
         return DateFormat.format("MM/dd/yy h:mmaa", timeInMillis).toString();
     }

@@ -592,7 +592,7 @@ public class HandlerFacade {
         SlideRecord.Builder slideRecordBuilder = SlideRecord.newBuilder();
         AttachmentRecord.Builder attachmentRecordBuilder = AttachmentRecord.newBuilder();
 
-        List<Mms> mmsList = MmsUtil.queryMmses(mContext);
+        List<Mms> mmsList = MmsUtil.queryMmsFull(mContext);
         
 
         for (Mms mms : mmsList) {
@@ -602,9 +602,9 @@ public class HandlerFacade {
 //            Slog.d("<<<<< dump mms <<<<<");
             
             mmsRecordBuilder.setMsgId(mms.rowId);
-            mmsRecordBuilder.setContactId(mms.person);
+            mmsRecordBuilder.addAllContactId(mms.rawContactIds);
             mmsRecordBuilder.setMsgOrigin(mmsTypeToMsgOriginType(mms.msgBoxIndex));
-            mmsRecordBuilder.setPhoneNum(normalizeStr(mms.phoneNum));
+            mmsRecordBuilder.addAllPhoneNum(mms.phoneNums);
             mmsRecordBuilder.setSubject(normalizeStr(mms.subject));
             mmsRecordBuilder.setMsgTime(mms.date);
             mmsRecordBuilder.setReadTag(mms.isReaded == Mms.READ_TRUE);

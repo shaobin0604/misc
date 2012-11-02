@@ -101,10 +101,10 @@ public class ContactUtil {
      * Get the {@link Contact} id by phone number
      * 
      * @param context
-     * @param number
-     * @return {@link Contact} id or zero if cannot find the {@link Contact}
+     * @param phoneNumber
+     * @return {@link Contact} id or zero if {@link Contact} not found
      */
-    public static long getRawContactId(Context context, String number) {
+    public static long getRawContactId(Context context, String phoneNumber) {
         // TODO: filter deleted contacts
         Cursor cursor = null;
         long rawContactId = 0;
@@ -115,8 +115,8 @@ public class ContactUtil {
                     }, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
-                    final String phoneNumber = cursor.getString(1);
-                    if (PhoneNumberUtils.compare(number, phoneNumber)) {
+                    final String phoneNumberInDb = cursor.getString(1);
+                    if (PhoneNumberUtils.compare(phoneNumber, phoneNumberInDb)) {
                         rawContactId = cursor.getLong(0); // Phone.RAW_CONTACT_ID
                         break;
                     }
