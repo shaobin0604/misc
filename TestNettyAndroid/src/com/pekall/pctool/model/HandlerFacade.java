@@ -584,119 +584,138 @@ public class HandlerFacade {
     // ------------------------------------------------------------------------
     public CmdResponse queryMms(CmdRequest request) {
         Slog.d("queryMms E");
-
+        
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_MMS);
-
+        
         MMSRecord.Builder mmsRecordBuilder = MMSRecord.newBuilder();
         SlideRecord.Builder slideRecordBuilder = SlideRecord.newBuilder();
         AttachmentRecord.Builder attachmentRecordBuilder = AttachmentRecord.newBuilder();
-
-        List<Mms> mmsList = MmsUtil.queryMmsFull(mContext);
         
+        if (request.hasMmsParams()) {
+        	// query single mms's attachment
+        	MMSRecord mmsParam = request.getMmsParams();
+        	
+        	long mmsId = mmsParam.getMsgId();
+        	
+        	Mms mms = MmsUtil.queryMmsAttachment(mContext, mmsId);
+        	
+        	if (mms == null) {
+        		setResultErrorIllegalParams(responseBuilder, "mms id");
+        	} else {
+        		ArrayList<Slide> slides = mms.slides;
+                ArrayList<Attachment> attachments = mms.attachments;
+                
+                List<Integer> slideAttachmentIndex = new ArrayList<Integer>();
 
-        for (Mms mms : mmsList) {
-            
-//            Slog.d(">>>>> dump mms >>>>>");
-//            Slog.d(mms.toString());
-//            Slog.d("<<<<< dump mms <<<<<");
-            
-            mmsRecordBuilder.setMsgId(mms.rowId);
-            mmsRecordBuilder.addAllContactId(mms.rawContactIds);
-            mmsRecordBuilder.setMsgOrigin(mmsTypeToMsgOriginType(mms.msgBoxIndex));
-            mmsRecordBuilder.addAllPhoneNum(mms.phoneNums);
-            mmsRecordBuilder.setSubject(normalizeStr(mms.subject));
-            mmsRecordBuilder.setMsgTime(mms.date);
-            mmsRecordBuilder.setReadTag(mms.isReaded == Mms.READ_TRUE);
-            mmsRecordBuilder.setSize(mms.size);
+                for (Slide slide : slides) {
+                    slideRecordBuilder.setDuration(slide.duration);
+                    slideRecordBuilder.setText(normalizeStr(slide.text));
 
-            ArrayList<Slide> slides = mms.slides;
-            ArrayList<Attachment> attachments = mms.attachments;
-            
-            List<Integer> slideAttachmentIndex = new ArrayList<Integer>();
+                    if (slide.imageIndex != -1) {
+                        slideAttachmentIndex.add(slide.imageIndex);
+                        
+                        Attachment attachment = attachments.get(slide.imageIndex);
 
-            for (Slide slide : slides) {
-                slideRecordBuilder.setDuration(slide.duration);
-                slideRecordBuilder.setText(normalizeStr(slide.text));
+                        attachmentRecordBuilder.setType(AttachmentType.IMAGE);
+                        attachmentRecordBuilder.setName(normalizeStr(attachment.name));
+                        attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+                        attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
 
-                if (slide.imageIndex != -1) {
-                    slideAttachmentIndex.add(slide.imageIndex);
-                    
-                    Attachment attachment = attachments.get(slide.imageIndex);
+                        slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
 
-                    attachmentRecordBuilder.setType(AttachmentType.IMAGE);
-                    attachmentRecordBuilder.setName(normalizeStr(attachment.name));
-                    attachmentRecordBuilder.setSize(attachment.fileBytes.length);
-                    attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
+                        attachmentRecordBuilder.clear();
+                    }
 
-                    slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+                    if (slide.audioIndex != -1) {
+                        slideAttachmentIndex.add(slide.audioIndex);
+                        
+                        Attachment attachment = attachments.get(slide.audioIndex);
 
-                    attachmentRecordBuilder.clear();
-                }
+                        attachmentRecordBuilder.setType(AttachmentType.AUDIO);
+                        attachmentRecordBuilder.setName(normalizeStr(attachment.name));
+                        attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+                        attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
 
-                if (slide.audioIndex != -1) {
-                    slideAttachmentIndex.add(slide.audioIndex);
-                    
-                    Attachment attachment = attachments.get(slide.audioIndex);
+                        slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
 
-                    attachmentRecordBuilder.setType(AttachmentType.AUDIO);
-                    attachmentRecordBuilder.setName(normalizeStr(attachment.name));
-                    attachmentRecordBuilder.setSize(attachment.fileBytes.length);
-                    attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
+                        attachmentRecordBuilder.clear();
+                    }
 
-                    slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+                    if (slide.videoIndex != -1) {
+                        slideAttachmentIndex.add(slide.videoIndex);
+                        
+                        Attachment attachment = attachments.get(slide.videoIndex);
 
-                    attachmentRecordBuilder.clear();
-                }
+                        attachmentRecordBuilder.setType(AttachmentType.VIDEO);
+                        attachmentRecordBuilder.setName(normalizeStr(attachment.name));
+                        attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+                        attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
 
-                if (slide.videoIndex != -1) {
-                    slideAttachmentIndex.add(slide.videoIndex);
-                    
-                    Attachment attachment = attachments.get(slide.videoIndex);
+                        slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
 
-                    attachmentRecordBuilder.setType(AttachmentType.VIDEO);
-                    attachmentRecordBuilder.setName(normalizeStr(attachment.name));
-                    attachmentRecordBuilder.setSize(attachment.fileBytes.length);
-                    attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
+                        attachmentRecordBuilder.clear();
+                    }
 
-                    slideRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+                    mmsRecordBuilder.addSlide(slideRecordBuilder.build());
 
-                    attachmentRecordBuilder.clear();
-                }
-
-                mmsRecordBuilder.addSlide(slideRecordBuilder.build());
-
-                slideRecordBuilder.clear();
-            }
-            
-            // mark slide attachment as null
-            for (int index : slideAttachmentIndex) {
-                attachments.set(index, null);
-            }
-
-            // the type of the rest attachments is OTHER
-            for (Attachment attachment : attachments) {
-                if (attachment == null) {
-                    continue;
+                    slideRecordBuilder.clear();
                 }
                 
-                attachmentRecordBuilder.setType(AttachmentType.OTHER);
-                attachmentRecordBuilder.setName(attachment.name);
-                attachmentRecordBuilder.setSize(attachment.fileBytes.length);
-                attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
+                // mark slide attachment as null
+                for (int index : slideAttachmentIndex) {
+                    attachments.set(index, null);
+                }
 
-                mmsRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+                // the type of the rest attachments is OTHER
+                for (Attachment attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    
+                    attachmentRecordBuilder.setType(AttachmentType.OTHER);
+                    attachmentRecordBuilder.setName(attachment.name);
+                    attachmentRecordBuilder.setSize(attachment.fileBytes.length);
+                    attachmentRecordBuilder.setContent(ByteString.copyFrom(attachment.fileBytes));
 
-                attachmentRecordBuilder.clear();
+                    mmsRecordBuilder.addAttachment(attachmentRecordBuilder.build());
+
+                    attachmentRecordBuilder.clear();
+                }
+
+                responseBuilder.addMmsRecord(mmsRecordBuilder.build());
+
+                mmsRecordBuilder.clear();
+                
+                setResultOK(responseBuilder);
+        	}
+        	
+        } else {
+        	// query all mms head, without attachment 
+        	
+        	List<Mms> mmsList = MmsUtil.queryMmsHead(mContext);
+        	
+            for (Mms mms : mmsList) {
+                
+//              Slog.d(">>>>> dump mms >>>>>");
+//              Slog.d(mms.toString());
+//              Slog.d("<<<<< dump mms <<<<<");
+              
+            	mmsRecordBuilder.setMsgId(mms.rowId);
+            	mmsRecordBuilder.addAllContactId(mms.rawContactIds);
+            	mmsRecordBuilder.setMsgOrigin(mmsTypeToMsgOriginType(mms.msgBoxIndex));
+            	mmsRecordBuilder.addAllPhoneNum(mms.phoneNums);
+            	mmsRecordBuilder.setSubject(normalizeStr(mms.subject));
+            	mmsRecordBuilder.setMsgTime(mms.date);
+            	mmsRecordBuilder.setReadTag(mms.isReaded == Mms.READ_TRUE);
+            	mmsRecordBuilder.setSize(mms.size);
+              
+            	responseBuilder.addMmsRecord(mmsRecordBuilder.build());
+
+            	mmsRecordBuilder.clear();
             }
-
-            responseBuilder.addMmsRecord(mmsRecordBuilder.build());
-
-            mmsRecordBuilder.clear();
+            setResultOK(responseBuilder);
         }
-
-        setResultOK(responseBuilder);
-
         Slog.d("queryMms X");
 
         return responseBuilder.build();

@@ -239,19 +239,14 @@ public class MmsUtil {
                 "recipient_ids",
         };
         
-        String selection = "_id=?";
-        
-        String[] selectionArgs = {
-                String.valueOf(threadId),
-        };
-        
         List<String> phoneNumbers = new ArrayList<String>();
         
         String recipientIdsStr = null;
         
         String[] recipientIdStrArray = null;
         
-        Cursor cursor = ctx.getContentResolver().query(Uri.parse("content://mms/threads"), projection, selection, selectionArgs, null);
+        final Uri uri = Uri.parse(String.format("content://mms-sms/conversations/%d/recipients?simple=true", threadId));
+        Cursor cursor = ctx.getContentResolver().query(uri, projection, null, null, null);
         
         if (cursor != null) {
             try {
