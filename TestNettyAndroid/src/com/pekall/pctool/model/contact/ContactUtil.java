@@ -160,7 +160,7 @@ public class ContactUtil {
      * 
      * @param context
      * @param id
-     * @return
+     * @return the specified contact version, or -1 if not found
      */
     public static int getContactVersion(Context context, long id) {
         Cursor cursor = context.getContentResolver().query(RawContacts.CONTENT_URI, new String[] {
