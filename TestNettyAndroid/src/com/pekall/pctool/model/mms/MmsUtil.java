@@ -42,10 +42,11 @@ public class MmsUtil {
     public static Mms queryMmsFull(Context ctx, long mmsId) {
     	Slog.d("queryMms E, mmsId = " + mmsId);
     	
-    	String selection = "_id = ?";
+    	String selection = "_id = ? AND ct_t = ?";
     	
     	String[] selectionArgs = {
-    			String.valueOf(mmsId)
+    			String.valueOf(mmsId),
+    			"application/vnd.wap.multipart.related",
     	};
     	Mms mms = null;
     	Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, MMS_PROJECTION, selection, selectionArgs, null);
@@ -144,10 +145,11 @@ public class MmsUtil {
     			"_id"
     	};
     	
-    	String selection = "_id = ?";
+    	String selection = "_id = ? AND ct_t = ?";
     	
     	String[] selectionArgs = {
-    			String.valueOf(mmsId)
+    			String.valueOf(mmsId),
+    			"application/vnd.wap.multipart.related",
     	};
     	Mms mms = null;
     	Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, projection, selection, selectionArgs, null);
@@ -317,9 +319,15 @@ public class MmsUtil {
     	Slog.d("queryMmsHead E");
         
         List<Mms> mmsList = new ArrayList<Mms>();
+        
+        String selection = "ct_t = ?";
+        String[] selectionArgs = {
+                "application/vnd.wap.multipart.related",
+        };
+        
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
                 "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
-        }, null, null, "_id desc");
+        }, selection, selectionArgs, "_id desc");
 
         while (cursor.moveToNext()) {
             Mms mms = new Mms();
@@ -360,9 +368,15 @@ public class MmsUtil {
         Slog.d("queryMmsFull E");
         
         List<Mms> mmsList = new ArrayList<Mms>();
+        
+        String selection = "ct_t = ?";
+        String[] selectionArgs = {
+                "application/vnd.wap.multipart.related",
+        };
+        
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
                 "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
-        }, null, null, "_id desc");
+        }, selection, selectionArgs, "_id desc");
 
         while (cursor.moveToNext()) {
             Mms mms = new Mms();

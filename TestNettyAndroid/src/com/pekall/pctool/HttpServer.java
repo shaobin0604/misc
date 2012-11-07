@@ -25,8 +25,9 @@ import java.util.concurrent.Executors;
 public class HttpServer {
     private static final int SERVER_PORT = 12580;
 
+    static ChannelGroup sAllChannels = new DefaultChannelGroup("http-server");
+    
     private Context mContext;
-    private ChannelGroup mAllChannels;
     private ChannelFactory mFactory;
     private volatile boolean mIsAlive;
 
@@ -62,8 +63,6 @@ public class HttpServer {
 
     public synchronized void start() {
         Slog.d("start E, port = " + SERVER_PORT);
-
-        mAllChannels = new DefaultChannelGroup("main-server");
         
         mFactory = new OioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
 //      mFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
@@ -71,7 +70,7 @@ public class HttpServer {
         ServerBootstrap bootstrap = new ServerBootstrap(mFactory);
         bootstrap.setPipelineFactory(new ServerPipelineFactory(mContext));
         Channel channel = bootstrap.bind(new InetSocketAddress(SERVER_PORT));
-        mAllChannels.add(channel);
+        sAllChannels.add(channel);
         
         mIsAlive = true;
         Slog.d("start X");
@@ -79,7 +78,7 @@ public class HttpServer {
 
     public synchronized void stop() {
         Slog.d("stop E");
-        ChannelGroupFuture future = mAllChannels.close();
+        ChannelGroupFuture future = sAllChannels.close();
         future.awaitUninterruptibly();
         mFactory.releaseExternalResources();
         Slog.d("stop X");

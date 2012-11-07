@@ -33,6 +33,7 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelFutureProgressListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.DefaultFileRegion;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -130,6 +131,17 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
     public HttpServerHandler(HandlerFacade facade) {
         this.mHandlerFacade = facade;
         this.mShutdownServerListener = new ShutdownServerListener(facade.getContext());
+    }
+    
+    @Override
+    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        super.channelOpen(ctx, e);
+        
+        // see 
+        // * http://static.netty.io/3.5/guide/#start.12
+        // * http://stackoverflow.com/questions/10950244/server-bootstrap-releaseexternalresources-stuck-in-loop
+        // * http://biasedbit.com/netty-releaseexternalresources-hangs/
+        HttpServer.sAllChannels.add(e.getChannel());
     }
 
     @Override
