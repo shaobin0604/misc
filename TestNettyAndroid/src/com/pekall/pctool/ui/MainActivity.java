@@ -232,7 +232,10 @@ public class MainActivity extends Activity implements OnClickListener {
                     return;
                 }
                 
-                String wifiSecret = WifiUtil.getWifiHostAddressBase64(context);
+//                String wifiSecret = WifiUtil.getWifiHostAddressBase64(context);
+                
+                String wifiSecret = WifiUtil.getWifiAddressRadix36Encoded(context);
+                
                 ServerController.setWifiSecret(wifiSecret);
                 
                 ServerController.startHttpService(context, /* usbMode */ false);

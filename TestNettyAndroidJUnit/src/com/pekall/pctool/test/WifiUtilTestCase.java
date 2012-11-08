@@ -21,6 +21,13 @@ public class WifiUtilTestCase extends AndroidTestCase {
 		Slog.d("transcode: " + Arrays.toString(transcode));
 	}
 	
+	public void testGetWifiAddressEncoded() throws Exception {
+	    String addressEncoded = WifiUtil.getWifiAddressRadix36Encoded(getContext());
+	    Slog.d("addressEncoded: " + addressEncoded);
+	    
+	    Slog.d("addressDecoded: " + WifiUtil.radix36StrToInt32(addressEncoded));
+	}
+	
 	public void testGetWifiAddressInt() throws Exception {
 	    Slog.d(Integer.toString(WifiUtil.getWifiAddressInt(getContext())));
 	}

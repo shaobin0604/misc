@@ -14,6 +14,8 @@ import android.net.NetworkInfo.State;
 import android.net.wifi.WifiManager;
 import android.util.Base64;
 
+import org.apache.http.conn.util.InetAddressUtils;
+
 public class WifiUtil {
 	public static byte[] hostPartInt2Bytes(int address) {
 		Stack<Byte> bytes = new Stack<Byte>();
@@ -66,6 +68,51 @@ public class WifiUtil {
             quads[k] = (byte) ((dhcp.ipAddress >> k * 8) & 0xFF);
         }
         return quads; 
+    }
+    
+    public static String getWifiAddressRadix36Encoded(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        
+        DhcpInfo dhcp = wifiManager.getDhcpInfo();
+        if (dhcp == null) {
+            Slog.e("Could not get dhcp info");
+            return null;
+        }
+        
+        final int ipAddress = dhcp.ipAddress;
+        final String radix36Str = Integer.toString(ipAddress, Character.MAX_RADIX);
+        
+        Slog.d("ipAddress = " + ipAddress + ", radix36Str = " + radix36Str);
+        
+        return radix36Str;
+    }
+    
+    public static int radix36StrToInt32(String radix36Str)
+    {
+        int i = 0;
+
+        for (char c : radix36Str.toCharArray())
+        {
+            i = i * 36 + radix36CharToInt32(c);
+        }
+
+        return i;
+    }
+
+    private static int radix36CharToInt32(char c)
+    {
+        if (c >= '0' && c <= '9')
+        {
+            return c - '0';
+        }
+        else if (c >= 'a' && c <= 'z')
+        {
+            return c - 'a' + 10;
+        }
+        else
+        {
+            throw new IllegalArgumentException("invalid char: " + c);
+        }
     }
     
     public static String getWifiAddressBase64(Context context) {
