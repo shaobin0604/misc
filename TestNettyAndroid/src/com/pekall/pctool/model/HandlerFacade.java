@@ -29,6 +29,8 @@ import com.pekall.pctool.model.mms.Mms;
 import com.pekall.pctool.model.mms.Mms.Attachment;
 import com.pekall.pctool.model.mms.Mms.Slide;
 import com.pekall.pctool.model.mms.MmsUtil;
+import com.pekall.pctool.model.picture.Picture;
+import com.pekall.pctool.model.picture.PictureUtil;
 import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
 import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
@@ -62,6 +64,7 @@ import com.pekall.pctool.protos.MsgDefProtos.OrgRecord;
 import com.pekall.pctool.protos.MsgDefProtos.OrgRecord.OrgType;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord;
 import com.pekall.pctool.protos.MsgDefProtos.PhoneRecord.PhoneType;
+import com.pekall.pctool.protos.MsgDefProtos.PictureRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SMSRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SlideRecord;
 import com.pekall.pctool.protos.MsgDefProtos.SyncConflictPloy;
@@ -69,6 +72,7 @@ import com.pekall.pctool.protos.MsgDefProtos.SyncResult;
 import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
 import com.pekall.pctool.util.DeviceInfoUtil;
 import com.pekall.pctool.util.Slog;
+import com.pekall.pctool.util.StorageUtil;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -106,7 +110,9 @@ public class HandlerFacade {
     private static final int RESULT_CODE_ERR_ILLEGAL_PARAMS = 101;
     private static final int RESULT_CODE_ERR_AUTH_FAIL = 102;
     private static final int RESULT_CODE_ERR_PERMISSION_DENY = 103;
+    
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
+    private static final int RESULT_CODE_ERR_STORAGE_NOT_AVAILABLE = 201;
 
     private static final String RESULT_MSG_OK = "OK";
 
@@ -274,6 +280,10 @@ public class HandlerFacade {
                     break;
                 }
                 
+                //
+                // Sync related method
+                //
+                
                 case CMD_SYNC_CONTACTS: {
                     cmdResponse = syncContactWithOutlook(cmdRequest);
                     break;
@@ -284,8 +294,22 @@ public class HandlerFacade {
                     break;
                 }
                 
+                //
+                // Picture related method
+                //
+                
+                case CMD_QUERY_PICTURE: {
+                    cmdResponse = queryPicture(cmdRequest);
+                    break;
+                }
+                
+                case CMD_DELETE_PICTURE: {
+                    cmdResponse = deletePicture(cmdRequest);
+                    break;
+                }
+                
                 default: {
-                    // should not goes here
+                    // WARN: should not goes here
                     cmdResponse = unknownCmdResponse(cmdRequest);
                     break;
                 }
@@ -299,7 +323,71 @@ public class HandlerFacade {
         
         return cmdResponse;
     }
+    
+    //-------------------------------------------------------------------------
+    // Picture
+    //-------------------------------------------------------------------------
+    
+    private CmdResponse deletePicture(CmdRequest cmdRequest) {
+        Slog.d("deletePicture E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(cmdRequest.getCmdType());
 
+        List<Long> recordIdList = cmdRequest.getRecordIdList();
+
+        if (recordIdList != null && recordIdList.size() > 0) {
+            if (PictureUtil.deletePictures(mContext, recordIdList)) {
+                setResultOK(responseBuilder);
+            } else {
+                setResultErrorInternal(responseBuilder, "PictureUtil.deletePictures");
+            }
+        } else {
+            setResultErrorInsufficentParams(responseBuilder, "recordIdList");
+        }
+        
+        Slog.d("deletePicture X");
+        return responseBuilder.build();
+    }
+
+    public CmdResponse queryPicture(CmdRequest cmdRequest) {
+        Slog.d("queryPicture E");
+        
+        CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
+        responseBuilder.setCmdType(cmdRequest.getCmdType());
+        
+        if (!StorageUtil.isExternalStorageMounted()) {
+            setResultErrorStorageNotAvailable(responseBuilder);
+            Slog.d("queryPicture X");
+            return responseBuilder.build();
+        }
+
+        List<Picture> pictures = PictureUtil.queryPictures(getContext());
+        
+        if (pictures == null) {
+            setResultErrorInternal(responseBuilder, "PictureUtil.queryPictures");
+            Slog.d("queryPicture X");
+            return responseBuilder.build();
+        } 
+
+        PictureRecord.Builder pictureBuilder = PictureRecord.newBuilder();
+        
+        for (Picture picture : pictures) {
+            pictureBuilder.setId(picture.id);
+            pictureBuilder.setTitle(normalizeStr(picture.title));
+            pictureBuilder.setDisplayName(normalizeStr(picture.displayName));
+            pictureBuilder.setMimeType(normalizeStr(picture.mimeType));
+            pictureBuilder.setDateTaken(picture.dateTaken);
+            pictureBuilder.setSize(picture.size);
+            pictureBuilder.setData(normalizeStr(picture.data));
+            pictureBuilder.setBucketDisplayName(normalizeStr(picture.bucketDisplayName));
+            responseBuilder.addPictureRecord(pictureBuilder.build());
+            pictureBuilder.clear();
+        }
+        setResultOK(responseBuilder);
+        Slog.d("queryPicture X");
+        return responseBuilder.build();
+    }
 
     private CmdResponse connect(CmdRequest cmdRequest) {
         Slog.d("connect E");
@@ -2880,6 +2968,15 @@ public class HandlerFacade {
     private static void setResultOK(CmdResponse.Builder responseBuilder) {
         responseBuilder.setResultCode(RESULT_CODE_OK);
         responseBuilder.setResultMsg(RESULT_MSG_OK);
+    }
+    
+    private static void setResultErrorStorageNotAvailable(CmdResponse.Builder responseBuilder) {
+        final String msg = "Error: external storage not available";
+
+        Slog.e(msg);
+
+        responseBuilder.setResultCode(RESULT_CODE_ERR_STORAGE_NOT_AVAILABLE);
+        responseBuilder.setResultMsg(msg);
     }
 
     private static void setResultErrorInternal(

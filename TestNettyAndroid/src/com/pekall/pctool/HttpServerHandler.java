@@ -18,6 +18,7 @@ import android.os.Environment;
 import com.pekall.pctool.model.HandlerFacade;
 import com.pekall.pctool.model.app.AppUtil;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
+import com.pekall.pctool.model.picture.PictureUtil;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
@@ -82,12 +83,19 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class HttpServerHandler extends SimpleChannelUpstreamHandler {
+    
+    private static enum FileUploadType {
+        APK,
+        PICTURE,
+    }
 
     // server error code
 
     private static final int RPC_END_POINT = 1;
     private static final int EXPORT_APP = 2;
     private static final int IMPORT_APP = 3;
+    private static final int EXPORT_PICTURE = 4;
+    private static final int IMPORT_PICTURE = 5;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(
             UriMatcher.NO_MATCH);
@@ -96,14 +104,18 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         sURIMatcher.addURI("localhost", "rpc", RPC_END_POINT);
         sURIMatcher.addURI("localhost", "export/*", EXPORT_APP);
         sURIMatcher.addURI("localhost", "import", IMPORT_APP);
+        sURIMatcher.addURI("localhost", "export_pic/*", EXPORT_PICTURE);
+        sURIMatcher.addURI("localhost", "import_pic", IMPORT_PICTURE);
     }
     
     //
-    // APK file upload related
+    // APK, picture file upload related
     // 
-    private HttpRequest request;
+    private HttpRequest mRequest;
 
     private boolean readingChunks;
+    
+    private FileUploadType mFileUploadType;
 
     private final StringBuilder responseContent = new StringBuilder();
 
@@ -151,7 +163,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
 //        Slog.d("MessageReceived, e.getClass: " + e.getMessage().getClass().toString() + ", readingChunks: " + readingChunks);
         
         if (readingChunks) {
-            handleImportApp(ctx, e);
+            handleImport(ctx, e, mFileUploadType);
             return;
         }
         
@@ -199,7 +211,20 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             }
             case IMPORT_APP: {
                 if (HttpMethod.POST.equals(method)) {
-                    handleImportApp(ctx, e);
+                    handleImport(ctx, e, FileUploadType.APK);
+                } else {
+                    sendError(ctx, BAD_REQUEST);
+                }
+                break;
+            }
+            case EXPORT_PICTURE: {
+                // TODO: not implemented
+                sendError(ctx, BAD_REQUEST);
+                break;
+            }
+            case IMPORT_PICTURE: {
+                if (HttpMethod.POST.equals(method)) {
+                    handleImport(ctx, e, FileUploadType.PICTURE);
                 } else {
                     sendError(ctx, BAD_REQUEST);
                 }
@@ -319,8 +344,8 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    private void handleImportApp(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        if (!StorageUtil.isSdCardMounted()) {
+    private void handleImport(ChannelHandlerContext ctx, MessageEvent e, FileUploadType fileUploadType) throws Exception {
+        if (!StorageUtil.isExternalStorageMounted()) {
             Slog.e("Error sdcard not mounted");
             sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
             return;
@@ -332,84 +357,86 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                 decoder.cleanFiles();
                 decoder = null;
             }
-            HttpRequest request = this.request = (HttpRequest) e.getMessage();
+            HttpRequest request = mRequest = (HttpRequest) e.getMessage();
             
-            responseContent.setLength(0);
-            responseContent.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-            responseContent.append("===================================\r\n");
-
-            responseContent.append("VERSION: " +
-                    request.getProtocolVersion().getText() + "\r\n");
-
-            responseContent.append("REQUEST_URI: " + request.getUri() +
-                    "\r\n\r\n");
-            responseContent.append("\r\n\r\n");
-
-            // new method
-            List<Entry<String, String>> headers = request.getHeaders();
-            for (Entry<String, String> entry: headers) {
-                responseContent.append("HEADER: " + entry.getKey() + "=" +
-                        entry.getValue() + "\r\n");
-            }
-            responseContent.append("\r\n\r\n");
-
-            // new method
-            Set<Cookie> cookies;
-            String value = request.getHeader(HttpHeaders.Names.COOKIE);
-            if (value == null) {
-                cookies = Collections.emptySet();
-            } else {
-                CookieDecoder decoder = new CookieDecoder();
-                cookies = decoder.decode(value);
-            }
-            for (Cookie cookie: cookies) {
-                responseContent.append("COOKIE: " + cookie.toString() + "\r\n");
-            }
-            responseContent.append("\r\n\r\n");
-
-            QueryStringDecoder decoderQuery = new QueryStringDecoder(request
-                    .getUri());
-            Map<String, List<String>> uriAttributes = decoderQuery
-                    .getParameters();
-            for (String key: uriAttributes.keySet()) {
-                for (String valuen: uriAttributes.get(key)) {
-                    responseContent.append("URI: " + key + "=" + valuen +
-                            "\r\n");
-                }
-            }
-            responseContent.append("\r\n\r\n");
+            mFileUploadType = fileUploadType;
+            
+            
+//            responseContent.setLength(0);
+//            responseContent.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
+//            responseContent.append("===================================\r\n");
+//
+//            responseContent.append("VERSION: " +
+//                    request.getProtocolVersion().getText() + "\r\n");
+//
+//            responseContent.append("REQUEST_URI: " + request.getUri() +
+//                    "\r\n\r\n");
+//            responseContent.append("\r\n\r\n");
+//
+//            // new method
+//            List<Entry<String, String>> headers = request.getHeaders();
+//            for (Entry<String, String> entry: headers) {
+//                responseContent.append("HEADER: " + entry.getKey() + "=" +
+//                        entry.getValue() + "\r\n");
+//            }
+//            responseContent.append("\r\n\r\n");
+//
+//            // new method
+//            Set<Cookie> cookies;
+//            String value = request.getHeader(HttpHeaders.Names.COOKIE);
+//            if (value == null) {
+//                cookies = Collections.emptySet();
+//            } else {
+//                CookieDecoder decoder = new CookieDecoder();
+//                cookies = decoder.decode(value);
+//            }
+//            for (Cookie cookie: cookies) {
+//                responseContent.append("COOKIE: " + cookie.toString() + "\r\n");
+//            }
+//            responseContent.append("\r\n\r\n");
+//
+//            QueryStringDecoder decoderQuery = new QueryStringDecoder(request
+//                    .getUri());
+//            Map<String, List<String>> uriAttributes = decoderQuery
+//                    .getParameters();
+//            for (String key: uriAttributes.keySet()) {
+//                for (String valuen: uriAttributes.get(key)) {
+//                    responseContent.append("URI: " + key + "=" + valuen +
+//                            "\r\n");
+//                }
+//            }
+//            responseContent.append("\r\n\r\n");
 
             // if GET Method: should not try to create a HttpPostRequestDecoder
             try {
                 decoder = new HttpPostRequestDecoder(factory, request);
             } catch (ErrorDataDecoderException e1) {
                 e1.printStackTrace();
-                responseContent.append(e1.getMessage());
+//                responseContent.append(e1.getMessage());
                 writeResponse(e.getChannel());
                 Channels.close(e.getChannel());
                 return;
             } catch (IncompatibleDataDecoderException e1) {
                 // GET Method: should not try to create a HttpPostRequestDecoder
                 // So OK but stop here
-                responseContent.append(e1.getMessage());
-                responseContent.append("\r\n\r\nEND OF GET CONTENT\r\n");
+//                responseContent.append(e1.getMessage());
+//                responseContent.append("\r\n\r\nEND OF GET CONTENT\r\n");
                 writeResponse(e.getChannel());
                 return;
             }
 
-            responseContent.append("Is Chunked: " + request.isChunked() +
-                    "\r\n");
-            responseContent.append("IsMultipart: " + decoder.isMultipart() +
-                    "\r\n");
+//            responseContent.append("Is Chunked: " + request.isChunked() +
+//                    "\r\n");
+//            responseContent.append("IsMultipart: " + decoder.isMultipart() +
+//                    "\r\n");
             if (request.isChunked()) {
                 // Chunk version
-                responseContent.append("Chunks: ");
+//                responseContent.append("Chunks: ");
                 readingChunks = true;
             } else {
                 // Not chunk version
                 readHttpDataAllReceive(e.getChannel());
-                responseContent
-                        .append("\r\n\r\nEND OF NOT CHUNKED CONTENT\r\n");
+//                responseContent.append("\r\n\r\nEND OF NOT CHUNKED CONTENT\r\n");
                 writeResponse(e.getChannel());
             }
         } else {
@@ -419,12 +446,12 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                 decoder.offer(chunk);
             } catch (ErrorDataDecoderException e1) {
                 e1.printStackTrace();
-                responseContent.append(e1.getMessage());
+//                responseContent.append(e1.getMessage());
                 writeResponse(e.getChannel());
                 Channels.close(e.getChannel());
                 return;
             }
-            responseContent.append("o");
+//            responseContent.append("o");
             // example of reading chunk by chunk (minimize memory usage due to Factory)
 //          readHttpDataChunkByChunk(e.getChannel());
             // example of reading only if at the end
@@ -449,7 +476,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         } catch (NotEnoughDataDecoderException e1) {
             // Should not be!
             e1.printStackTrace();
-            responseContent.append(e1.getMessage());
+//            responseContent.append(e1.getMessage());
             writeResponse(channel);
             Channels.close(channel);
             return;
@@ -457,7 +484,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         for (InterfaceHttpData data: datas) {
             writeHttpData(data);
         }
-        responseContent.append("\r\n\r\nEND OF CONTENT AT FINAL END\r\n");
+//        responseContent.append("\r\n\r\nEND OF CONTENT AT FINAL END\r\n");
     }
 
     /**
@@ -477,85 +504,110 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             }
         } catch (EndOfDataDecoderException e1) {
             // end
-            responseContent
-                    .append("\r\n\r\nEND OF CONTENT CHUNK BY CHUNK\r\n\r\n");
+//            responseContent.append("\r\n\r\nEND OF CONTENT CHUNK BY CHUNK\r\n\r\n");
         }
     }
 
     private void writeHttpData(InterfaceHttpData data) {
         if (data.getHttpDataType() == HttpDataType.Attribute) {
-            Attribute attribute = (Attribute) data;
-            String value;
-            try {
-                value = attribute.getValue();
-            } catch (IOException e1) {
-                // Error while reading data from File, only print name and error
-                e1.printStackTrace();
-                responseContent.append("\r\nBODY Attribute: " +
-                        attribute.getHttpDataType().name() + ": " +
-                        attribute.getName() + " Error while reading value: " +
-                        e1.getMessage() + "\r\n");
-                return;
-            }
-            if (value.length() > 100) {
-                responseContent.append("\r\nBODY Attribute: " +
-                        attribute.getHttpDataType().name() + ": " +
-                        attribute.getName() + " data too long\r\n");
-            } else {
-                responseContent.append("\r\nBODY Attribute: " +
-                        attribute.getHttpDataType().name() + ": " +
-                        attribute.toString() + "\r\n");
-            }
+//            Attribute attribute = (Attribute) data;
+//            String value;
+//            try {
+//                value = attribute.getValue();
+//            } catch (IOException e1) {
+//                // Error while reading data from File, only print name and error
+//                e1.printStackTrace();
+//                responseContent.append("\r\nBODY Attribute: " +
+//                        attribute.getHttpDataType().name() + ": " +
+//                        attribute.getName() + " Error while reading value: " +
+//                        e1.getMessage() + "\r\n");
+//                return;
+//            }
+//            if (value.length() > 100) {
+//                responseContent.append("\r\nBODY Attribute: " +
+//                        attribute.getHttpDataType().name() + ": " +
+//                        attribute.getName() + " data too long\r\n");
+//            } else {
+//                responseContent.append("\r\nBODY Attribute: " +
+//                        attribute.getHttpDataType().name() + ": " +
+//                        attribute.toString() + "\r\n");
+//            }
         } else {
-            responseContent.append("\r\nBODY FileUpload: " +
-                    data.getHttpDataType().name() + ": " + data.toString() +
-                    "\r\n");
+//            responseContent.append("\r\nBODY FileUpload: " +
+//                    data.getHttpDataType().name() + ": " + data.toString() +
+//                    "\r\n");
             if (data.getHttpDataType() == HttpDataType.FileUpload) {
                 FileUpload fileUpload = (FileUpload) data;
                 if (fileUpload.isCompleted()) {
-                    if (fileUpload.length() < 10000) {
-                        responseContent.append("\tContent of file\r\n");
-                        try {
-                            responseContent
-                                    .append(((FileUpload) data)
-                                            .getString(((FileUpload) data)
-                                                    .getCharset()));
-                        } catch (IOException e1) {
-                            // do nothing for the example
-                            e1.printStackTrace();
-                        }
-                        responseContent.append("\r\n");
-                    } else {
-                        responseContent
-                                .append("\tFile too long to be printed out:" +
-                                        fileUpload.length() + "\r\n");
-                    }
+//                    if (fileUpload.length() < 10000) {
+//                        responseContent.append("\tContent of file\r\n");
+//                        try {
+//                            responseContent
+//                                    .append(((FileUpload) data)
+//                                            .getString(((FileUpload) data)
+//                                                    .getCharset()));
+//                        } catch (IOException e1) {
+//                            // do nothing for the example
+//                            e1.printStackTrace();
+//                        }
+//                        responseContent.append("\r\n");
+//                    } else {
+//                        responseContent
+//                                .append("\tFile too long to be printed out:" +
+//                                        fileUpload.length() + "\r\n");
+//                    }
                     boolean isInMemory = fileUpload.isInMemory();// tells if the file is in Memory or on File
                     
                     Slog.d("isInMemory: " + isInMemory);
-                    
-                    Context context = mHandlerFacade.getContext();
-                    
-                    File externalDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-                    
-                    File dest = new File(externalDir, fileUpload.getFilename());
-                    
-                    Slog.d("dest: " + dest);
-                    
-                    try {
-                        fileUpload.renameTo(dest); // enable to move into another File dest
-                        AppUtil.installAPK(context, dest);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } 
+                    switch (mFileUploadType) {
+                        case APK:
+                            installAPK(fileUpload);
+                            break;
+                        case PICTURE:
+                            savePicture(fileUpload);
+                            break;
+                        default:
+                            // should not reach here
+                            throw new IllegalStateException("Error: unknown file upload type: " + mFileUploadType);
+                    }
+                     
                     //decoder.removeFileUploadFromClean(fileUpload); //remove the File of to delete file
                     decoder.removeHttpDataFromClean(data);
                 } else {
-                    responseContent
-                            .append("\tFile to be continued but should not!\r\n");
+//                    responseContent
+//                            .append("\tFile to be continued but should not!\r\n");
                 }
             }
+        }
+    }
+
+    private void installAPK(FileUpload fileUpload) {
+        Context context = mHandlerFacade.getContext();
+        File externalDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        File dest = new File(externalDir, fileUpload.getFilename());
+        Slog.d("dest: " + dest);
+        
+        try {
+            fileUpload.renameTo(dest); // enable to move into another File dest
+            AppUtil.installAPK(context, dest);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    private void savePicture(FileUpload fileUpload) {
+        Context context = mHandlerFacade.getContext();
+        File externalDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File dest = new File(externalDir, fileUpload.getFilename());
+        Slog.d("dest: " + dest);
+        
+        try {
+            fileUpload.renameTo(dest); // enable to move into another File dest
+            PictureUtil.scanPicture(context, dest.getAbsolutePath());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -566,10 +618,10 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         responseContent.setLength(0);
 
         // Decide whether to close the connection or not.
-        boolean close = HttpHeaders.Values.CLOSE.equalsIgnoreCase(request
+        boolean close = HttpHeaders.Values.CLOSE.equalsIgnoreCase(mRequest
                 .getHeader(HttpHeaders.Names.CONNECTION)) ||
-                request.getProtocolVersion().equals(HttpVersion.HTTP_1_0) &&
-                !HttpHeaders.Values.KEEP_ALIVE.equalsIgnoreCase(request
+                mRequest.getProtocolVersion().equals(HttpVersion.HTTP_1_0) &&
+                !HttpHeaders.Values.KEEP_ALIVE.equalsIgnoreCase(mRequest
                         .getHeader(HttpHeaders.Names.CONNECTION));
 
         // Build the response object.
@@ -587,7 +639,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         }
 
         Set<Cookie> cookies;
-        String value = request.getHeader(HttpHeaders.Names.COOKIE);
+        String value = mRequest.getHeader(HttpHeaders.Names.COOKIE);
         if (value == null) {
             cookies = Collections.emptySet();
         } else {
