@@ -12,14 +12,38 @@ import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.provider.MediaStore.Images.Media;
+import android.text.TextUtils;
 
 import com.pekall.pctool.util.Slog;
 import com.pekall.pctool.util.StorageUtil;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PictureUtil {
+    
+    public static class PictureNotExistException extends Exception {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1L;
+        private String mPath;
+
+        public PictureNotExistException(String path) {
+            super();
+            mPath = path;
+        }
+
+        @Override
+        public String toString() {
+            return "PictureNotExistException [mPath=" + mPath + "]";
+        }
+    }
+    
     public static final int QUERY_LIMIT_NULL = 0;
     
     
@@ -68,6 +92,54 @@ public class PictureUtil {
             return result.getPictures();
         }
     }
+    
+    public static InputStream getPictureStream(Context context, long id, StringBuilder /*out*/outMimeType) throws PictureNotExistException {
+        String path = queryPicturePath(context, id, outMimeType);
+        
+        if (TextUtils.isEmpty(path)) {
+            throw new PictureNotExistException(path);
+        }
+
+        try {
+            FileInputStream fis = new FileInputStream(path);
+            return fis;
+        } catch (FileNotFoundException e) {
+            Slog.e("Error: file not found " + path, e);
+            throw new PictureNotExistException(path);
+        }
+    }
+    
+    private static String queryPicturePath(Context context, long id, StringBuilder /*out*/outMimeType) {
+        String[] projection = {
+          ImageColumns.DATA,
+          ImageColumns.MIME_TYPE,
+        };
+                 
+        final Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+        Cursor cursor = context.getContentResolver().query(uri, projection,
+                null, null, null);
+        
+        if (cursor == null) {
+            Slog.e("Error: queryPicturePath cursor is null");
+            return null;
+        }
+        
+        if (cursor.moveToFirst()) {
+            try {
+                String path = cursor.getString(0); // ImageColumns.DATA
+                String mimeType = cursor.getString(1); // ImageColumns.MIME_TYPE
+                
+                outMimeType.setLength(0);
+                outMimeType.append(mimeType);
+                
+                return path;
+            } finally {
+                cursor.close();
+            }
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Query pictures with offset and limit
@@ -109,7 +181,7 @@ public class PictureUtil {
                 selection, selectionArgs, null);
 
         if (cursor == null) {
-            Slog.e("queryPictures cursor is null");
+            Slog.e("Error: queryPictures cursor is null");
             return null;
         }
         

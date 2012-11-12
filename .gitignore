@@ -28,3 +28,5 @@ main.txt
 
 # Thumbs.db
 Thumbs.db
+*.db-shm
+*.db-wal

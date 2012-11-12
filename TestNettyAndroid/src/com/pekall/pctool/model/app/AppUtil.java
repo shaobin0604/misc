@@ -32,6 +32,10 @@ public class AppUtil {
     private AppUtil() {}
     
     public static class AppNotExistException extends Exception {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1L;
         private String mPackageName;
 
         public AppNotExistException(String packageName) {

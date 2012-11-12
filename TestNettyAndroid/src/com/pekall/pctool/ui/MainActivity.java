@@ -151,7 +151,7 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onStart() {
         super.onStart();
-        Slog.d("onStart E, server state: " + ServerController.getServerState());
+        Slog.d("onStart E, server state: " + ServerController.getServerStateDisplayString());
         
         mDisplayUsbMode = false;
         

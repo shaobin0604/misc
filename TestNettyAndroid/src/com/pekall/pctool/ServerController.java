@@ -45,6 +45,26 @@ public class ServerController {
         return sServerState;
     }
     
+    public static String getServerStateDisplayString() {
+        return serverStateToDisplayString(sServerState);
+    }
+    
+    private static String serverStateToDisplayString(int serverState) {
+        switch (serverState) {
+            case STATE_START:
+                return "STATE_START";
+            case STATE_STOP: 
+                return "STATE_STOP";
+            case STATE_CONNECTED:
+                return "STATE_CONNECTED";
+            case STATE_DISCONNECTED:
+                return "STATE_DISCONNECTED";
+            default:
+                // WARN: should not goes here
+                return "STATE_UNKNOWN";
+        }
+    }
+    
     public static boolean isUsbMode() {
         return sIsUsbMode;
     }

@@ -19,6 +19,7 @@ import com.pekall.pctool.model.HandlerFacade;
 import com.pekall.pctool.model.app.AppUtil;
 import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
 import com.pekall.pctool.model.picture.PictureUtil;
+import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
 import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
 import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
 import com.pekall.pctool.protos.MsgDefProtos.CmdType;
@@ -53,8 +54,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.handler.codec.http.QueryStringDecoder;
-import org.jboss.netty.handler.codec.http.multipart.Attribute;
 import org.jboss.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import org.jboss.netty.handler.codec.http.multipart.DiskAttribute;
 import org.jboss.netty.handler.codec.http.multipart.DiskFileUpload;
@@ -78,8 +77,6 @@ import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 public class HttpServerHandler extends SimpleChannelUpstreamHandler {
@@ -104,7 +101,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         sURIMatcher.addURI("localhost", "rpc", RPC_END_POINT);
         sURIMatcher.addURI("localhost", "export/*", EXPORT_APP);
         sURIMatcher.addURI("localhost", "import", IMPORT_APP);
-        sURIMatcher.addURI("localhost", "export_pic/*", EXPORT_PICTURE);
+        sURIMatcher.addURI("localhost", "export_pic/#", EXPORT_PICTURE);    // should be IMAGES_MEDIA_ID
         sURIMatcher.addURI("localhost", "import_pic", IMPORT_PICTURE);
     }
     
@@ -218,8 +215,12 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                 break;
             }
             case EXPORT_PICTURE: {
-                // TODO: not implemented
-                sendError(ctx, BAD_REQUEST);
+                if (HttpMethod.GET.equals(method)) {
+                    String pictureId = url.getPathSegments().get(1);
+                    handleExportPicture(pictureId, e);
+                } else {
+                    sendError(ctx, BAD_REQUEST);
+                }
                 break;
             }
             case IMPORT_PICTURE: {
@@ -281,6 +282,79 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper(httpResponse, shutdownServer);
         Slog.d("\n=====================================================\n\n");
         return httpResponseWrapper;
+    }
+    
+    private void handleExportPicture(final String pictureId, MessageEvent event) {
+        Slog.d("pictureId = " + pictureId);
+        try {
+            StringBuilder mimeType = new StringBuilder();
+            InputStream is = mHandlerFacade.exportPicture(Long.valueOf(pictureId), mimeType);
+            if (is instanceof FileInputStream) {
+                Slog.d("use zero-copy");
+
+                HttpResponse response = new DefaultHttpResponse(HTTP_1_0, OK);
+
+                FileChannel src = ((FileInputStream) is).getChannel();
+
+                response.setHeader(CONTENT_TYPE, mimeType.toString());
+                long fileLength = src.size();
+                response.setHeader(CONTENT_LENGTH, fileLength);
+
+                Channel ch = event.getChannel();
+
+                // Write the initial line and the header.
+                ch.write(response);
+
+                final FileRegion region =
+                        new DefaultFileRegion(src, 0, fileLength);
+                ChannelFuture writeFuture = ch.write(region);
+                writeFuture.addListener(new ChannelFutureProgressListener() {
+                    public void operationComplete(ChannelFuture future) {
+                        region.releaseExternalResources();
+                        future.getChannel().close();
+                    }
+
+                    public void operationProgressed(
+                            ChannelFuture future, long amount, long current, long total) {
+                        Slog.d(String.format("%d / %d (+%d)%n", current, total, amount));
+                    }
+                });
+                
+            }
+        } catch (NumberFormatException e) {
+            Slog.e("Error picture id not exist, id = " + pictureId, e);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, NOT_FOUND);
+
+            response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+            response.setContent(ChannelBuffers.copiedBuffer(
+                    "Failure: " + NOT_FOUND.toString() + "\r\n",
+                    CharsetUtil.UTF_8));
+
+            // Close the connection as soon as the error message is sent.
+            event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        } catch (PictureNotExistException e) {
+            Slog.e("Error picture id not exist, id = " + pictureId, e);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, NOT_FOUND);
+
+            response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+            response.setContent(ChannelBuffers.copiedBuffer(
+                    "Failure: " + NOT_FOUND.toString() + "\r\n",
+                    CharsetUtil.UTF_8));
+
+            // Close the connection as soon as the error message is sent.
+            event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        } catch (IOException e) {
+            Slog.e("Error when export picture, id = " + pictureId, e);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, INTERNAL_SERVER_ERROR);
+
+            response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+            response.setContent(ChannelBuffers.copiedBuffer(
+                    "Failure: " + INTERNAL_SERVER_ERROR.toString() + "\r\n",
+                    CharsetUtil.UTF_8));
+
+            // Close the connection as soon as the error message is sent.
+            event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        }
     }
 
     private void handleExportApp(final String packageName, MessageEvent event) {

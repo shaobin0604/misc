@@ -31,6 +31,7 @@ import com.pekall.pctool.model.mms.Mms.Slide;
 import com.pekall.pctool.model.mms.MmsUtil;
 import com.pekall.pctool.model.picture.Picture;
 import com.pekall.pctool.model.picture.PictureUtil;
+import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
 import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
 import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
@@ -328,7 +329,7 @@ public class HandlerFacade {
     // Picture
     //-------------------------------------------------------------------------
     
-    private CmdResponse deletePicture(CmdRequest cmdRequest) {
+    public CmdResponse deletePicture(CmdRequest cmdRequest) {
         Slog.d("deletePicture E");
         
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
@@ -388,6 +389,15 @@ public class HandlerFacade {
         Slog.d("queryPicture X");
         return responseBuilder.build();
     }
+    
+    public InputStream exportPicture(long pictureId, StringBuilder /*out*/outMimeType)
+            throws PictureNotExistException {
+        return PictureUtil.getPictureStream(mContext, pictureId, outMimeType);
+    }
+    
+    //
+    // Connection management
+    //
 
     private CmdResponse connect(CmdRequest cmdRequest) {
         Slog.d("connect E");
