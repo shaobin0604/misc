@@ -42,6 +42,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private boolean mIsUsbOn;
     
     // wifi mode
+    private TextView mTvWifiTips;
     private TextView mTvWifiSecret;
     private TextView mTvWifiStatus;
     private ImageView mTbWifiStatus;
@@ -67,6 +68,7 @@ public class MainActivity extends Activity implements OnClickListener {
                         } else {
                         	setWifiModeState(true);
                             mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                            mTvWifiTips.setVisibility(View.VISIBLE);
                             mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
                             mTvWifiSecret.setVisibility(View.VISIBLE);
                             mViewFlipper.setDisplayedChild(FRAME_WIFI);
@@ -75,6 +77,7 @@ public class MainActivity extends Activity implements OnClickListener {
                     }
                     case STATE_STOP: {
                     	mTvWifiStatus.setText(R.string.text_wifi_tips);
+                    	mTvWifiTips.setVisibility(View.INVISIBLE);
                         mTvWifiSecret.setVisibility(View.INVISIBLE);
                         setWifiModeState(false);
                         mViewFlipper.setDisplayedChild(FRAME_WIFI);
@@ -88,6 +91,7 @@ public class MainActivity extends Activity implements OnClickListener {
                         } else {
                         	setWifiModeState(true);
                             mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
+                            mTvWifiTips.setVisibility(View.VISIBLE);
                             mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
                             mTvWifiSecret.setVisibility(View.VISIBLE);
                             mViewFlipper.setDisplayedChild(FRAME_WIFI);
@@ -125,6 +129,7 @@ public class MainActivity extends Activity implements OnClickListener {
         
         mTbUsbStatus.setOnClickListener(this);
         
+        mTvWifiTips = (TextView) findViewById(R.id.tv_wifi_tips);
         mTvWifiSecret = (TextView) findViewById(R.id.tv_wifi_secret);
         mTvWifiStatus = (TextView) findViewById(R.id.tv_wifi_status);
         mTbWifiStatus = (ImageView) findViewById(R.id.tb_wifi_status);
@@ -164,6 +169,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 } else {
                     setWifiModeState(true);
                     mTvWifiStatus.setText(R.string.text_wifi_in_service);
+                    mTvWifiTips.setVisibility(View.VISIBLE);
                     mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
                     mTvWifiSecret.setVisibility(View.VISIBLE);
                 }
@@ -177,6 +183,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 } else {
                     setWifiModeState(true);
                     mTvWifiStatus.setText(getString(R.string.text_wifi_connected, ServerController.getHostname()));
+                    mTvWifiTips.setVisibility(View.VISIBLE);
                     mTvWifiSecret.setText(getString(R.string.text_password, ServerController.getWifiSecret()));
                     mTvWifiSecret.setVisibility(View.VISIBLE);
                 }
@@ -194,6 +201,7 @@ public class MainActivity extends Activity implements OnClickListener {
             }
             case STATE_STOP: {
                  mTvWifiStatus.setText(R.string.text_wifi_tips);
+                 mTvWifiTips.setVisibility(View.INVISIBLE);
                  mTvWifiSecret.setVisibility(View.INVISIBLE);
                  setWifiModeState(false);
                 break;

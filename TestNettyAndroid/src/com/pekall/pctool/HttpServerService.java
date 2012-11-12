@@ -64,9 +64,10 @@ public class HttpServerService extends Service {
             int noteTextResId = isUsbMode ? R.string.note_text_usb_start : R.string.note_text_wifi_start;
 
             Notification notification = new Notification();
-            notification.icon = R.drawable.ic_launcher;
+            notification.icon = R.drawable.notification_icon;
             notification.tickerText = getString(noteTickerResId);
             notification.when = System.currentTimeMillis();
+            
 
             Intent notificationIntent = new Intent(this, MainActivity.class);
             PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);

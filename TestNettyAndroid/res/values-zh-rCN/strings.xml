@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">京联云手机助手</string>
-    <string name="note_ticker_wifi_start">京联云手机精灵WIFI使用中</string>
-    <string name="note_ticker_wifi_connected">正在通过WIFI连接%1$s</string>
+    <string name="note_ticker_wifi_start">京联云手机精灵Wi-Fi使用中</string>
+    <string name="note_ticker_wifi_connected">正在通过Wi-Fi连接%1$s</string>
     
-    <string name="note_title_wifi_start">京联云手机精灵WIFI使用中</string>
-    <string name="note_text_wifi_start">正在使用WIFI连接京联云手机精灵</string>
-    <string name="note_text_wifi_connected">正在通过WIFI连接%1$s</string>
+    <string name="note_title_wifi_start">京联云手机精灵Wi-Fi使用中</string>
+    <string name="note_text_wifi_start">正在使用Wi-Fi连接京联云手机精灵</string>
+    <string name="note_text_wifi_connected">正在通过Wi-Fi连接%1$s</string>
     
-    <string name="text_wifi_connected">正在通过WIFI连接%1$s</string>
-    <string name="text_wifi_in_service">WIFI连接正在使用</string>
+    <string name="text_wifi_connected">正在通过Wi-Fi连接%1$s</string>
+    <string name="text_wifi_in_service">Wi-Fi连接正在使用</string>
     
-    <string name="text_wifi_tips">通过WIFI连接电脑</string>
-    
+    <string name="text_wifi_tips">通过Wi-Fi连接电脑</string>
+    <string name="text_password_tips">在京联云手机助手(PC版)输入</string>
     <string name="text_password">验证码: %1$s</string>
     
     <string name="note_ticker_usb_start">京联云手机精灵USB使用中</string>
@@ -25,7 +25,8 @@
     <string name="text_usb_connected">正在通过USB连接%1$s</string>
     <string name="text_usb_in_service">USB连接正在使用</string>
     
-    <string name="dlg_title_wifi_tips">设置WIFI网络</string>
-    <string name="dlg_text_wifi_tips">您的手机还没有连接WIFI网络，请点击[确定]开启WIFI网络连接</string>
+    <string name="dlg_title_wifi_tips">设置Wi-Fi网络</string>
+    <string name="dlg_text_wifi_tips">您的手机还没有连接Wi-Fi网络，请点击[确定]开启Wi-Fi网络连接</string>
+    
    
 </resources>
