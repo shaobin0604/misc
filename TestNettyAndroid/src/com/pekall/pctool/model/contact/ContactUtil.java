@@ -53,8 +53,11 @@ import java.util.Queue;
 import java.util.Set;
 
 public class ContactUtil {
+    // FIXME: disable sim contacts for bug 9863
+    private static final boolean DISABLE_SIM_CONTACTS = true;
 
     private static final String CONTACTS_ACCOUNT_TYPE_SIM = "contacts.account.type.sim";
+    private static final String CONTACTS_ACCOUNT_TYPE_USIM = "contacts.account.type.usim";
 
     private static final boolean DUMP_PARAMS = true;
 
@@ -70,14 +73,10 @@ public class ContactUtil {
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_NAME = "contacts.account.name.local";
     private static final String LENOVO_S868T_LOCAL_ACCOUNT_TYPE = "contacts.account.type.local";
 
-    private static final boolean DISABLE_SIM_CONTACTS = true; // FIXME: disable
-                                                              // sim contacts
-                                                              // for bug 9863
 
-    private static final String RAW_CONTACT_SORT_KEY = "sort_key"; // sort_key
-                                                                   // column in
-                                                                   // table
-                                                                   // 'raw_contacts'
+    
+    // sort_key column in table 'raw_contacts'
+    private static final String RAW_CONTACT_SORT_KEY = "sort_key"; 
     //
     //
     //
@@ -1294,9 +1293,11 @@ public class ContactUtil {
         String[] selectionArgs = null;
 
         if (DISABLE_SIM_CONTACTS) {
-            selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_TYPE + "!=?";
+            selection = RawContacts.DELETED + "!=? AND " + RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?)";
             selectionArgs = new String[] {
-                    String.valueOf(RAW_CONTACT_DELETE_FLAG), CONTACTS_ACCOUNT_TYPE_SIM
+                    String.valueOf(RAW_CONTACT_DELETE_FLAG), 
+                    CONTACTS_ACCOUNT_TYPE_SIM,
+                    CONTACTS_ACCOUNT_TYPE_USIM,
             };
         } else {
             selection = RawContacts.DELETED + "!=?";

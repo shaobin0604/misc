@@ -57,8 +57,6 @@ public class Mms {
         public String toString() {
             return "Attachment [name=" + name + ", fileBytes.length=" + fileBytes.length + "]";
         }
-        
-        
     }
     
     @Override

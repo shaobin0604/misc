@@ -1,0 +1,57 @@
+<smil>
+
+    <head>
+
+        <layout>
+
+            <root-layout
+                height="720px"
+                width="1134px" />
+
+            <region
+                id="Text"
+                fit="meet"
+                height="72px"
+                left="0"
+                top="648"
+                width="1134px" />
+
+            <region
+                id="Image"
+                fit="meet"
+                height="648px"
+                left="0"
+                top="0"
+                width="1134px" />
+        </layout>
+    </head>
+
+    <body>
+
+        <par dur="5000ms" >
+
+            <text
+                region="Text"
+                src="text_1.txt" />
+
+            <img
+                region="Image"
+                src="Screenshot_2012-10-31-19-35-57.png" />
+        </par>
+
+        <par dur="5000ms" >
+
+            <text
+                region="Text"
+                src="text_2.txt" />
+        </par>
+
+        <par dur="5000ms" >
+
+            <text
+                region="Text"
+                src="text_3.txt" />
+        </par>
+    </body>
+
+</smil>

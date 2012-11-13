@@ -38,15 +38,16 @@ public class MmsUtil {
     	"_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
     };
     
+    private static final String PDU_CT_T_RELATED = "application/vnd.wap.multipart.related";
+    private static final String PDU_CT_T_MIXED = "application/vnd.wap.multipart.mixed";
     
     public static Mms queryMmsFull(Context ctx, long mmsId) {
     	Slog.d("queryMms E, mmsId = " + mmsId);
     	
-    	String selection = "_id = ? AND ct_t = ?";
+    	String selection = "_id";
     	
     	String[] selectionArgs = {
     			String.valueOf(mmsId),
-    			"application/vnd.wap.multipart.related",
     	};
     	Mms mms = null;
     	Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, MMS_PROJECTION, selection, selectionArgs, null);
@@ -88,11 +89,14 @@ public class MmsUtil {
     	                    "text"
     	            }, "ct='application/smil'", null, null);
     	            String smilContent = "";
+    	            List<String> slideTxtFileNames = null;
     	            if (cursorSmil != null) {
     	            	try {
 		    	            if (cursorSmil.moveToFirst()) {
 		    	                smilContent = cursorSmil.getString(cursorSmil.getColumnIndex("text"));
 		    	                // Log.e("", "smil content = " + smilContent);
+		    	                /** parse smil.xml and fill slide contents **/
+		    	                slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
 		    	            } else {
 		    	                Slog.e("this mms don't have smil.xml");
 		    	            }
@@ -100,9 +104,6 @@ public class MmsUtil {
 	    	            	cursorSmil.close();
 	    	            }
     	            }
-
-    	            /** parse smil.xml and fill slide contents **/
-    	            List<String> slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
 
     	            /** get attachments **/
     	            Cursor cursorPart = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
@@ -117,11 +118,37 @@ public class MmsUtil {
 		    	                fileName = (fileName == null) ? "" : fileName;
 		    	                type = (type == null) ? "" : type;
 		
-		    	                if (!type.equalsIgnoreCase("application/smil")
-		    	                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
-		    	                        && !isSlideFile(mms.attachments, fileName)) {
-		    	                    loadAttachment(ctx, mms, partRowId, type, fileName);
-		    	                }
+		    	                if (type.equalsIgnoreCase("application/smil") || fileName.equals(".txt")) {
+                                    continue;
+                                }
+                                
+                                if (slideTxtFileNames != null && slideTxtFileNames.contains(fileName) || isSlideFile(mms.attachments, fileName)) {
+                                    continue;
+                                }
+                                
+                                if ("text/plain".equals(type)) {
+                                    String text = cursorPart.getString(cursorPart.getColumnIndex("text"));
+                                    
+                                    Attachment attachment = new Attachment();
+                                    
+                                    if (!fileName.endsWith(".txt")) {
+                                        attachment.name = fileName + ".txt";
+                                    } else {
+                                        attachment.name = fileName;
+                                    }
+                                    
+                                    
+                                    attachment.fileBytes = text.getBytes();
+                                    
+                                    mms.attachments.add(attachment);
+                                } else {
+                                    loadAttachment(ctx, mms, partRowId, type, fileName);
+                                }
+//		    	                if (!type.equalsIgnoreCase("application/smil")
+//		    	                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
+//		    	                        && !isSlideFile(mms.attachments, fileName)) {
+//		    	                    loadAttachment(ctx, mms, partRowId, type, fileName);
+//		    	                }
 		    	            }
 	    	            } finally {
 	    	            	cursorPart.close();
@@ -142,35 +169,37 @@ public class MmsUtil {
     	Slog.d("queryMms E, mmsId = " + mmsId);
     	
     	String[] projection = {
-    			"_id"
+    			"_id", "ct_t"
     	};
     	
-    	String selection = "_id = ? AND ct_t = ?";
-    	
-    	String[] selectionArgs = {
-    			String.valueOf(mmsId),
-    			"application/vnd.wap.multipart.related",
-    	};
+        String selection = "_id = ?";
+        
+        String[] selectionArgs = {
+                String.valueOf(mmsId),
+        };
     	Mms mms = null;
     	Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, projection, selection, selectionArgs, null);
     	
     	if (cursor != null) {
     		try {
     			if (cursor.moveToFirst()) {
-    				final int idxForId = cursor.getColumnIndex("_id");
     				mms = new Mms();
-    				mms.rowId = cursor.getLong(idxForId);
+    				mms.rowId = cursor.getLong(0);  // _id
+    				
     	                	            
     	            /* get smil.xml */
     	            Cursor cursorSmil = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {
     	                    "text"
     	            }, "ct='application/smil'", null, null);
     	            String smilContent = "";
+    	            List<String> slideTxtFileNames = null;
     	            if (cursorSmil != null) {
     	            	try {
 		    	            if (cursorSmil.moveToFirst()) {
 		    	                smilContent = cursorSmil.getString(cursorSmil.getColumnIndex("text"));
 		    	                // Log.e("", "smil content = " + smilContent);
+		    	                /** parse smil.xml and fill slide contents **/
+		                        slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
 		    	            } else {
 		    	                Slog.e("this mms don't have smil.xml");
 		    	            }
@@ -178,9 +207,6 @@ public class MmsUtil {
 	    	            	cursorSmil.close();
 	    	            }
     	            }
-
-    	            /** parse smil.xml and fill slide contents **/
-    	            List<String> slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
 
     	            /** get attachments **/
     	            Cursor cursorPart = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
@@ -191,15 +217,49 @@ public class MmsUtil {
 		    	                String type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
 		    	                long partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
 		    	                String fileName = cursorPart.getString(cursorPart.getColumnIndex("cl"));
+		    	                
 		    	                /** avoid null pointer **/
-		    	                fileName = (fileName == null) ? "" : fileName;
-		    	                type = (type == null) ? "" : type;
+		    	                
+		    	                if (type == null) {
+                                    type = "";
+                                }
+		    	                
+		    	                if (fileName == null) {
+		    	                    fileName = "";
+		    	                }
 		
-		    	                if (!type.equalsIgnoreCase("application/smil")
-		    	                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
-		    	                        && !isSlideFile(mms.attachments, fileName)) {
+		    	                if (type.equalsIgnoreCase("application/smil") || fileName.equals(".txt")) {
+		    	                    continue;
+		    	                }
+		    	                
+		    	                if (slideTxtFileNames != null && slideTxtFileNames.contains(fileName) || isSlideFile(mms.attachments, fileName)) {
+		    	                    continue;
+		    	                }
+		    	                
+		    	                if ("text/plain".equals(type)) {
+		    	                    String text = cursorPart.getString(cursorPart.getColumnIndex("text"));
+		    	                    
+		    	                    Attachment attachment = new Attachment();
+		    	                    
+		    	                    if (!fileName.endsWith(".txt")) {
+		    	                        attachment.name = fileName + ".txt";
+		    	                    } else {
+		    	                        attachment.name = fileName;
+		    	                    }
+		    	                    
+		    	                    
+		    	                    attachment.fileBytes = text.getBytes();
+		    	                    
+		    	                    mms.attachments.add(attachment);
+		    	                } else {
 		    	                    loadAttachment(ctx, mms, partRowId, type, fileName);
 		    	                }
+		    	                
+//		    	                if (!type.equalsIgnoreCase("application/smil")
+//		    	                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
+//		    	                        && !isSlideFile(mms.attachments, fileName)) {
+//		    	                    loadAttachment(ctx, mms, partRowId, type, fileName);
+//		    	                }
 		    	            }
 	    	            } finally {
 	    	            	cursorPart.close();
@@ -320,9 +380,12 @@ public class MmsUtil {
         
         List<Mms> mmsList = new ArrayList<Mms>();
         
-        String selection = "ct_t = ?";
+        
+        String selection = "ct_t IN (?, ?)";
+        
         String[] selectionArgs = {
                 "application/vnd.wap.multipart.related",
+                "application/vnd.wap.multipart.mixed",
         };
         
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
@@ -369,9 +432,11 @@ public class MmsUtil {
         
         List<Mms> mmsList = new ArrayList<Mms>();
         
-        String selection = "ct_t = ?";
+        String selection = "ct_t IN (?, ?)";
+        
         String[] selectionArgs = {
                 "application/vnd.wap.multipart.related",
+                "application/vnd.wap.multipart.mixed",
         };
         
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
@@ -408,19 +473,19 @@ public class MmsUtil {
                     "text"
             }, "ct='application/smil'", null, null);
             String smilContent = "";
+            List<String> slideTxtFileNames = null;
             if (cursorSmil.moveToFirst()) {
                 smilContent = cursorSmil.getString(cursorSmil.getColumnIndex("text"));
+                /** parse smil.xml and fill slide contents **/
+                slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
                 // Log.e("", "smil content = " + smilContent);
             } else {
-                Slog.e("this mms don't have smil.xml");
+                Slog.w("this mms don't have smil.xml");
             }
             cursorSmil.close();
-
-            /** parse smil.xml and fill slide contents **/
-            List<String> slideTxtFileNames = parseSmilToSlidePull(ctx, smilContent, mms);
-
+            
             /** get attachments **/
-            Cursor cursorPart = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), null, null, null, null);
+            Cursor cursorPart = ctx.getContentResolver().query(makeIdPartUri(mms.rowId), new String[] {"ct", "_id", "cl", "text"}, null, null, null);
             while (cursorPart.moveToNext()) {
                 String type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
                 long partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
@@ -428,11 +493,38 @@ public class MmsUtil {
                 /** avoid null pointer **/
                 fileName = (fileName == null) ? "" : fileName;
                 type = (type == null) ? "" : type;
-
-                if (!type.equalsIgnoreCase("application/smil")
-                        && (!fileName.endsWith(".txt") || !slideTxtFileNames.contains(fileName))
-                        && !isSlideFile(mms.attachments, fileName))
+                
+                if (type.equalsIgnoreCase("application/smil") || fileName.equals(".txt")) {
+                    continue;
+                }
+                
+                if (slideTxtFileNames != null && slideTxtFileNames.contains(fileName) || isSlideFile(mms.attachments, fileName)) {
+                    continue;
+                }
+                
+                if ("text/plain".equals(type)) {
+                    String text = cursorPart.getString(cursorPart.getColumnIndex("text"));
+                    
+                    Attachment attachment = new Attachment();
+                    
+                    if (!fileName.endsWith(".txt")) {
+                        attachment.name = fileName + ".txt";
+                    } else {
+                        attachment.name = fileName;
+                    }
+                    
+                    
+                    attachment.fileBytes = text.getBytes();
+                    
+                    mms.attachments.add(attachment);
+                } else {
                     loadAttachment(ctx, mms, partRowId, type, fileName);
+                }
+                
+//                if ((!type.equalsIgnoreCase("application/smil") && (!fileName.endsWith(".txt")) 
+//                        || (!slideTxtFileNames.contains(fileName)) && !isSlideFile(mms.attachments, fileName))) {
+//                    loadAttachment(ctx, mms, partRowId, type, fileName);
+//                }
             }
             cursorPart.close();
 
@@ -683,9 +775,20 @@ public class MmsUtil {
     private static int gainAttachmentIndex(Context cxt, Mms mms, String fileName) {
         String type = null;
         long partRowId = 0;
+        
+        String[] projection = {
+          "ct", "_id",      
+        };
+        
+        String selection = "cl=? or name=?";
+        
+        String[] selectionArgs = {
+                fileName,
+                fileName,
+        };
 
-        Cursor cursorPart = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), null,
-                "cl='" + fileName + "' OR name='" + fileName + "'", null, null);
+        Cursor cursorPart = cxt.getContentResolver().query(makeIdPartUri(mms.rowId), projection,
+                selection, selectionArgs, null);
         if (cursorPart.moveToFirst()) {
             type = cursorPart.getString(cursorPart.getColumnIndex("ct"));
             partRowId = cursorPart.getLong(cursorPart.getColumnIndex("_id"));
