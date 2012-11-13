@@ -381,12 +381,9 @@ public class MmsUtil {
         List<Mms> mmsList = new ArrayList<Mms>();
         
         
-        String selection = "ct_t IN (?, ?)";
+        String selection = null;
         
-        String[] selectionArgs = {
-                "application/vnd.wap.multipart.related",
-                "application/vnd.wap.multipart.mixed",
-        };
+        String[] selectionArgs = null;
         
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
                 "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
@@ -432,12 +429,9 @@ public class MmsUtil {
         
         List<Mms> mmsList = new ArrayList<Mms>();
         
-        String selection = "ct_t IN (?, ?)";
+        String selection = null;
         
-        String[] selectionArgs = {
-                "application/vnd.wap.multipart.related",
-                "application/vnd.wap.multipart.mixed",
-        };
+        String[] selectionArgs = null;
         
         Cursor cursor = ctx.getContentResolver().query(MAIN_MMS_URI, new String[] {
                 "_id", "thread_id", "msg_box", "sub", "date", "read", "m_size"
