@@ -694,7 +694,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         
         Slog.d("filename = " + filename);
                
-        File dest = StorageUtil.generateDstFileName(pictureDir, filename);
+        File dest = StorageUtil.generateDstFileNameExt(pictureDir, filename);
         
         Slog.d("save picture dest: " + dest);
         
