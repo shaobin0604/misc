@@ -48,7 +48,22 @@ public class PictureUtil {
     
     
     public static void scanPicture(Context context, String absolutePath) {
-        Uri uri = Uri.parse("file://" + absolutePath);  
+//        Uri uri = Uri.parse("file://" + absolutePath);
+        
+        String path = absolutePath;
+        if (absolutePath.startsWith("/")) {
+            path = absolutePath.substring(1);
+        }
+        
+        Uri.Builder builder = new Uri.Builder();
+        
+        builder.scheme("file");
+        builder.appendPath(path);
+        
+        Uri uri = builder.build();
+        
+        Slog.d("uri = " + uri);
+        
         context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
     }
     

@@ -73,8 +73,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -670,11 +673,30 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         }
     }
     
+    private String toHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte data : bytes) {
+            sb.append(Integer.toHexString(data));
+            sb.append('-');
+        }
+        return sb.toString();
+    }
+    
     private void savePicture(FileUpload fileUpload) {
         Context context = mHandlerFacade.getContext();
-        File externalDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File dest = new File(externalDir, fileUpload.getFilename());
-        Slog.d("dest: " + dest);
+        
+        File pictureDir = StorageUtil.getExternalPictureDir();
+        if (!pictureDir.exists()) {
+            pictureDir.mkdir();
+        }
+        
+        final String filename = fileUpload.getFilename();
+        
+        Slog.d("filename = " + filename);
+               
+        File dest = StorageUtil.generateDstFileName(pictureDir, filename);
+        
+        Slog.d("save picture dest: " + dest);
         
         try {
             fileUpload.renameTo(dest); // enable to move into another File dest
