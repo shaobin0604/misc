@@ -39,6 +39,7 @@ import com.pekall.pctool.model.contact.Contact.ImInfo;
 import com.pekall.pctool.model.contact.Contact.ModifyTag;
 import com.pekall.pctool.model.contact.Contact.OrgInfo;
 import com.pekall.pctool.model.contact.Contact.PhoneInfo;
+import com.pekall.pctool.util.Settings;
 import com.pekall.pctool.util.Slog;
 
 import java.util.ArrayList;
@@ -350,20 +351,54 @@ public class ContactUtil {
      * 
      * @param context rawId[]
      */
-    public static boolean deleteContactByIds(Context context, List<Long> rawIds) {
+    public static boolean deleteContactByIds(Context context, List<Long> ids) {
+//        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+//        for (long rawId : rawIds) {
+//            ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawId))
+//                    .build());
+//        }
+//        try {
+//            context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+//            return true;
+//        } catch (RemoteException e) {
+//            Slog.e("Error deleteContactByIds", e);
+//            return false;
+//        } catch (OperationApplicationException e) {
+//            Slog.e("Error deleteContactByIds", e);
+//            return false;
+//        }
+        
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        for (long rawId : rawIds) {
-            ops.add(ContentProviderOperation.newDelete(ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawId))
-                    .build());
+
+        int count = 0;
+        for (int i = 0; i < ids.size(); i++) {
+            if (count == Settings.MAX_CONTENT_PROVIDER_OPERATION_COUNT) {
+                try {
+                    context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+                    count = 0;
+                    ops.clear();
+                } catch (RemoteException e) {
+                    Slog.e("Error when deleteContactByIds", e);
+                    return false;
+                } catch (OperationApplicationException e) {
+                    Slog.e("Error when deleteContactByIds", e);
+                    return false;
+                }
+            }
+            long id = ids.get(i);
+            ops.add(ContentProviderOperation.newDelete(
+                    ContentUris.withAppendedId(RawContacts.CONTENT_URI, id)).withYieldAllowed(true).build());
+            count++;
         }
+        
         try {
             context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
             return true;
         } catch (RemoteException e) {
-            Slog.e("Error deleteContactByIds", e);
+            Slog.e("Error when deleteContactByIds", e);
             return false;
         } catch (OperationApplicationException e) {
-            Slog.e("Error deleteContactByIds", e);
+            Slog.e("Error when deleteContactByIds", e);
             return false;
         }
     }

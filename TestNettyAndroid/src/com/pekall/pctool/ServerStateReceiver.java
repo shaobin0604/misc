@@ -48,7 +48,7 @@ public class ServerStateReceiver extends BroadcastReceiver {
                     }
 
                     Notification notification = new Notification();
-                    notification.icon = R.drawable.ic_launcher;
+                    notification.icon = R.drawable.notification_icon;
                     notification.tickerText = context.getString(noteTickerResId, ServerController.getHostname());
                     notification.when = System.currentTimeMillis();
 
