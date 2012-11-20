@@ -50,4 +50,9 @@ public class WifiUtilTestCase extends AndroidTestCase {
         int wifiHostAddress = WifiUtil.decodeWifiHostAddressBase64(wifiHostAddressBase64);
         Slog.d("wifihostAddress: " + wifiHostAddress);
     }
+    
+    public void testWifiDecimalToLiteral() throws Exception {
+        String result = WifiUtil.ipAddressDecimalToLiteral(875276480L);
+        Slog.d("result = " + result);
+    }
 }

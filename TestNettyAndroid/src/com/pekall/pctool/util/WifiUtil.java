@@ -69,6 +69,14 @@ public class WifiUtil {
         }
         return quads; 
     }
+
+    public static String ipAddressDecimalToLiteral(long address) {
+        short[] quads = new short[4];
+        for (int k = 0; k < 4; k++) {
+            quads[k] = (short) ((address >> k * 8) & 0xFF);
+        }
+        return Arrays.toString(quads);
+    }
     
     public static String getWifiAddressRadix36Encoded(Context context) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -79,10 +87,13 @@ public class WifiUtil {
             return null;
         }
         
-        final int ipAddress = dhcp.ipAddress;
-        final String radix36Str = Integer.toString(ipAddress, Character.MAX_RADIX);
+        Slog.d("dhcp info = " + dhcp);
         
-        Slog.d("ipAddress = " + ipAddress + ", radix36Str = " + radix36Str);
+        final int ipAddressLong = dhcp.ipAddress;
+        final String ipAddressLiteral = ipAddressDecimalToLiteral(ipAddressLong);
+        final String radix36Str = Integer.toString(ipAddressLong, Character.MAX_RADIX);
+        
+        Slog.d("ipAddress long = " + ipAddressLong + ", ipAddressLiteral = " + ipAddressLiteral + ", radix36Str = " + radix36Str);
         
         return radix36Str;
     }
