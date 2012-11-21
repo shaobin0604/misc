@@ -59,6 +59,7 @@ public class MainActivity extends Activity implements OnClickListener {
             if (ACTION_SERVER_STATE_CHANGED.equals(action)) {
                 Bundle extras = intent.getExtras();
                 int state = extras.getInt(EXTRAS_STATE_KEY);
+                Slog.d("state: " + ServerController.serverStateToDisplayString(state));
                 switch (state) {
                     case STATE_START: {
                         if (ServerController.isUsbMode()) {

@@ -49,7 +49,7 @@ public class ServerController {
         return serverStateToDisplayString(sServerState);
     }
     
-    private static String serverStateToDisplayString(int serverState) {
+    public static String serverStateToDisplayString(int serverState) {
         switch (serverState) {
             case STATE_START:
                 return "STATE_START";

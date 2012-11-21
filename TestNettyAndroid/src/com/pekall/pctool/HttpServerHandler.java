@@ -9,22 +9,16 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_0;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.UriMatcher;
-import android.net.Uri;
-import android.os.Environment;
-
-import com.pekall.pctool.model.HandlerFacade;
-import com.pekall.pctool.model.app.AppUtil;
-import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
-import com.pekall.pctool.model.picture.PictureUtil;
-import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
-import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
-import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
-import com.pekall.pctool.protos.MsgDefProtos.CmdType;
-import com.pekall.pctool.util.Slog;
-import com.pekall.pctool.util.StorageUtil;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
@@ -68,19 +62,22 @@ import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData;
 import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import org.jboss.netty.util.CharsetUtil;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.net.URLDecoder;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import android.content.Context;
+import android.content.Intent;
+import android.content.UriMatcher;
+import android.net.Uri;
+import android.os.Environment;
+
+import com.pekall.pctool.model.HandlerFacade;
+import com.pekall.pctool.model.app.AppUtil;
+import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
+import com.pekall.pctool.model.picture.PictureUtil;
+import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
+import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
+import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
+import com.pekall.pctool.protos.MsgDefProtos.CmdType;
+import com.pekall.pctool.util.Slog;
+import com.pekall.pctool.util.StorageUtil;
 
 public class HttpServerHandler extends SimpleChannelUpstreamHandler {
     
@@ -779,13 +776,14 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             throws Exception {
         Channel ch = e.getChannel();
         Throwable cause = e.getCause();
+        
+        Slog.e("!!!!! exceptionCaught: " + e);
+        
+        cause.printStackTrace();
+        
         if (cause instanceof TooLongFrameException) {
             sendError(ctx, BAD_REQUEST);
-            return;
-        }
-
-        cause.printStackTrace();
-        if (ch.isConnected()) {
+        } else if (ch.isConnected()) {
             sendError(ctx, INTERNAL_SERVER_ERROR);
         }
     }
