@@ -91,6 +91,10 @@ public class HttpServerService extends Service {
 
         super.onDestroy();
 
+        ServerController.setServiceState(STATE_STOP);
+        ServerController.setWifiSecret(null);
+        ServerController.setHostname(null);
+        
         if (mHttpServer != null) {
             mHttpServer.stop();
             mHttpServer = null;
@@ -103,10 +107,6 @@ public class HttpServerService extends Service {
         }
 
         releaseWakeLock();
-
-        ServerController.setServiceState(STATE_STOP);
-        ServerController.setWifiSecret(null);
-        ServerController.setHostname(null);
 
         Intent serverStateStopIntent = new Intent(ACTION_SERVER_STATE_CHANGED);
         serverStateStopIntent.putExtra(EXTRAS_STATE_KEY, STATE_STOP);

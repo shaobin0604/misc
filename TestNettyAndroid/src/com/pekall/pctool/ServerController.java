@@ -1,5 +1,7 @@
 package com.pekall.pctool;
 
+import static com.pekall.pctool.ServerController.STATE_STOP;
+
 import android.content.Context;
 import android.content.Intent;
 
@@ -22,7 +24,7 @@ public class ServerController {
     public static final int STATE_DISCONNECTED = 4;
     
     // Server state
-    private static int sServerState = STATE_STOP;
+    private static volatile int sServerState = STATE_STOP;
     
     // Server connection mode: usb or wifi
     private static boolean sIsUsbMode;

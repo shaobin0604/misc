@@ -114,6 +114,7 @@ public class HandlerFacade {
     
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
     private static final int RESULT_CODE_ERR_STORAGE_NOT_AVAILABLE = 201;
+    private static final int RESULT_CODE_ERR_SERVER_SHUTDOWN = 202;
 
     private static final String RESULT_MSG_OK = "OK";
 
@@ -504,7 +505,11 @@ public class HandlerFacade {
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_HEART_BEAT);
 
-        setResultOK(responseBuilder);
+        if (ServerController.getServerState() == ServerController.STATE_CONNECTED) {
+            setResultOK(responseBuilder);
+        } else {
+            setResultErrorServerShutdown(responseBuilder);
+        }
 
         Slog.d("heartbeat X");
 
@@ -2978,6 +2983,11 @@ public class HandlerFacade {
     private static void setResultOK(CmdResponse.Builder responseBuilder) {
         responseBuilder.setResultCode(RESULT_CODE_OK);
         responseBuilder.setResultMsg(RESULT_MSG_OK);
+    }
+    
+    private static void setResultErrorServerShutdown(CmdResponse.Builder responseBuilder) {
+        responseBuilder.setResultCode(RESULT_CODE_ERR_SERVER_SHUTDOWN);
+        responseBuilder.setResultMsg("shutdown is requested on server");
     }
     
     private static void setResultErrorStorageNotAvailable(CmdResponse.Builder responseBuilder) {

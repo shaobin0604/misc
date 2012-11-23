@@ -18,6 +18,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,6 +33,8 @@ import com.pekall.pctool.util.Slog;
 import com.pekall.pctool.util.WifiUtil;
 
 public class MainActivity extends Activity implements OnClickListener {
+    
+    
     private static final int FRAME_USB = 0;
     private static final int FRAME_WIFI = 1;
     
@@ -115,6 +119,27 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
             }
         }
+    };
+    
+    private static final int SHUTDOWN_SERVER_DELAY_MILLIS = 1000;   // delay is to shutdown server
+    private static final int WHAT_SHUTDOWN_SERVER = 1000;
+    
+    private Handler mHandler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case WHAT_SHUTDOWN_SERVER:
+                    final Context context = getApplicationContext();
+                    ServerController.stopFTPService(context);
+                    ServerController.stopHttpService(context);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        
     };
     
     @Override
@@ -240,8 +265,6 @@ public class MainActivity extends Activity implements OnClickListener {
                     return;
                 }
                 
-//                String wifiSecret = WifiUtil.getWifiHostAddressBase64(context);
-                
                 String wifiSecret = WifiUtil.getWifiAddressRadix36Encoded(context);
                 
                 ServerController.setWifiSecret(wifiSecret);
@@ -249,13 +272,23 @@ public class MainActivity extends Activity implements OnClickListener {
                 ServerController.startHttpService(context, /* usbMode */ false);
                 ServerController.startFTPService(context);
             } else {
-                ServerController.stopFTPService(context);
-                ServerController.stopHttpService(context);
+                if (ServerController.getServerState() == ServerController.STATE_CONNECTED) {
+                    ServerController.setServiceState(ServerController.STATE_STOP);
+                    mHandler.sendEmptyMessageDelayed(WHAT_SHUTDOWN_SERVER, SHUTDOWN_SERVER_DELAY_MILLIS);
+                } else {
+                    ServerController.stopFTPService(context);
+                    ServerController.stopHttpService(context);
+                }
             }
         } else if (v == mTbUsbStatus) {
             if (mIsUsbOn) {
-                ServerController.stopFTPService(context);
-                ServerController.stopHttpService(context);
+                if (ServerController.getServerState() == ServerController.STATE_CONNECTED) {
+                    ServerController.setServiceState(ServerController.STATE_STOP);
+                    mHandler.sendEmptyMessageDelayed(WHAT_SHUTDOWN_SERVER, SHUTDOWN_SERVER_DELAY_MILLIS);
+                } else {
+                    ServerController.stopFTPService(context);
+                    ServerController.stopHttpService(context);
+                }
             }
         }
     }
