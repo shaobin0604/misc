@@ -27,7 +27,7 @@ public class ServerStateReceiver extends BroadcastReceiver {
         if (ACTION_SERVER_STATE_CHANGED.equals(action)) {
             Bundle extras = intent.getExtras();
             int state = extras.getInt(EXTRAS_STATE_KEY);
-
+            Slog.d("state: " + ServerController.serverStateToDisplayString(state));
             switch (state) {
                 case STATE_CONNECTED: 
                 case STATE_DISCONNECTED: {
