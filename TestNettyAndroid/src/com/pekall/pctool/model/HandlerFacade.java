@@ -604,6 +604,7 @@ public class HandlerFacade {
             String msgText = smsRecord.getMsgText();
             MsgOriginType msgOriginType = smsRecord.getMsgOrigin();
             long msgTime = smsRecord.getMsgTime();
+            boolean readTag = smsRecord.getReadTag();
 
             Sms sms = new Sms();
 
@@ -611,6 +612,7 @@ public class HandlerFacade {
             sms.body = msgText;
             sms.type = msgOriginTypeToSmsType(msgOriginType);
             sms.date = msgTime;
+            sms.read = readTag ? Sms.READ_TRUE : Sms.READ_FALSE;
 
             if (SmsUtil.importPhoneSms(mContext, sms) > 0) {
                 setResultOK(responseBuilder);

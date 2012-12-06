@@ -331,6 +331,7 @@ public class SmsUtil {
         /** one phoneNum only has one draft sms, discard exceed body **/
         values.put(BODY, sms.body);
         values.put(DATE, sms.date);
+        values.put(READ, sms.read);
         Uri newSmsUri = context.getContentResolver().insert(typeToUri(sms.type), values);
 
         Slog.d("newSmsUri = " + newSmsUri);
