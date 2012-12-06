@@ -60,10 +60,12 @@ message ConnectParam
 		WIFI = 1;
 	}
 	required ConnectType		connect_type = 1;
-	optional string				secret = 2;			// 配对码，仅在WIFI模式下需要
-    optional string				host_name = 3;		// PC 主机名
-	optional string				device_model = 4;	// 手机名
-	optional string				device_imei = 5;	// 手机IMEI号码
+	optional string				secret = 2;			// 配对码，仅在WIFI模式下需要, client request
+    optional string				host_name = 3;		// PC 主机名, client request
+	optional string				device_model = 4;	// 手机名, server response
+	optional string				device_imei = 5;	// 手机IMEI号码, server response
+	optional string				apk_version_name = 6; // PC 端附带的 APK version name, client request
+	optional int32				apk_version_code = 7; // PC 端附带的 APK version code, client request
 }
 
 message AppRecord

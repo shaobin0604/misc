@@ -10,6 +10,15 @@ public class VersionUtil {
     private static String sVersionName;
     private static int sVersionCode;
     
+    public static boolean isVersionCodeMatch(Context context, int pcApkVersionCode) {
+        int phoneApkVersionCode = getVersionCode(context);
+        
+        Slog.d("PC APK versionCode: " + pcApkVersionCode);
+        Slog.d("Phone APK versionCode: " + phoneApkVersionCode);
+        
+        return (pcApkVersionCode == phoneApkVersionCode);
+    }
+    
     public static int getVersionCode(Context context) {
         if (sVersionCode == 0) {
             getVersionInfo(context);

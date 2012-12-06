@@ -74,6 +74,7 @@ import com.pekall.pctool.protos.MsgDefProtos.SyncSubType;
 import com.pekall.pctool.util.DeviceInfoUtil;
 import com.pekall.pctool.util.Slog;
 import com.pekall.pctool.util.StorageUtil;
+import com.pekall.pctool.util.VersionUtil;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -111,6 +112,7 @@ public class HandlerFacade {
     private static final int RESULT_CODE_ERR_ILLEGAL_PARAMS = 101;
     private static final int RESULT_CODE_ERR_AUTH_FAIL = 102;
     private static final int RESULT_CODE_ERR_PERMISSION_DENY = 103;
+    private static final int RESULT_CODE_ERR_VERSION_MISMATCH = 104;
     
     private static final int RESULT_CODE_ERR_INTERNAL = 200;
     private static final int RESULT_CODE_ERR_STORAGE_NOT_AVAILABLE = 201;
@@ -405,55 +407,75 @@ public class HandlerFacade {
 
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(cmdRequest.getCmdType());
-        
-        if (cmdRequest.hasConnectParam()) {
-            ConnectParam connectParam = cmdRequest.getConnectParam();
-            final ConnectType connectType = connectParam.getConnectType();
-            String hostname = connectParam.getHostName();
-            
-            ConnectParam.Builder connectResultBuilder = ConnectParam.newBuilder();
-            connectResultBuilder.setConnectType(connectType);
-            connectResultBuilder.setDeviceModel(DeviceInfoUtil.getDeviceModel());
-            connectResultBuilder.setDeviceImei(DeviceInfoUtil.getDeviceUuid(mContext));
-            
-            switch (connectType) {
-                case USB: {
-                    ServerController.setServiceState(ServerController.STATE_CONNECTED);
-                    ServerController.setHostname(hostname);
-                    ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
-                    
-                    responseBuilder.setConnectResult(connectResultBuilder);
-                    
-                    setResultOK(responseBuilder);
-                    break;
-                }
-                case WIFI: {
-                    if (connectParam.hasSecret()) {
-                        String wifiSecret = connectParam.getSecret();
-                        if (ServerController.isWifiSecretMatch(wifiSecret)) {
-                            ServerController.setServiceState(ServerController.STATE_CONNECTED);
-                            ServerController.setHostname(hostname);
-                            ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
-                            
-                            responseBuilder.setConnectResult(connectResultBuilder);
-                            
-                            setResultOK(responseBuilder);
-                        } else {
-                            setResultErrorAuthFail(responseBuilder, "secret");
-                        }
-                    } else {
-                        setResultErrorInsufficentParams(responseBuilder, "secret");
-                    }
-                    
-                    break;
-                }
-                default: {
-                    setResultErrorIllegalParams(responseBuilder, "connectType: " + connectType);
-                    break;
-                }
-            }
-        } else {
+
+        if (!cmdRequest.hasConnectParam()) {
             setResultErrorInsufficentParams(responseBuilder, "connect");
+            Slog.d("connect X");
+            return responseBuilder.build();
+        }
+
+        ConnectParam connectParam = cmdRequest.getConnectParam();
+        final ConnectType connectType = connectParam.getConnectType();
+        String hostname = connectParam.getHostName();
+
+        String pcApkVersionName = connectParam.getApkVersionName();
+        int pcApkVersionCode = connectParam.getApkVersionCode();
+
+        Slog.d("pcApkVersionName: " + pcApkVersionName);
+        Slog.d("pcApkVersionCode: " + pcApkVersionCode);
+        
+        String phoneApkVersionName = VersionUtil.getVersionName(mContext);
+        int phoneApkVersionCode = VersionUtil.getVersionCode(mContext);
+        
+        Slog.d("phoneApkVersionName: " + phoneApkVersionName);
+        Slog.d("phoneApkVersionCode: " + phoneApkVersionCode);
+
+        if (!VersionUtil.isVersionCodeMatch(mContext, pcApkVersionCode)) {
+            setResultErrorVersionMismatch(responseBuilder, pcApkVersionCode, phoneApkVersionCode);
+            Slog.d("connect X");
+            return responseBuilder.build();
+        }
+
+        ConnectParam.Builder connectResultBuilder = ConnectParam.newBuilder();
+        connectResultBuilder.setConnectType(connectType);
+        connectResultBuilder.setDeviceModel(DeviceInfoUtil.getDeviceModel());
+        connectResultBuilder.setDeviceImei(DeviceInfoUtil.getDeviceUuid(mContext));
+
+        switch (connectType) {
+            case USB: {
+                ServerController.setServiceState(ServerController.STATE_CONNECTED);
+                ServerController.setHostname(hostname);
+                ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
+
+                responseBuilder.setConnectResult(connectResultBuilder);
+
+                setResultOK(responseBuilder);
+                break;
+            }
+            case WIFI: {
+                if (connectParam.hasSecret()) {
+                    String wifiSecret = connectParam.getSecret();
+                    if (ServerController.isWifiSecretMatch(wifiSecret)) {
+                        ServerController.setServiceState(ServerController.STATE_CONNECTED);
+                        ServerController.setHostname(hostname);
+                        ServerController.sendServerStateBroadcast(mContext, ServerController.STATE_CONNECTED);
+
+                        responseBuilder.setConnectResult(connectResultBuilder);
+
+                        setResultOK(responseBuilder);
+                    } else {
+                        setResultErrorAuthFail(responseBuilder, "secret");
+                    }
+                } else {
+                    setResultErrorInsufficentParams(responseBuilder, "secret");
+                }
+
+                break;
+            }
+            default: {
+                setResultErrorIllegalParams(responseBuilder, "connectType: " + connectType);
+                break;
+            }
         }
 
         Slog.d("connect X");
@@ -3026,6 +3048,22 @@ public class HandlerFacade {
         Slog.e(msg);
 
         responseBuilder.setResultCode(RESULT_CODE_ERR_INSUFFICIENT_PARAMS);
+        responseBuilder.setResultMsg(msg);
+    }
+    
+    private static void setResultErrorVersionMismatch(CmdResponse.Builder responseBuilder, int pcApkVersionCode,
+            int phoneApkVersionCode) {
+        StringBuilder msgBuilder = new StringBuilder("APK version mismatch: pcApkVersionCode = ");
+        
+        msgBuilder.append(pcApkVersionCode);
+        msgBuilder.append(", phoneApkVersionCode = ");
+        msgBuilder.append(phoneApkVersionCode);
+        
+        final String msg = msgBuilder.toString();
+
+        Slog.e(msg);
+
+        responseBuilder.setResultCode(RESULT_CODE_ERR_VERSION_MISMATCH);
         responseBuilder.setResultMsg(msg);
     }
     
