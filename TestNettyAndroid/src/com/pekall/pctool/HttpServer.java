@@ -1,10 +1,8 @@
 
 package com.pekall.pctool;
 
-import android.content.Context;
-
-import com.pekall.pctool.model.HandlerFacade;
-import com.pekall.pctool.util.Slog;
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -18,9 +16,13 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
+import android.content.Context;
+
+import com.pekall.pctool.model.HandlerFacade;
+import com.pekall.pctool.util.Slog;
 
 public class HttpServer {
     private static final int SERVER_PORT = 12580;
@@ -52,6 +54,8 @@ public class HttpServer {
             
             pipeline.addLast("encoder", new HttpResponseEncoder());
 
+            pipeline.addLast("executor", new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(2, 0, 0)));
+            
             pipeline.addLast("handler", new HttpServerHandler(new HandlerFacade(mContext)));
             return pipeline;
         }
