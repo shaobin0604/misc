@@ -118,7 +118,7 @@ public class PictureUtil {
     }
 
     public static List<Picture> queryPictures(Context context) {
-        QueryPictureResult result = queryPicturesWithOffsetLimit(context, 0, QUERY_LIMIT_NULL);
+        QueryPictureResult result = queryPicturesWithRange(context, 0, QUERY_LIMIT_NULL);
 
         if (result == null) {
             return null;
@@ -185,7 +185,7 @@ public class PictureUtil {
      * @param limit the max count to query, or <b>0</b> if does not need limit
      * @return the {@link QueryPictureResult} or null if error occurred
      */
-    public static QueryPictureResult queryPicturesWithOffsetLimit(Context context, int offset, int limit) {
+    public static QueryPictureResult queryPicturesWithRange(Context context, int offset, int limit) {
         if (offset < 0) {
             throw new IllegalArgumentException("offset should be greater than -1");
         }
@@ -223,7 +223,8 @@ public class PictureUtil {
 
         int resultCount = 0;
         int totalCount = cursor.getCount();
-        Slog.d("cursor count = " + totalCount);
+        
+        Slog.d("total count = " + totalCount);
 
         QueryPictureResult queryResult = new QueryPictureResult(offset, limit, totalCount);
 

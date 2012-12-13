@@ -198,6 +198,97 @@ public class SmsUtil {
 
         return smsList;
     }
+    
+    public static QuerySmsResult querySmsListWithRange(Context context, int offset, int limit) {
+        Slog.d("querySmsListWithRange E, offset = " + offset + ", limit = " + limit);
+        
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset should be greater than -1");
+        }
+
+        if (limit < 0) {
+            throw new IllegalArgumentException("limit should be greater than -1");
+        }
+        
+        ContentResolver resolver = context.getContentResolver();
+
+        Cursor cursor = resolver.query(SMS_ALL_URI, PHONE_SMS_PROJECTION, null, null, DEFAULT_SORT_ORDER);
+        
+        if (cursor == null) {
+            Slog.e("querySmsListWithRange X, Error: querySms cursor is null");
+            return null;
+        }
+            
+        int resultCount = 0;
+        int totalCount = cursor.getCount();
+        
+        Slog.d("total count = " + totalCount);   
+        
+        QuerySmsResult queryResult = new QuerySmsResult(offset, limit, totalCount);
+          
+        try {
+            if (cursor.moveToPosition(offset)) {
+                
+                final int rowIdIndex = cursor.getColumnIndex(_ID);
+                final int threadIdIndex = cursor.getColumnIndex(THREAD_ID);
+                final int personIndex = cursor.getColumnIndex(PERSON);
+                final int addressIndex = cursor.getColumnIndex(ADDRESS);
+                final int dateIndex = cursor.getColumnIndex(DATE);
+                final int protocolIndex = cursor.getColumnIndex(PROTOCOL);
+                final int readIndex = cursor.getColumnIndex(READ);
+                final int statusIndex = cursor.getColumnIndex(STATUS);
+                final int typeIndex = cursor.getColumnIndex(TYPE);
+                final int bodyIndex = cursor.getColumnIndex(BODY);
+                final int serviceCenterIndex = cursor.getColumnIndex(SERVICE_CENTER);
+                final int lockedIndex = cursor.getColumnIndex(LOCKED);
+                final int errorCodeIndex = cursor.getColumnIndex(ERROR_CODE);
+
+                do {
+                    Sms sms = new Sms();
+
+                    sms.rowId = cursor.getLong(rowIdIndex);
+                    sms.threadId = cursor.getLong(threadIdIndex);
+                    sms.address = cursor.getString(addressIndex);
+                    
+//                    sms.person = cursor.getLong(personIndex);
+//                    if (sms.person <= 0) {
+//                        sms.person = ContactUtil.getRawContactId(context, sms.address);
+//                    }
+                    
+                    sms.person = ContactUtil.getRawContactId(context, sms.address);
+                    
+                    sms.date = cursor.getLong(dateIndex);
+                    sms.protocol = cursor.getInt(protocolIndex);
+                    sms.read = cursor.getInt(readIndex);
+                    sms.status = cursor.getInt(statusIndex);
+                    sms.type = cursor.getInt(typeIndex);
+                    sms.body = cursor.getString(bodyIndex);
+                    String serviceCenter = cursor.getString(serviceCenterIndex);
+                    if (serviceCenter == null) {
+                        serviceCenter = "";
+                    }
+                    sms.serviceCenter = serviceCenter;
+                    sms.locked = cursor.getInt(lockedIndex);
+                    sms.errorCode = cursor.getInt(errorCodeIndex);
+
+                    queryResult.addSms(sms);
+                    
+                    resultCount++;
+                    
+                    if (limit > 0 && resultCount >= limit) {
+                        break;
+                    }
+                    
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+        
+        Slog.d("querySmsListWithRange X, OK");
+        
+        return queryResult;
+    }
 
     /**
      * Get {@link Sms} list

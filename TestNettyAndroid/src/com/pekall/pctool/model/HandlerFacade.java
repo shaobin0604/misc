@@ -32,6 +32,7 @@ import com.pekall.pctool.model.mms.MmsUtil;
 import com.pekall.pctool.model.picture.Picture;
 import com.pekall.pctool.model.picture.PictureUtil;
 import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
+import com.pekall.pctool.model.sms.QuerySmsResult;
 import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
 import com.pekall.pctool.protos.MsgDefProtos.AccountRecord;
@@ -87,11 +88,17 @@ public class HandlerFacade {
     private static final boolean DUMP_CMD_REQUEST = true;
     private static final boolean DUMP_CMD_RESPONSE = true;
     
+    private static final boolean DUMP_DETAIL = false;
+    
     private static void dumpCmdRequest(CmdRequest cmdRequest) {
         if (DUMP_CMD_REQUEST) {
             StringBuilder log = new StringBuilder();
             log.append("\n\n++++++++++ CMD_REQUEST ++++++++++\n");
-            log.append(cmdRequest.toString());
+            if (DUMP_DETAIL) {
+                log.append(cmdRequest.toString());
+            } else {
+                log.append(dumpCmdRequestHeader(cmdRequest));
+            }
             log.append( "++++++++++++++++++++++++++++++++++\n\n");
             Slog.d(log.toString());
         }
@@ -101,10 +108,43 @@ public class HandlerFacade {
         if (DUMP_CMD_RESPONSE) {
             StringBuilder log = new StringBuilder();
             log.append("\n\n---------- CMD_RESPONSE ----------\n");
-            log.append(cmdResponse.toString());
+            
+            if (DUMP_DETAIL) {
+                log.append(cmdResponse.toString());
+            } else {
+                log.append(dumpCmdResponseHeader(cmdResponse));
+            }
+            
             log.append( "-----------------------------------\n\n");
             Slog.d(log.toString());
         }
+    }
+    
+    private static StringBuilder dumpCmdRequestHeader(CmdRequest cmdRequest) {
+        StringBuilder builder = new StringBuilder();
+        
+        builder.append("cmd_type: ");
+        builder.append(cmdRequest.getCmdType());
+        builder.append('\n');
+        
+        return builder;
+    }
+    
+    private static StringBuilder dumpCmdResponseHeader(CmdResponse cmdResponse) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("cmd_type: ");
+        builder.append(cmdResponse.getCmdType());
+        builder.append('\n');
+        
+        builder.append("result_code: ");
+        builder.append(cmdResponse.getResultCode());
+        builder.append('\n');
+        
+        builder.append("result_msg: ");
+        builder.append(cmdResponse.getResultMsg());
+        builder.append('\n');
+        
+        return builder;
     }
     
     private static final int RESULT_CODE_OK = 0;
@@ -544,29 +584,39 @@ public class HandlerFacade {
 
     public CmdResponse querySms(CmdRequest request) {
         Slog.d("querySms E");
-
+        
         CmdResponse.Builder responseBuilder = CmdResponse.newBuilder();
         responseBuilder.setCmdType(CmdType.CMD_QUERY_SMS);
-
+        
         SMSRecord.Builder smsBuilder = SMSRecord.newBuilder();
 
-        List<Sms> smsList = SmsUtil.querySmsList(mContext);
-
-        for (Sms sms : smsList) {
-            smsBuilder.setMsgId(sms.rowId);
-            smsBuilder.setContactId(sms.person);
-            smsBuilder.setMsgOrigin(smsTypeToMsgOriginType(sms.type));
-            smsBuilder.setPhoneNum(normalizeStr(sms.address));
-            smsBuilder.setMsgText(normalizeStr(sms.body));
-            smsBuilder.setMsgTime(sms.date);
-            smsBuilder.setReadTag(sms.read == Sms.READ_TRUE);
-
-            responseBuilder.addSmsRecord(smsBuilder.build());
-
-            smsBuilder.clear();
+        int offset = request.getOffsetParam();
+        int limit = request.getLimitParam();
+        
+        QuerySmsResult queryResult = SmsUtil.querySmsListWithRange(mContext, offset, limit);
+        
+        if (queryResult == null) {
+            setResultErrorInternal(responseBuilder, "SmsUtil.querySmsListWithRange");
+        } else {
+            List<Sms> smsList = queryResult.getSmses();
+            
+            responseBuilder.setRecordTotalCount(queryResult.getTotalCount());
+            
+            for (Sms sms : smsList) {
+                smsBuilder.setMsgId(sms.rowId);
+                smsBuilder.setContactId(sms.person);
+                smsBuilder.setMsgOrigin(smsTypeToMsgOriginType(sms.type));
+                smsBuilder.setPhoneNum(normalizeStr(sms.address));
+                smsBuilder.setMsgText(normalizeStr(sms.body));
+                smsBuilder.setMsgTime(sms.date);
+                smsBuilder.setReadTag(sms.read == Sms.READ_TRUE);
+    
+                responseBuilder.addSmsRecord(smsBuilder.build());
+    
+                smsBuilder.clear();
+            }
+            setResultOK(responseBuilder);
         }
-
-        setResultOK(responseBuilder);
         Slog.d("querySms X");
         return responseBuilder.build();
     }
