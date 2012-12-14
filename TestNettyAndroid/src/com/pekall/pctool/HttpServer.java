@@ -17,6 +17,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.MemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 import android.content.Context;
@@ -54,7 +55,8 @@ public class HttpServer {
             
             pipeline.addLast("encoder", new HttpResponseEncoder());
 
-            pipeline.addLast("executor", new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(2, 0, 0)));
+//            pipeline.addLast("executor", new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(4, 0, 0)));
+//            pipeline.addLast("executor", new ExecutionHandler(new MemoryAwareThreadPoolExecutor(4, 0, 0)));
             
             pipeline.addLast("handler", new HttpServerHandler(new HandlerFacade(mContext)));
             return pipeline;
