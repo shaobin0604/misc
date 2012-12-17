@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.pekall.pctool"
-    android:versionCode="20121214"
-    android:versionName="1.0.40" >
+    android:versionCode="20121217"
+    android:versionName="1.0.41" >
 
     <uses-sdk
         android:minSdkVersion="15"

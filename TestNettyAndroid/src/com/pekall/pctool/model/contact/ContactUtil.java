@@ -436,19 +436,16 @@ public class ContactUtil {
         // update Name
         if (hasField(context, StructuredName.CONTENT_ITEM_TYPE, contact.id)) {
             Slog.d("has name");
-
-            final Builder builder = ContentProviderOperation
+            ops.add(ContentProviderOperation
                     .newUpdate(Data.CONTENT_URI)
-                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + " = ?",
+                    .withSelection(Data.RAW_CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + "=?",
                             new String[] {
                                     String.valueOf(contact.id), StructuredName.CONTENT_ITEM_TYPE
-                            }).withValue(StructuredName.DISPLAY_NAME, contact.name);
-            if (TextUtils.isEmpty(contact.name)) {
-                builder.withValue(StructuredName.FAMILY_NAME, "")
-                        .withValue(StructuredName.GIVEN_NAME, "")
-                        .withValue(StructuredName.MIDDLE_NAME, "");
-            }
-            ops.add(builder.build());
+                            })
+                    .withValue(StructuredName.DISPLAY_NAME, contact.name)
+                    .withValue(StructuredName.FAMILY_NAME, "")
+                    .withValue(StructuredName.GIVEN_NAME, "")
+                    .withValue(StructuredName.MIDDLE_NAME, "").build());
 
         } else {
             Slog.d("does not has name");
