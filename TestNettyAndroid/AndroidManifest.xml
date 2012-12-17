@@ -64,6 +64,16 @@
                 <action android:name="action.SERVER_STATE_CHANGED"/>
             </intent-filter>
         </receiver>
+        
+        <!-- 
+        <receiver android:name=".StorageStateReceiver">
+            <intent-filter>
+                <data android:scheme="file"/>
+                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+                <action android:name="android.intent.action.MEDIA_UNMOUNTED"/>
+            </intent-filter>
+        </receiver>
+         -->
     </application>
 
 </manifest>

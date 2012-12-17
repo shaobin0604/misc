@@ -26,8 +26,13 @@ import com.pekall.pctool.util.VersionUtil;
 public class HttpServerService extends Service {
 
     private HttpServer mHttpServer;
+    
     private BroadcastReceiver mUsbUnPlugReceiver;
     private IntentFilter mUsbUnPlugFilter;
+    
+    private BroadcastReceiver mStorageStateReceiver;
+    private IntentFilter mStorageStateFilter;
+    
     private WakeLock mWakeLock;
     private WifiLock mWifiLock;
 
@@ -51,6 +56,7 @@ public class HttpServerService extends Service {
             final boolean isUsbMode = intent.getBooleanExtra(ServerController.EXTRAS_USB_MODE, false);
             ServerController.setServiceState(STATE_START);
             ServerController.setUsbMode(isUsbMode);
+            
             if (isUsbMode) {
                 startListenUsbUnPlugEvent();
             } else {
@@ -58,6 +64,8 @@ public class HttpServerService extends Service {
             }
 
             acquireWakeLock();
+            
+            startListenStorageState();
 
             int noteTickerResId = isUsbMode ? R.string.note_ticker_usb_start : R.string.note_ticker_wifi_start;
             int noteTitleResId = isUsbMode ? R.string.note_title_usb_start : R.string.note_title_wifi_start;
@@ -107,6 +115,8 @@ public class HttpServerService extends Service {
         }
 
         releaseWakeLock();
+        
+        stopListenStorageState();
 
         Intent serverStateStopIntent = new Intent(ACTION_SERVER_STATE_CHANGED);
         serverStateStopIntent.putExtra(EXTRAS_STATE_KEY, STATE_STOP);
@@ -155,6 +165,42 @@ public class HttpServerService extends Service {
                 ServerController.stopFTPService(context);
             }
         }
+
+    }
+    
+    private void startListenStorageState() {
+    	 Slog.d("startListenStorageState E");
+         mStorageStateReceiver = new StorageStateReceiver();
+         
+         mStorageStateFilter = new IntentFilter(Intent.ACTION_MEDIA_MOUNTED);
+         mStorageStateFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+         mStorageStateFilter.addDataScheme("file");
+         
+         registerReceiver(mStorageStateReceiver, mStorageStateFilter);
+         Slog.d("startListenStorageState X");
+    }
+    
+    private void stopListenStorageState() {
+    	Slog.d("stopListenStorageState E");
+    	
+    	unregisterReceiver(mStorageStateReceiver);
+    	
+    	Slog.d("stopListenStorageState X");
+    }
+    
+    private static class StorageStateReceiver extends BroadcastReceiver {
+    	@Override
+    	public void onReceive(Context context, Intent intent) {
+    		final String action = intent.getAction();
+    		Slog.d("action: " + action);
+    		
+    		if (Intent.ACTION_MEDIA_MOUNTED.equals(action)) {
+    			ServerController.startFTPService(context);
+    		} else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(action)) {
+    			ServerController.stopFTPService(context);
+    		}
+    		
+    	}
 
     }
 
