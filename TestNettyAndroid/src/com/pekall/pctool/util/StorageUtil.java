@@ -28,6 +28,11 @@ public class StorageUtil {
         return absolutePath.replace(externalDir.getAbsolutePath(), "");
     }
     
+    public static boolean isFileExist(String absolutePath) {
+    	File file = new File(absolutePath);
+    	return file.exists();
+    }
+    
     /**
      * Generate upload filename, if target file exist, append timestamp
      * 

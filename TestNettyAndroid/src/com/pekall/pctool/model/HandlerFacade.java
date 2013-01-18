@@ -88,7 +88,7 @@ public class HandlerFacade {
     private static final boolean DUMP_CMD_REQUEST = true;
     private static final boolean DUMP_CMD_RESPONSE = true;
     
-    private static final boolean DUMP_DETAIL = false;
+    private static final boolean DUMP_DETAIL = true;
     
     private static void dumpCmdRequest(CmdRequest cmdRequest) {
         if (DUMP_CMD_REQUEST) {

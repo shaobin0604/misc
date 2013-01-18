@@ -240,18 +240,27 @@ public class PictureUtil {
                 final int idxforBucketDisplayName = cursor.getColumnIndex(ImageColumns.BUCKET_DISPLAY_NAME);
 
                 do {
-                    queryResult.addPicture(
-                            new Picture(cursor.getLong(idxForId),
-                                    cursor.getString(idxForTitle),
-                                    cursor.getString(idxForDisplayName),
-                                    cursor.getString(idxForMimeType),
-                                    cursor.getLong(idxForDateTaken),
-                                    cursor.getLong(idxForSize),
-                                    StorageUtil.absolutePathToRelativePath(cursor.getString(idxForData)),
-                                    cursor.getString(idxforBucketDisplayName))
-                            );
+                    String absolutePath = cursor.getString(idxForData);
+                    
+                    // NOTICE: When picture is deleted by other application, e.g. File Manager, 
+                    // MediaScanner may not detect the change, MediaStore still has that record,
+                    // but the picture file has been deleted.
+                    if (StorageUtil.isFileExist(absolutePath)) {
+						queryResult.addPicture(
+	                            new Picture(cursor.getLong(idxForId),
+	                                    cursor.getString(idxForTitle),
+	                                    cursor.getString(idxForDisplayName),
+	                                    cursor.getString(idxForMimeType),
+	                                    cursor.getLong(idxForDateTaken),
+	                                    cursor.getLong(idxForSize),
+	                                    StorageUtil.absolutePathToRelativePath(absolutePath),
+	                                    cursor.getString(idxforBucketDisplayName))
+	                            );
 
-                    resultCount++;
+						resultCount++;
+                    } else {
+                        Slog.d("Skip path = " + absolutePath);
+                    }
 
                     if (limit > 0 && resultCount >= limit) {
                         break;
