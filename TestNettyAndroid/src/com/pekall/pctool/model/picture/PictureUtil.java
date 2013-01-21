@@ -241,26 +241,34 @@ public class PictureUtil {
 
                 do {
                     String absolutePath = cursor.getString(idxForData);
+                    String relativePath;
                     
-                    // NOTICE: When picture is deleted by other application, e.g. File Manager, 
-                    // MediaScanner may not detect the change, MediaStore still has that record,
-                    // but the picture file has been deleted.
+                    // **NOTICE**
+                    // 
+                    // When picture is deleted by other application, e.g. File Manager, 
+                    // MediaScanner may not detect the change immediately, MediaStore will still has
+                    // that record, but the picture file has been deleted. 
+                    // 
+                    // So we set the path field of Picture as Empty String to indicate the picture 
+                    // file has been deleted.
                     if (StorageUtil.isFileExist(absolutePath)) {
-						queryResult.addPicture(
-	                            new Picture(cursor.getLong(idxForId),
-	                                    cursor.getString(idxForTitle),
-	                                    cursor.getString(idxForDisplayName),
-	                                    cursor.getString(idxForMimeType),
-	                                    cursor.getLong(idxForDateTaken),
-	                                    cursor.getLong(idxForSize),
-	                                    StorageUtil.absolutePathToRelativePath(absolutePath),
-	                                    cursor.getString(idxforBucketDisplayName))
-	                            );
-
-						resultCount++;
+                        relativePath = StorageUtil.absolutePathToRelativePath(absolutePath);
                     } else {
-                        Slog.d("Skip path = " + absolutePath);
+                        relativePath = "";
                     }
+                    
+                    queryResult.addPicture(
+                            new Picture(cursor.getLong(idxForId),
+                                    cursor.getString(idxForTitle),
+                                    cursor.getString(idxForDisplayName),
+                                    cursor.getString(idxForMimeType),
+                                    cursor.getLong(idxForDateTaken),
+                                    cursor.getLong(idxForSize),
+                                    relativePath,
+                                    cursor.getString(idxforBucketDisplayName))
+                            );
+
+                    resultCount++;
 
                     if (limit > 0 && resultCount >= limit) {
                         break;
