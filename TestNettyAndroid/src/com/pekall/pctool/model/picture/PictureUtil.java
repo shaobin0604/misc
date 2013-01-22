@@ -7,21 +7,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.provider.MediaStore.Images.Media;
+import android.provider.MediaStore.Images.Thumbnails;
 import android.text.TextUtils;
 
 import com.pekall.pctool.util.Settings;
 import com.pekall.pctool.util.Slog;
 import com.pekall.pctool.util.StorageUtil;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +46,24 @@ public class PictureUtil {
         @Override
         public String toString() {
             return "PictureNotExistException [mPath=" + mPath + "]";
+        }
+    }
+    
+    public static class PictureThumbnailNotExistException extends Exception {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1L;
+        private long mId;
+
+        public PictureThumbnailNotExistException(long id) {
+            super();
+            mId = id;
+        }
+
+        @Override
+        public String toString() {
+            return "PictureThumbnailNotExistException [mId=" + mId + "]";
         }
     }
 
@@ -125,6 +147,23 @@ public class PictureUtil {
         } else {
             return result.getPictures();
         }
+    }
+    
+    public static byte[] getPictureThumbnailStream(Context context, long id, StringBuilder /* out */outMimeType) throws PictureThumbnailNotExistException {
+        
+        Slog.d(">>>>> Thumbnails.getThumbnail");
+        Bitmap bitmap = Thumbnails.getThumbnail(context.getContentResolver(), id, Thumbnails.MICRO_KIND, null);
+        if (bitmap == null) {
+            throw new PictureThumbnailNotExistException(id);
+        }
+        Slog.d("<<<<< Thumbnails.getThumbnail");
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+        bitmap.compress(CompressFormat.PNG, 0 /*ignored for PNG*/, bos); 
+        byte[] bitmapdata = bos.toByteArray();
+        outMimeType.setLength(0);
+        outMimeType.append("image/png");
+        return bitmapdata;
     }
 
     public static InputStream getPictureStream(Context context, long id, StringBuilder /* out */outMimeType)

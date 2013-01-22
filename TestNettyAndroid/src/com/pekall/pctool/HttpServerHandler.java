@@ -9,16 +9,23 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_0;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.channels.FileChannel;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import android.content.Context;
+import android.content.Intent;
+import android.content.UriMatcher;
+import android.net.Uri;
+import android.os.Environment;
+
+import com.pekall.pctool.model.HandlerFacade;
+import com.pekall.pctool.model.app.AppUtil;
+import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
+import com.pekall.pctool.model.picture.PictureUtil;
+import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
+import com.pekall.pctool.model.picture.PictureUtil.PictureThumbnailNotExistException;
+import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
+import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
+import com.pekall.pctool.protos.MsgDefProtos.CmdType;
+import com.pekall.pctool.util.Slog;
+import com.pekall.pctool.util.StorageUtil;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
@@ -62,25 +69,20 @@ import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData;
 import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import org.jboss.netty.util.CharsetUtil;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.UriMatcher;
-import android.net.Uri;
-import android.os.Environment;
-
-import com.pekall.pctool.model.HandlerFacade;
-import com.pekall.pctool.model.app.AppUtil;
-import com.pekall.pctool.model.app.AppUtil.AppNotExistException;
-import com.pekall.pctool.model.picture.PictureUtil;
-import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
-import com.pekall.pctool.protos.MsgDefProtos.CmdRequest;
-import com.pekall.pctool.protos.MsgDefProtos.CmdResponse;
-import com.pekall.pctool.protos.MsgDefProtos.CmdType;
-import com.pekall.pctool.util.Slog;
-import com.pekall.pctool.util.StorageUtil;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 public class HttpServerHandler extends SimpleChannelUpstreamHandler {
-    
+
     private static enum FileUploadType {
         APK,
         PICTURE,
@@ -93,6 +95,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
     private static final int IMPORT_APP = 3;
     private static final int EXPORT_PICTURE = 4;
     private static final int IMPORT_PICTURE = 5;
+    private static final int EXPORT_PICTURE_THUMBNAIL = 6;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(
             UriMatcher.NO_MATCH);
@@ -101,17 +104,18 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         sURIMatcher.addURI("localhost", "rpc", RPC_END_POINT);
         sURIMatcher.addURI("localhost", "export/*", EXPORT_APP);
         sURIMatcher.addURI("localhost", "import", IMPORT_APP);
-        sURIMatcher.addURI("localhost", "export_pic/#", EXPORT_PICTURE);    // should be IMAGES_MEDIA_ID
+        sURIMatcher.addURI("localhost", "export_pic/#", EXPORT_PICTURE); // should be IMAGES_MEDIA_ID
         sURIMatcher.addURI("localhost", "import_pic", IMPORT_PICTURE);
+        sURIMatcher.addURI("localhost", "export_pic_thumb/#", EXPORT_PICTURE_THUMBNAIL); // should be IMAGES_MEDIA_ID
     }
-    
+
     //
     // APK, picture file upload related
-    // 
+    //
     private HttpRequest mRequest;
 
     private boolean readingChunks;
-    
+
     private FileUploadType mFileUploadType;
 
     private final StringBuilder responseContent = new StringBuilder();
@@ -129,7 +133,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                                                         // exit (in normal exit)
         DiskAttribute.baseDirectory = null; // system temp directory
     }
-    
+
     private ShutdownServerListener mShutdownServerListener;
 
     //
@@ -141,14 +145,15 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         this.mHandlerFacade = facade;
         this.mShutdownServerListener = new ShutdownServerListener(facade.getContext());
     }
-    
+
     @Override
     public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         super.channelOpen(ctx, e);
-        
-        // see 
+
+        // see
         // * http://static.netty.io/3.5/guide/#start.12
-        // * http://stackoverflow.com/questions/10950244/server-bootstrap-releaseexternalresources-stuck-in-loop
+        // *
+        // http://stackoverflow.com/questions/10950244/server-bootstrap-releaseexternalresources-stuck-in-loop
         // * http://biasedbit.com/netty-releaseexternalresources-hangs/
         HttpServer.sAllChannels.add(e.getChannel());
     }
@@ -156,22 +161,23 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
             throws Exception {
-        
-//        Slog.d("MessageReceived, e.getClass: " + e.getMessage().getClass().toString() + ", readingChunks: " + readingChunks);
-        
+
+        // Slog.d("MessageReceived, e.getClass: " +
+        // e.getMessage().getClass().toString() + ", readingChunks: " +
+        // readingChunks);
+
         if (readingChunks) {
             handleImport(ctx, e, mFileUploadType);
             return;
         }
-        
+
         HttpRequest request = (HttpRequest) e.getMessage();
-        
+
         String path = request.getUri();
         HttpMethod method = request.getMethod();
         path = sanitizeUri(path);
 
         Slog.d("path:" + path + ", method: " + method);
-        
 
         Uri url = Uri.parse("content://localhost" + path);
 
@@ -231,6 +237,15 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                 }
                 break;
             }
+            case EXPORT_PICTURE_THUMBNAIL: {
+                if (HttpMethod.GET.equals(method)) {
+                    String pictureId = url.getPathSegments().get(1);
+                    handleExportPictureThumbnail(pictureId, e);
+                } else {
+                    sendError(ctx, BAD_REQUEST);
+                }
+                break;
+            }
 
             default: {
                 sendError(ctx, NOT_FOUND);
@@ -244,32 +259,32 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         Slog.d("\n==================== handleRPC E ====================\n\n");
 
         String contentLength = request.getHeader(CONTENT_LENGTH);
-        
+
         Slog.d("header: Content-Length = " + contentLength);
-        
+
         boolean isChunked = request.isChunked();
-        
+
         Slog.d("isChunked: " + isChunked);
-        
+
         ChannelBuffer content = request.getContent();
-        
+
         Slog.d("body: length = " + content.readableBytes());
-        
+
         ChannelBufferInputStream cbis = new ChannelBufferInputStream(content);
         HttpResponse httpResponse = new DefaultHttpResponse(HTTP_1_0, OK);
         boolean shutdownServer = false;
         try {
             CmdRequest cmdRequest = CmdRequest.parseFrom(cbis);
-            
+
             CmdResponse cmdResponse = mHandlerFacade.handleCmdRequest(cmdRequest);
-            
+
             if (cmdResponse.getCmdType() == CmdType.CMD_DISCONNECT) {
                 shutdownServer = true;
             }
-            
+
             ChannelBuffer buffer = new DynamicChannelBuffer(2048);
             buffer.writeBytes(cmdResponse.toByteArray());
-            
+
             httpResponse.setContent(buffer);
             httpResponse.setHeader(CONTENT_TYPE, "application/x-protobuf");
             httpResponse.setHeader(CONTENT_LENGTH, httpResponse.getContent().writerIndex());
@@ -283,7 +298,59 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         Slog.d("\n=====================================================\n\n");
         return httpResponseWrapper;
     }
-    
+
+    private void handleExportPictureThumbnail(final String pictureId, MessageEvent event) {
+        Slog.d("pictureId = " + pictureId);
+        try {
+            StringBuilder mimeType = new StringBuilder();
+            byte[] data = mHandlerFacade.exportPictureThumbnail(Long.valueOf(pictureId), mimeType);
+
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, OK);
+
+            response.setHeader(CONTENT_TYPE, mimeType.toString());
+            response.setHeader(CONTENT_LENGTH, data.length);
+            response.setContent(ChannelBuffers.wrappedBuffer(data));
+            
+            Channel ch = event.getChannel();
+
+            // Write the initial line and the header.
+            ChannelFuture writeFuture = ch.write(response);
+
+            writeFuture.addListener(new ChannelFutureProgressListener() {
+                public void operationComplete(ChannelFuture future) {
+                    future.getChannel().close();
+                }
+
+                public void operationProgressed(
+                        ChannelFuture future, long amount, long current, long total) {
+                    Slog.d(String.format("%d / %d (+%d)%n", current, total, amount));
+                }
+            });
+        } catch (NumberFormatException e) {
+            Slog.e("Error picture id not exist, id = " + pictureId, e);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, NOT_FOUND);
+
+            response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+            response.setContent(ChannelBuffers.copiedBuffer(
+                    "Failure: " + NOT_FOUND.toString() + "\r\n",
+                    CharsetUtil.UTF_8));
+
+            // Close the connection as soon as the error message is sent.
+            event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        } catch (PictureThumbnailNotExistException e) {
+            Slog.e("Error picture id not exist, id = " + pictureId, e);
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_0, NOT_FOUND);
+
+            response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+            response.setContent(ChannelBuffers.copiedBuffer(
+                    "Failure: " + NOT_FOUND.toString() + "\r\n",
+                    CharsetUtil.UTF_8));
+
+            // Close the connection as soon as the error message is sent.
+            event.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        } 
+    }
+
     private void handleExportPicture(final String pictureId, MessageEvent event) {
         Slog.d("pictureId = " + pictureId);
         try {
@@ -319,7 +386,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                         Slog.d(String.format("%d / %d (+%d)%n", current, total, amount));
                     }
                 });
-                
+
             }
         } catch (NumberFormatException e) {
             Slog.e("Error picture id not exist, id = " + pictureId, e);
@@ -391,7 +458,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                         Slog.d(String.format("%s: %d / %d (+%d)%n", packageName, current, total, amount));
                     }
                 });
-                
+
             }
         } catch (AppNotExistException e) {
             Slog.e("Error app not exist", e);
@@ -418,13 +485,14 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    private void handleImport(ChannelHandlerContext ctx, MessageEvent e, FileUploadType fileUploadType) throws Exception {
+    private void handleImport(ChannelHandlerContext ctx, MessageEvent e, FileUploadType fileUploadType)
+            throws Exception {
         if (!StorageUtil.isExternalStorageMounted()) {
             Slog.e("Error sdcard not mounted");
             sendError(ctx, HttpResponseStatus.SERVICE_UNAVAILABLE);
             return;
         }
-        
+
         if (!readingChunks) {
             // clean previous FileUpload if Any
             if (decoder != null) {
@@ -432,85 +500,84 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                 decoder = null;
             }
             HttpRequest request = mRequest = (HttpRequest) e.getMessage();
-            
+
             mFileUploadType = fileUploadType;
-            
-            
-//            responseContent.setLength(0);
-//            responseContent.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-//            responseContent.append("===================================\r\n");
-//
-//            responseContent.append("VERSION: " +
-//                    request.getProtocolVersion().getText() + "\r\n");
-//
-//            responseContent.append("REQUEST_URI: " + request.getUri() +
-//                    "\r\n\r\n");
-//            responseContent.append("\r\n\r\n");
-//
-//            // new method
-//            List<Entry<String, String>> headers = request.getHeaders();
-//            for (Entry<String, String> entry: headers) {
-//                responseContent.append("HEADER: " + entry.getKey() + "=" +
-//                        entry.getValue() + "\r\n");
-//            }
-//            responseContent.append("\r\n\r\n");
-//
-//            // new method
-//            Set<Cookie> cookies;
-//            String value = request.getHeader(HttpHeaders.Names.COOKIE);
-//            if (value == null) {
-//                cookies = Collections.emptySet();
-//            } else {
-//                CookieDecoder decoder = new CookieDecoder();
-//                cookies = decoder.decode(value);
-//            }
-//            for (Cookie cookie: cookies) {
-//                responseContent.append("COOKIE: " + cookie.toString() + "\r\n");
-//            }
-//            responseContent.append("\r\n\r\n");
-//
-//            QueryStringDecoder decoderQuery = new QueryStringDecoder(request
-//                    .getUri());
-//            Map<String, List<String>> uriAttributes = decoderQuery
-//                    .getParameters();
-//            for (String key: uriAttributes.keySet()) {
-//                for (String valuen: uriAttributes.get(key)) {
-//                    responseContent.append("URI: " + key + "=" + valuen +
-//                            "\r\n");
-//                }
-//            }
-//            responseContent.append("\r\n\r\n");
+
+            // responseContent.setLength(0);
+            // responseContent.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
+            // responseContent.append("===================================\r\n");
+            //
+            // responseContent.append("VERSION: " +
+            // request.getProtocolVersion().getText() + "\r\n");
+            //
+            // responseContent.append("REQUEST_URI: " + request.getUri() +
+            // "\r\n\r\n");
+            // responseContent.append("\r\n\r\n");
+            //
+            // // new method
+            // List<Entry<String, String>> headers = request.getHeaders();
+            // for (Entry<String, String> entry: headers) {
+            // responseContent.append("HEADER: " + entry.getKey() + "=" +
+            // entry.getValue() + "\r\n");
+            // }
+            // responseContent.append("\r\n\r\n");
+            //
+            // // new method
+            // Set<Cookie> cookies;
+            // String value = request.getHeader(HttpHeaders.Names.COOKIE);
+            // if (value == null) {
+            // cookies = Collections.emptySet();
+            // } else {
+            // CookieDecoder decoder = new CookieDecoder();
+            // cookies = decoder.decode(value);
+            // }
+            // for (Cookie cookie: cookies) {
+            // responseContent.append("COOKIE: " + cookie.toString() + "\r\n");
+            // }
+            // responseContent.append("\r\n\r\n");
+            //
+            // QueryStringDecoder decoderQuery = new QueryStringDecoder(request
+            // .getUri());
+            // Map<String, List<String>> uriAttributes = decoderQuery
+            // .getParameters();
+            // for (String key: uriAttributes.keySet()) {
+            // for (String valuen: uriAttributes.get(key)) {
+            // responseContent.append("URI: " + key + "=" + valuen +
+            // "\r\n");
+            // }
+            // }
+            // responseContent.append("\r\n\r\n");
 
             // if GET Method: should not try to create a HttpPostRequestDecoder
             try {
                 decoder = new HttpPostRequestDecoder(factory, request);
             } catch (ErrorDataDecoderException e1) {
                 e1.printStackTrace();
-//                responseContent.append(e1.getMessage());
+                // responseContent.append(e1.getMessage());
                 writeResponse(e.getChannel());
                 Channels.close(e.getChannel());
                 return;
             } catch (IncompatibleDataDecoderException e1) {
                 // GET Method: should not try to create a HttpPostRequestDecoder
                 // So OK but stop here
-//                responseContent.append(e1.getMessage());
-//                responseContent.append("\r\n\r\nEND OF GET CONTENT\r\n");
+                // responseContent.append(e1.getMessage());
+                // responseContent.append("\r\n\r\nEND OF GET CONTENT\r\n");
                 writeResponse(e.getChannel());
                 return;
             }
 
-//            responseContent.append("Is Chunked: " + request.isChunked() +
-//                    "\r\n");
-//            responseContent.append("IsMultipart: " + decoder.isMultipart() +
-//                    "\r\n");
+            // responseContent.append("Is Chunked: " + request.isChunked() +
+            // "\r\n");
+            // responseContent.append("IsMultipart: " + decoder.isMultipart() +
+            // "\r\n");
             if (request.isChunked()) {
                 // Chunk version
-//                responseContent.append("Chunks: ");
+                // responseContent.append("Chunks: ");
                 readingChunks = true;
             } else {
                 // Not chunk version
                 readHttpDataAllReceive(e.getChannel());
-//                responseContent.append("\r\n\r\nEND OF NOT CHUNKED CONTENT\r\n");
+                // responseContent.append("\r\n\r\nEND OF NOT CHUNKED CONTENT\r\n");
                 writeResponse(e.getChannel());
             }
         } else {
@@ -520,14 +587,15 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                 decoder.offer(chunk);
             } catch (ErrorDataDecoderException e1) {
                 e1.printStackTrace();
-//                responseContent.append(e1.getMessage());
+                // responseContent.append(e1.getMessage());
                 writeResponse(e.getChannel());
                 Channels.close(e.getChannel());
                 return;
             }
-//            responseContent.append("o");
-            // example of reading chunk by chunk (minimize memory usage due to Factory)
-//          readHttpDataChunkByChunk(e.getChannel());
+            // responseContent.append("o");
+            // example of reading chunk by chunk (minimize memory usage due to
+            // Factory)
+            // readHttpDataChunkByChunk(e.getChannel());
             // example of reading only if at the end
             if (chunk.isLast()) {
                 readHttpDataAllReceive(e.getChannel());
@@ -535,12 +603,12 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                 readingChunks = false;
             }
         }
-        
+
     }
-    
+
     /**
      * Example of reading all InterfaceHttpData from finished transfer
-     *
+     * 
      * @param channel
      */
     private void readHttpDataAllReceive(Channel channel) {
@@ -550,21 +618,21 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         } catch (NotEnoughDataDecoderException e1) {
             // Should not be!
             e1.printStackTrace();
-//            responseContent.append(e1.getMessage());
+            // responseContent.append(e1.getMessage());
             writeResponse(channel);
             Channels.close(channel);
             return;
         }
-        for (InterfaceHttpData data: datas) {
+        for (InterfaceHttpData data : datas) {
             writeHttpData(data);
         }
-//        responseContent.append("\r\n\r\nEND OF CONTENT AT FINAL END\r\n");
+        // responseContent.append("\r\n\r\nEND OF CONTENT AT FINAL END\r\n");
     }
 
     /**
      * Example of reading request by chunk and getting values from chunk to
      * chunk
-     *
+     * 
      * @param channel
      */
     private void readHttpDataChunkByChunk(Channel channel) {
@@ -578,60 +646,63 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             }
         } catch (EndOfDataDecoderException e1) {
             // end
-//            responseContent.append("\r\n\r\nEND OF CONTENT CHUNK BY CHUNK\r\n\r\n");
+            // responseContent.append("\r\n\r\nEND OF CONTENT CHUNK BY CHUNK\r\n\r\n");
         }
     }
 
     private void writeHttpData(InterfaceHttpData data) {
         if (data.getHttpDataType() == HttpDataType.Attribute) {
-//            Attribute attribute = (Attribute) data;
-//            String value;
-//            try {
-//                value = attribute.getValue();
-//            } catch (IOException e1) {
-//                // Error while reading data from File, only print name and error
-//                e1.printStackTrace();
-//                responseContent.append("\r\nBODY Attribute: " +
-//                        attribute.getHttpDataType().name() + ": " +
-//                        attribute.getName() + " Error while reading value: " +
-//                        e1.getMessage() + "\r\n");
-//                return;
-//            }
-//            if (value.length() > 100) {
-//                responseContent.append("\r\nBODY Attribute: " +
-//                        attribute.getHttpDataType().name() + ": " +
-//                        attribute.getName() + " data too long\r\n");
-//            } else {
-//                responseContent.append("\r\nBODY Attribute: " +
-//                        attribute.getHttpDataType().name() + ": " +
-//                        attribute.toString() + "\r\n");
-//            }
+            // Attribute attribute = (Attribute) data;
+            // String value;
+            // try {
+            // value = attribute.getValue();
+            // } catch (IOException e1) {
+            // // Error while reading data from File, only print name and error
+            // e1.printStackTrace();
+            // responseContent.append("\r\nBODY Attribute: " +
+            // attribute.getHttpDataType().name() + ": " +
+            // attribute.getName() + " Error while reading value: " +
+            // e1.getMessage() + "\r\n");
+            // return;
+            // }
+            // if (value.length() > 100) {
+            // responseContent.append("\r\nBODY Attribute: " +
+            // attribute.getHttpDataType().name() + ": " +
+            // attribute.getName() + " data too long\r\n");
+            // } else {
+            // responseContent.append("\r\nBODY Attribute: " +
+            // attribute.getHttpDataType().name() + ": " +
+            // attribute.toString() + "\r\n");
+            // }
         } else {
-//            responseContent.append("\r\nBODY FileUpload: " +
-//                    data.getHttpDataType().name() + ": " + data.toString() +
-//                    "\r\n");
+            // responseContent.append("\r\nBODY FileUpload: " +
+            // data.getHttpDataType().name() + ": " + data.toString() +
+            // "\r\n");
             if (data.getHttpDataType() == HttpDataType.FileUpload) {
                 FileUpload fileUpload = (FileUpload) data;
                 if (fileUpload.isCompleted()) {
-//                    if (fileUpload.length() < 10000) {
-//                        responseContent.append("\tContent of file\r\n");
-//                        try {
-//                            responseContent
-//                                    .append(((FileUpload) data)
-//                                            .getString(((FileUpload) data)
-//                                                    .getCharset()));
-//                        } catch (IOException e1) {
-//                            // do nothing for the example
-//                            e1.printStackTrace();
-//                        }
-//                        responseContent.append("\r\n");
-//                    } else {
-//                        responseContent
-//                                .append("\tFile too long to be printed out:" +
-//                                        fileUpload.length() + "\r\n");
-//                    }
-                    boolean isInMemory = fileUpload.isInMemory();// tells if the file is in Memory or on File
-                    
+                    // if (fileUpload.length() < 10000) {
+                    // responseContent.append("\tContent of file\r\n");
+                    // try {
+                    // responseContent
+                    // .append(((FileUpload) data)
+                    // .getString(((FileUpload) data)
+                    // .getCharset()));
+                    // } catch (IOException e1) {
+                    // // do nothing for the example
+                    // e1.printStackTrace();
+                    // }
+                    // responseContent.append("\r\n");
+                    // } else {
+                    // responseContent
+                    // .append("\tFile too long to be printed out:" +
+                    // fileUpload.length() + "\r\n");
+                    // }
+                    boolean isInMemory = fileUpload.isInMemory();// tells if the
+                                                                 // file is in
+                                                                 // Memory or on
+                                                                 // File
+
                     Slog.d("isInMemory: " + isInMemory);
                     switch (mFileUploadType) {
                         case APK:
@@ -644,12 +715,13 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
                             // should not reach here
                             throw new IllegalStateException("Error: unknown file upload type: " + mFileUploadType);
                     }
-                     
-                    //decoder.removeFileUploadFromClean(fileUpload); //remove the File of to delete file
+
+                    // decoder.removeFileUploadFromClean(fileUpload); //remove
+                    // the File of to delete file
                     decoder.removeHttpDataFromClean(data);
                 } else {
-//                    responseContent
-//                            .append("\tFile to be continued but should not!\r\n");
+                    // responseContent
+                    // .append("\tFile to be continued but should not!\r\n");
                 }
             }
         }
@@ -660,7 +732,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         File externalDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
         File dest = new File(externalDir, fileUpload.getFilename());
         Slog.d("dest: " + dest);
-        
+
         try {
             fileUpload.renameTo(dest); // enable to move into another File dest
             AppUtil.installAPK(context, dest);
@@ -669,7 +741,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             e.printStackTrace();
         }
     }
-    
+
     private String toHexString(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte data : bytes) {
@@ -678,23 +750,23 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         }
         return sb.toString();
     }
-    
+
     private void savePicture(FileUpload fileUpload) {
         Context context = mHandlerFacade.getContext();
-        
+
         File pictureDir = StorageUtil.getExternalPictureDir();
         if (!pictureDir.exists()) {
             pictureDir.mkdir();
         }
-        
+
         final String filename = fileUpload.getFilename();
-        
+
         Slog.d("filename = " + filename);
-               
+
         File dest = StorageUtil.generateDstFileNameExt(pictureDir, filename);
-        
+
         Slog.d("save picture dest: " + dest);
-        
+
         try {
             fileUpload.renameTo(dest); // enable to move into another File dest
             PictureUtil.scanPicture(context, dest.getAbsolutePath());
@@ -742,7 +814,7 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         if (!cookies.isEmpty()) {
             // Reset the cookies if necessary.
             CookieEncoder cookieEncoder = new CookieEncoder(true);
-            for (Cookie cookie: cookies) {
+            for (Cookie cookie : cookies) {
                 cookieEncoder.addCookie(cookie);
                 response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder
                         .encode());
@@ -776,11 +848,11 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
             throws Exception {
         Channel ch = e.getChannel();
         Throwable cause = e.getCause();
-        
+
         Slog.e("!!!!! exceptionCaught: " + e);
-        
+
         cause.printStackTrace();
-        
+
         if (cause instanceof TooLongFrameException) {
             sendError(ctx, BAD_REQUEST);
         } else if (ch.isConnected()) {
@@ -798,30 +870,30 @@ public class HttpServerHandler extends SimpleChannelUpstreamHandler {
         ctx.getChannel().write(response)
                 .addListener(ChannelFutureListener.CLOSE);
     }
-    
+
     private static final class HttpResponseWrapper {
-        boolean mIsHaltRequested;    // whether shutdown server after send response 
+        boolean mIsHaltRequested; // whether shutdown server after send response
         HttpResponse mHttpResponse;
-        
+
         HttpResponseWrapper(HttpResponse httpResponse, boolean isHaltRequested) {
             mHttpResponse = httpResponse;
             mIsHaltRequested = isHaltRequested;
         }
     }
-    
+
     private static final class ShutdownServerListener implements ChannelFutureListener {
-        
+
         private Context mContext;
-        
+
         ShutdownServerListener(Context context) {
             mContext = context;
         }
-        
+
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {
             // 1. close channel first
             future.getChannel().close();
-            
+
             // 2. then send broadcast to shutdown server
             Intent shutdownIntent = new Intent(AmCommandReceiver.ACTION_MAIN_SERVER_STOP);
             mContext.sendBroadcast(shutdownIntent);

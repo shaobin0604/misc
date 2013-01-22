@@ -32,6 +32,7 @@ import com.pekall.pctool.model.mms.MmsUtil;
 import com.pekall.pctool.model.picture.Picture;
 import com.pekall.pctool.model.picture.PictureUtil;
 import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
+import com.pekall.pctool.model.picture.PictureUtil.PictureThumbnailNotExistException;
 import com.pekall.pctool.model.picture.QueryPictureResult;
 import com.pekall.pctool.model.sms.QuerySmsResult;
 import com.pekall.pctool.model.sms.Sms;
@@ -442,6 +443,11 @@ public class HandlerFacade {
     public InputStream exportPicture(long pictureId, StringBuilder /*out*/outMimeType)
             throws PictureNotExistException {
         return PictureUtil.getPictureStream(mContext, pictureId, outMimeType);
+    }
+    
+    public byte[] exportPictureThumbnail(long pictureId, StringBuilder /* out */outMimeType)
+            throws PictureThumbnailNotExistException {
+        return PictureUtil.getPictureThumbnailStream(mContext, pictureId, outMimeType);
     }
     
     //
