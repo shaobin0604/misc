@@ -32,6 +32,7 @@ import com.pekall.pctool.model.mms.MmsUtil;
 import com.pekall.pctool.model.picture.Picture;
 import com.pekall.pctool.model.picture.PictureUtil;
 import com.pekall.pctool.model.picture.PictureUtil.PictureNotExistException;
+import com.pekall.pctool.model.picture.QueryPictureResult;
 import com.pekall.pctool.model.sms.QuerySmsResult;
 import com.pekall.pctool.model.sms.Sms;
 import com.pekall.pctool.model.sms.SmsUtil;
@@ -88,7 +89,7 @@ public class HandlerFacade {
     private static final boolean DUMP_CMD_REQUEST = true;
     private static final boolean DUMP_CMD_RESPONSE = true;
     
-    private static final boolean DUMP_DETAIL = true;
+    private static final boolean DUMP_DETAIL = false;
     
     private static void dumpCmdRequest(CmdRequest cmdRequest) {
         if (DUMP_CMD_REQUEST) {
@@ -405,16 +406,21 @@ public class HandlerFacade {
             Slog.d("queryPicture X");
             return responseBuilder.build();
         }
-
-        List<Picture> pictures = PictureUtil.queryPictures(getContext());
         
-        if (pictures == null) {
-            setResultErrorInternal(responseBuilder, "PictureUtil.queryPictures");
+        int offset = cmdRequest.getOffsetParam();
+        int limit = cmdRequest.getLimitParam();
+
+        QueryPictureResult queryResult = PictureUtil.queryPicturesWithRange(mContext, offset, limit);
+        
+        if (queryResult == null) {
+            setResultErrorInternal(responseBuilder, "PictureUtil.queryPicturesWithRange");
             Slog.d("queryPicture X");
             return responseBuilder.build();
         } 
 
         PictureRecord.Builder pictureBuilder = PictureRecord.newBuilder();
+        
+        List<Picture> pictures = queryResult.getPictures();
         
         for (Picture picture : pictures) {
             pictureBuilder.setId(picture.id);
