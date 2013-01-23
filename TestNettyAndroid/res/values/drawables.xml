@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <item type="drawable" name="TrueWhite">#ffffffff</item>
-    <item type="drawable" name="Gray">#ffe1e8ed</item>
-    <item type="drawable" name="Alpha">#00000000</item>
-    <item type="drawable" name="translucent_background">#00000000</item>
-</resources>
